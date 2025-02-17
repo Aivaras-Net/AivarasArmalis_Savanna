@@ -7,7 +7,13 @@ namespace Savanna.CLI
     {
         static void Main(string[] args)
         {
-            GameEngine engine = new GameEngine();
+            ConsoleRenderer renderer = new ConsoleRenderer(2);
+            GameEngine engine = new GameEngine(renderer);
+
+            Console.SetCursorPosition(0, 0);
+            Console.WriteLine("Savanna simulation");
+            Console.WriteLine("Press A to add ANtelope, Q to quit");
+
 
             bool running = true;
 
@@ -30,7 +36,6 @@ namespace Savanna.CLI
                 }
 
                 engine.Update();
-                Console.Clear();
                 engine.DrawField();
                 Thread.Sleep(500);
             }

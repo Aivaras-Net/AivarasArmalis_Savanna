@@ -1,13 +1,20 @@
 ﻿using Savanna.Core.Domain;
+using Savanna.Core.Interfaces;
 
 namespace Savanna.Core
 {
     public class GameEngine
     {
         private readonly List<IAnimal> _animals = new List<IAnimal>();
-        private readonly int _fieldWidth = 20;
+        private readonly int _fieldWidth = 40;
         private readonly int _fieldHeight = 20;
         private Random _random = new Random();
+        private IConsoleRenderer renderer;
+
+        public GameEngine(IConsoleRenderer renderer)
+        {
+            this.renderer = renderer;
+        }
 
         public void AddAnimal(IAnimal animal)
         {
@@ -37,7 +44,7 @@ namespace Savanna.Core
             {
                 for (int x = 0; x < _fieldWidth; x++)
                 {
-                    field[y, x] = '.';
+                    field[y, x] = ' ';
                 }
             }
 
@@ -49,14 +56,7 @@ namespace Savanna.Core
                 }
             }
 
-            for (int y = 0; y < _fieldHeight; ++y)
-            {
-                for (int x = 0; x < _fieldWidth; ++x)
-                {
-                    Console.Write(field[y, x]);
-                }
-                Console.WriteLine();
-            }
+            renderer.RenderField(field);
         }
     }
 }
