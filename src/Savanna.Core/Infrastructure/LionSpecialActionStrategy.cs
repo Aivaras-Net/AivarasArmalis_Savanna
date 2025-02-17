@@ -3,6 +3,9 @@ using Savanna.Core.Interfaces;
 
 namespace Savanna.Core
 {
+    /// <summary>
+    /// Implements a special action strategy for a lion, enabling it to consume an adjacent antelope.
+    /// </summary>
     public class LionSpecialActionStrategy : ISpecialActionStrategy
     {
         public void Execute(IAnimal animal, IEnumerable<IAnimal> animals)

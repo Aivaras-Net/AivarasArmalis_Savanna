@@ -1,8 +1,10 @@
-﻿namespace Savanna.Core.Domain
+﻿using Savanna.Core.Constants;
+
+namespace Savanna.Core.Domain
 {
     public class Lion : Animal
     {
-        public override string Name => "Lion";
+        public override string Name => GameConstants.LionName;
 
         public Lion(double speed, double visionRange, Position position) : base(speed, visionRange, position, new LionMovementStrategy(), new LionSpecialActionStrategy())
         {

@@ -1,27 +1,40 @@
-﻿using Savanna.Core.Domain;
+﻿using Savanna.Core.Constants;
+using Savanna.Core.Domain;
 using Savanna.Core.Interfaces;
 
 namespace Savanna.Core
 {
+    /// <summary>
+    /// Main game engine that manages the simulation state and updates
+    /// </summary>
     public class GameEngine
     {
         private readonly List<IAnimal> _animals = new List<IAnimal>();
-        private readonly int _fieldWidth = 40;
-        private readonly int _fieldHeight = 20;
+        private readonly int _fieldWidth;
+        private readonly int _fieldHeight;
         private Random _random = new Random();
-        private IConsoleRenderer renderer;
+        private readonly IConsoleRenderer _renderer;
 
         public GameEngine(IConsoleRenderer renderer)
         {
-            this.renderer = renderer;
+            _renderer = renderer;
+            _fieldWidth = GameConstants.DefaultFieldWidth;
+            _fieldHeight = GameConstants.DefaultFieldHeight;
         }
 
+        /// <summary>
+        /// Adds an animal to the simulation and assigns it a random position within the field boundaries.
+        /// </summary>
+        /// <param name="animal">The animal instance to add.</param>
         public void AddAnimal(IAnimal animal)
         {
             animal.Position = new Position(_random.Next(0, _fieldWidth), _random.Next(0, _fieldHeight));
             _animals.Add(animal);
         }
 
+        /// <summary>
+        /// Updates the simulation by moving animals and invoking their special actions.
+        /// </summary>
         public void Update()
         {
             foreach (var animal in _animals)
@@ -35,7 +48,9 @@ namespace Savanna.Core
             }
         }
 
-
+        /// <summary>
+        /// Draws the current state of the field, populating it with animals and rendering via the console.
+        /// </summary>
         public void DrawField()
         {
             char[,] field = new char[_fieldHeight, _fieldWidth];
@@ -56,7 +71,7 @@ namespace Savanna.Core
                 }
             }
 
-            renderer.RenderField(field);
+            _renderer.RenderField(field);
         }
     }
 }

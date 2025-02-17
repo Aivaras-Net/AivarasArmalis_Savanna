@@ -1,4 +1,5 @@
-﻿using Savanna.Core.Domain;
+﻿using Savanna.Core.Constants;
+using Savanna.Core.Domain;
 
 namespace Savanna.Core
 {
@@ -8,12 +9,12 @@ namespace Savanna.Core
         {
             switch (type)
             {
-                case "Antelope":
+                case GameConstants.AntelopeName:
                     return new Antelope(speed, visionRange, position);
-                case "Lion":
+                case GameConstants.LionName:
                     return new Lion(speed, visionRange, position);
                 default:
-                    throw new ArgumentException("Invalid animal type");
+                    throw new ArgumentException(GameConstants.InvalidAnimalName);
             }
         }
     }

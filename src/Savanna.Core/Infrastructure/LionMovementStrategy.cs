@@ -1,13 +1,17 @@
-﻿using Savanna.Core.Domain;
+﻿using Savanna.Core.Constants;
+using Savanna.Core.Domain;
 
 namespace Savanna.Core
 {
+    /// <summary>
+    /// Implements movement strategy for Lions, pursuing nearby Antelopes
+    /// </summary>
     public class LionMovementStrategy : BaseMovementStrategy
     {
         public override Position Move(IAnimal animal, IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight)
         {
             var nearbyAntelope = animals.FirstOrDefault(a =>
-                a.Name == "Antelope" &&
+                a.Name == GameConstants.AntelopeName &&
                 animal.Position.DistanceTo(a.Position) <= animal.VisionRange);
 
             if (nearbyAntelope != null)

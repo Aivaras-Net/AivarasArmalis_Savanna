@@ -1,4 +1,5 @@
 ﻿using Savanna.Core;
+using Savanna.Core.Constants;
 using Savanna.Core.Domain;
 
 namespace Savanna.CLI
@@ -7,7 +8,7 @@ namespace Savanna.CLI
     {
         static void Main(string[] args)
         {
-            ConsoleRenderer renderer = new ConsoleRenderer(2);
+            ConsoleRenderer renderer = new ConsoleRenderer(ConsoleConstants.HeaderHeight);
             GameEngine engine = new GameEngine(renderer);
 
             Console.SetCursorPosition(0, 0);
@@ -25,14 +26,14 @@ namespace Savanna.CLI
                     switch (key)
                     {
                         case ConsoleKey.A:
-                            var antelope = AnimalFactory.CreateAnimal("Antelope", 1, 5, new Position(0, 0));
+                            var antelope = AnimalFactory.CreateAnimal(GameConstants.AntelopeName, ConsoleConstants.DefaultSpeed, ConsoleConstants.DefaultSpeed, new Position(0, 0));
                             engine.AddAnimal(antelope);
                             renderer.ShowMessage(ConsoleConstants.AntelopeAditionMessage, ConsoleConstants.MessageDuration);
                             break;
                         case ConsoleKey.L:
-                            var lion = AnimalFactory.CreateAnimal("Lion", 1, 5, new Position(0, 0));
+                            var lion = AnimalFactory.CreateAnimal(GameConstants.LionName, ConsoleConstants.DefaultSpeed, ConsoleConstants.DefaultSpeed, new Position(0, 0));
                             engine.AddAnimal(lion);
-                            renderer.ShowMessage("Lion added",3);
+                            renderer.ShowMessage(ConsoleConstants.LionAdditionMessage,ConsoleConstants.MessageDuration);
                             break;
                         case ConsoleKey.Q:
                             running = false;
