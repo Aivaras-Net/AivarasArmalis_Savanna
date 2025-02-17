@@ -1,7 +1,7 @@
 using Savanna.Core.Domain;
 using Savanna.Core.Interfaces;
 
-namespace Savanna.Core
+namespace Savanna.Core.Infrastructure
 {
     /// <summary>
     /// Base class for animal movement strategies providing common functionality
@@ -10,14 +10,6 @@ namespace Savanna.Core
     {
         private readonly Random _random = new Random();
 
-        /// <summary>
-        /// Calculates the next position for an animal based on its surroundings
-        /// </summary>
-        /// <param name="animal">The animal to move</param>
-        /// <param name="animals">All animals in the field</param>
-        /// <param name="fieldWidth">Width of the game field</param>
-        /// <param name="fieldHeight">Height of the game field</param>
-        /// <returns>The new position for the animal</returns>
         public abstract Position Move(IAnimal animal, IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight);
 
         /// <summary>

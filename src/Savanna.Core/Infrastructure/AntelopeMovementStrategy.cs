@@ -1,7 +1,7 @@
 ﻿using Savanna.Core.Constants;
 using Savanna.Core.Domain;
 
-namespace Savanna.Core
+namespace Savanna.Core.Infrastructure
 {
     /// <summary>
     /// Implements movement strategy for Antelopes, fleeing from nearby Lions

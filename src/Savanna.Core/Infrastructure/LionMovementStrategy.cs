@@ -1,7 +1,7 @@
 ﻿using Savanna.Core.Constants;
 using Savanna.Core.Domain;
 
-namespace Savanna.Core
+namespace Savanna.Core.Infrastructure
 {
     /// <summary>
     /// Implements movement strategy for Lions, pursuing nearby Antelopes
@@ -18,8 +18,8 @@ namespace Savanna.Core
             {
                 int deltaX = nearbyAntelope.Position.X - animal.Position.X;
                 int deltaY = nearbyAntelope.Position.Y - animal.Position.Y;
-                int stepX = deltaX == 0 ? 0 : (deltaX > 0 ? 1 : -1);
-                int stepY = deltaY == 0 ? 0 : (deltaY > 0 ? 1 : -1);
+                int stepX = deltaX == 0 ? 0 : deltaX > 0 ? 1 : -1;
+                int stepY = deltaY == 0 ? 0 : deltaY > 0 ? 1 : -1;
 
                 return ClampPosition(
                     animal.Position.X + stepX * (int)animal.Speed,
