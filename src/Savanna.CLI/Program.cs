@@ -27,14 +27,14 @@ namespace Savanna.CLI
                     switch (key)
                     {
                         case ConsoleKey.A:
-                            var antelope = AnimalFactory.CreateAnimal(GameConstants.AntelopeName, ConsoleConstants.DefaultSpeed, ConsoleConstants.DefaultSpeed, new Position(0, 0));
+                            var antelope = AnimalFactory.CreateAnimal(GameConstants.AntelopeName, GameConstants.AntelopeSpeed, GameConstants.AntelopeVisionRange, new Position(0, 0));
                             engine.AddAnimal(antelope);
-                            renderer.ShowMessage(ConsoleConstants.AntelopeAditionMessage, ConsoleConstants.MessageDuration);
+                            //renderer.ShowMessage(ConsoleConstants.AntelopeAditionMessage, ConsoleConstants.MessageDuration);
                             break;
                         case ConsoleKey.L:
-                            var lion = AnimalFactory.CreateAnimal(GameConstants.LionName, ConsoleConstants.DefaultSpeed, ConsoleConstants.DefaultSpeed, new Position(0, 0));
+                            var lion = AnimalFactory.CreateAnimal(GameConstants.LionName, GameConstants.LionSpeed, GameConstants.LionVisionRange, new Position(0, 0));
                             engine.AddAnimal(lion);
-                            renderer.ShowMessage(ConsoleConstants.LionAdditionMessage,ConsoleConstants.MessageDuration);
+                            //renderer.ShowMessage(ConsoleConstants.LionAdditionMessage,ConsoleConstants.MessageDuration);
                             break;
                         case ConsoleKey.Q:
                             running = false;

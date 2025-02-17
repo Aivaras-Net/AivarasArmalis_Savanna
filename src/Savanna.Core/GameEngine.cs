@@ -9,7 +9,7 @@ namespace Savanna.Core
     /// </summary>
     public class GameEngine
     {
-        private readonly List<IAnimal> _animals = new List<IAnimal>();
+        private List<IAnimal> _animals = new List<IAnimal>();
         private readonly int _fieldWidth;
         private readonly int _fieldHeight;
         private Random _random = new Random();
@@ -28,8 +28,46 @@ namespace Savanna.Core
         /// <param name="animal">The animal instance to add.</param>
         public void AddAnimal(IAnimal animal)
         {
+            if (animal is Animal a)
+            {
+                a.OnReproduction += HandleReproduction;
+            }
             animal.Position = new Position(_random.Next(0, _fieldWidth), _random.Next(0, _fieldHeight));
             _animals.Add(animal);
+        }
+
+        private void HandleReproduction(IAnimal parent)
+        {
+            var possiblePositions = new List<Position>();
+
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    if (dx == 0 && dy == 0) continue;
+
+                    var newX = parent.Position.X + dx;
+                    var newY = parent.Position.Y + dy;
+
+                    if(newX >= 0 && newX < _fieldWidth && newY >= 0 && newY < _fieldHeight && _animals.Any(a => a.Position.X == newX && a.Position.Y == newY))
+                    { 
+                        possiblePositions.Add(new Position(newX, newY));
+                    }
+
+                }
+            }
+
+            if (possiblePositions.Count > 0)
+            {
+                var birthPosition = possiblePositions[_random.Next(possiblePositions.Count)];
+                var offspring = (parent as Animal)?.CreateOffspring(birthPosition);
+                if (offspring != null)
+                {
+                    AddAnimal(offspring);
+                    //Console.WriteLine($"A new {offspring.Name} was born");
+                }
+            }
+
         }
 
         /// <summary>
@@ -37,12 +75,18 @@ namespace Savanna.Core
         /// </summary>
         public void Update()
         {
-            foreach (var animal in _animals)
+            _animals.RemoveAll(animal => !animal.isAlive);
+
+            var currentAnimals = _animals.ToList();
+
+            foreach (var animal in currentAnimals)
             {
                 animal.Move(_animals, _fieldWidth, _fieldHeight);
             }
 
-            foreach (var animal in _animals)
+            currentAnimals = _animals.ToList();
+
+            foreach (var animal in currentAnimals)
             {
                 animal.SpecialAction(_animals);
             }

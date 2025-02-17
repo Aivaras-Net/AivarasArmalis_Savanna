@@ -12,5 +12,10 @@ namespace Savanna.Core.Domain
 
             }
         }
+
+        public override IAnimal CreateOffspring(Position position)
+        {
+            return new Antelope(Speed, VisionRange, position);
+        }
     }
 }

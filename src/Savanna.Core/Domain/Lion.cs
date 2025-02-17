@@ -11,5 +11,10 @@ namespace Savanna.Core.Domain
         {
 
         }
+
+        public override IAnimal CreateOffspring(Position position)
+        {
+            return new Lion(Speed, VisionRange, position);
+        }
     }
 }

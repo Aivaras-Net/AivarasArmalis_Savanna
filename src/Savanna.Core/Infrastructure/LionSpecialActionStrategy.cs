@@ -11,11 +11,17 @@ namespace Savanna.Core.Infrastructure
     {
         public void Execute(IAnimal animal, IEnumerable<IAnimal> animals)
         {
-            var target = animals.FirstOrDefault(a => a.Name == GameConstants.AntelopeName && animal.Position.DistanceTo(a.Position) <= 1);
+            var animalsList = animals.ToList();
+            var target = animalsList.FirstOrDefault(a => a.Name == GameConstants.AntelopeName && a.isAlive && animal.Position.DistanceTo(a.Position) <= 1);
 
             if (target != null)
             {
-                Console.WriteLine(string.Format(GameConstants.LionSpecialActionMessage, animal.Position, target.Position));
+                if (animal is Animal predetor && target is Animal prey)
+                {
+                    predetor.Health = Math.Max(10, predetor.Health + 5);
+                    prey.Health = 0;
+                    //Console.WriteLine(string.Format(GameConstants.LionSpecialActionMessage, animal.Position, target.Position));
+                }
             }
         }
     }

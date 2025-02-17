@@ -6,9 +6,11 @@
     public interface IAnimal
     {
         string Name { get; }
+        double Health { get; }
         double Speed { get; }
         double VisionRange { get; }
         Position Position { get; set; }
+        bool isAlive { get; }
 
         /// <summary>
         /// Moves the animal based on its movement strategy and surrounding animals
