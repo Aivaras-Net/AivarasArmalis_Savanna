@@ -10,6 +10,8 @@ namespace Savanna.Core
             {
                 case "Antelope":
                     return new Antelope(speed, visionRange, position);
+                case "Lion":
+                    return new Lion(speed, visionRange, position);
                 default:
                     throw new ArgumentException("Invalid animal type");
             }

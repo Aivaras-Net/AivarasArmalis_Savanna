@@ -29,6 +29,11 @@ namespace Savanna.CLI
                             engine.AddAnimal(antelope);
                             renderer.ShowMessage(ConsoleConstants.AntelopeAditionMessage, ConsoleConstants.MessageDuration);
                             break;
+                        case ConsoleKey.L:
+                            var lion = AnimalFactory.CreateAnimal("Lion", 1, 5, new Position(0, 0));
+                            engine.AddAnimal(lion);
+                            renderer.ShowMessage("Lion added",3);
+                            break;
                         case ConsoleKey.Q:
                             running = false;
                             break;
