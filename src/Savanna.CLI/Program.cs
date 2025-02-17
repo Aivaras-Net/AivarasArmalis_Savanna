@@ -11,8 +11,8 @@ namespace Savanna.CLI
             GameEngine engine = new GameEngine(renderer);
 
             Console.SetCursorPosition(0, 0);
-            Console.WriteLine("Savanna simulation");
-            Console.WriteLine("Press A to add ANtelope, Q to quit");
+            Console.WriteLine(ConsoleConstants.Header);
+            Console.WriteLine(ConsoleConstants.CommandGuide);
 
 
             bool running = true;
@@ -27,7 +27,7 @@ namespace Savanna.CLI
                         case ConsoleKey.A:
                             var antelope = AnimalFactory.CreateAnimal("Antelope", 1, 5, new Position(0, 0));
                             engine.AddAnimal(antelope);
-                            Console.WriteLine("Antelope added");
+                            renderer.ShowMessage(ConsoleConstants.AntelopeAditionMessage, ConsoleConstants.MessageDuration);
                             break;
                         case ConsoleKey.Q:
                             running = false;
@@ -37,7 +37,7 @@ namespace Savanna.CLI
 
                 engine.Update();
                 engine.DrawField();
-                Thread.Sleep(500);
+                Thread.Sleep(ConsoleConstants.IterationDuration);
             }
         }
     }

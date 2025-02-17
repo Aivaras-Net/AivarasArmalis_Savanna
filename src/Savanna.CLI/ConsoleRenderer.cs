@@ -6,10 +6,20 @@ namespace Savanna.CLI
     public class ConsoleRenderer : IConsoleRenderer
     {
         public int HeaderOffset { get; set; }
+        private string _message;
+        private int _messageFrames;
 
         public ConsoleRenderer(int headerOffset = 0)
         {
             HeaderOffset = headerOffset;
+            _message = string.Empty;
+            _messageFrames = 0;
+        }
+
+        public void ShowMessage(string message, int frames)
+        {
+            _message = message;
+            _messageFrames = frames;
         }
 
         public void RenderField(char[,] field)
@@ -36,6 +46,18 @@ namespace Savanna.CLI
 
             Console.SetCursorPosition(0, HeaderOffset + 1 + rows);
             Console.WriteLine(topBorder);
+
+            int messageLine = HeaderOffset +2 + rows;
+            Console.SetCursorPosition(0, messageLine);
+            if (_messageFrames > 0)
+            {
+                Console.Write(_message.PadRight(cols + 2));
+                _messageFrames--;
+            }
+            else
+            {
+                Console.Write(new string(' ', cols + 2));
+            }
         }
     }
 }
