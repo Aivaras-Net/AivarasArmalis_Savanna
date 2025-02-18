@@ -29,6 +29,11 @@ namespace Savanna.Core.Infrastructure
                 );
             }
 
+            if (ShouldStayForMating(animal, animals))
+            {
+                return animal.Position;
+            }
+
             return RandomMove(animal, fieldWidth, fieldHeight);
         }
     }

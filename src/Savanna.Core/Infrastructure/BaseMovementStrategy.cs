@@ -1,3 +1,4 @@
+using Savanna.Core.Constants;
 using Savanna.Core.Domain;
 using Savanna.Core.Interfaces;
 
@@ -30,6 +31,20 @@ namespace Savanna.Core.Infrastructure
             int newX = Math.Max(0, Math.Min(fieldWidth - 1, x));
             int newY = Math.Max(0, Math.Min(fieldHeight - 1, y));
             return new Position(newX, newY);
+        }
+        protected bool ShouldStayForMating(IAnimal animal, IEnumerable<IAnimal> animals)
+        {
+            if(animals is Animal a && a.Health < GameConstants.InitialHealth/2)
+            {
+                var nearbyMate = animals.FirstOrDefault(other =>
+                    other != animal &&
+                    other.Name == animal.Name &&
+                    other.isAlive &&
+                    animal.Position.DistanceTo(other.Position) <= 1);
+
+                return nearbyMate != null;
+            }
+            return false;
         }
     }
 }

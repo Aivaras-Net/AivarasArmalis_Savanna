@@ -2,7 +2,7 @@ namespace Savanna.Core.Constants
 {
     public static class GameConstants
     {
-        public const int DefaultFieldWidth = 10;
+        public const int DefaultFieldWidth = 20;
         public const int DefaultFieldHeight = 10;
 
         public const string LionName = "Lion";
