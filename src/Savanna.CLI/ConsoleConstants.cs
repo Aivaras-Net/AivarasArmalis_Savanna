@@ -2,7 +2,7 @@
 {
     public static class ConsoleConstants
     {
-        public const int IterationDuration = 250;
+        public const int IterationDuration = 500;
         public const int HeaderHeight = 2;
 
         public const string Header = "Savanna simulation";
