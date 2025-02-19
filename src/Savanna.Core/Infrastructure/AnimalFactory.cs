@@ -30,5 +30,10 @@ namespace Savanna.Core.Infrastructure
                     throw new ArgumentException(GameConstants.InvalidAnimalName);
             }
         }
+
+        public static IAnimal CreateAnimal(string type, double speed, double visionRange)
+        {
+            return CreateAnimal(type, speed, visionRange, Position.Null);
+        }
     }
 }

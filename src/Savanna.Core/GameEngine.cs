@@ -16,6 +16,7 @@ namespace Savanna.Core
         private Random _random = new Random();
         private readonly IConsoleRenderer _renderer;
         private readonly LifeCycleManager _lifeCycleManager = new();
+        private readonly PredatorBehaviorManager _predatorManager = new();
 
         public GameEngine(IConsoleRenderer renderer)
         {
@@ -39,10 +40,13 @@ namespace Savanna.Core
         /// <param name="animal">The animal instance to add.</param>
         public void AddAnimal(IAnimal animal)
         {
-            animal.Position = new Position(
-                _random.Next(0, _field.Width),
-                _random.Next(0, _field.Height)
-            );
+            if (animal.Position == Position.Null)
+            {
+                animal.Position = new Position(
+                    _random.Next(0, _field.Width),
+                    _random.Next(0, _field.Height)
+                );
+            }
             _animals.Add(animal);
         }
 
@@ -67,6 +71,7 @@ namespace Savanna.Core
                 animal.SpecialAction(_animals);
             }
 
+            _predatorManager.Update(_animals);
             _lifeCycleManager.Update(_animals, _field.Width, _field.Height);
         }
 

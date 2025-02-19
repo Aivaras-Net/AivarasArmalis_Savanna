@@ -23,25 +23,5 @@ namespace Savanna.Core.Domain
         {
             return new Lion(Speed, VisionRange, position);
         }
-
-        /// <summary>
-        /// Hunts the nearest prey at hunting range.
-        /// </summary>
-        /// <param name="prey">The collection of potential prey</param>
-        public void Hunt(IEnumerable<IPrey> prey)
-        {
-            var target = prey
-                .Where(p => p.isAlive && Position.DistanceTo(p.Position) <= HuntingRange)
-                .OrderBy(p => Position.DistanceTo(p.Position))
-                .FirstOrDefault();
-
-            if (target != null)
-            {
-                double healthGain = Math.Min(GameConstants.MaxHealth - Health, target.Health);
-
-                Health += healthGain;
-                target.Health = 0;
-            }
-        }
     }
 }
