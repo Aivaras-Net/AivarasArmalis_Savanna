@@ -9,18 +9,39 @@ namespace Savanna.Core.Infrastructure
     /// </summary>
     public class LionSpecialActionStrategy : ISpecialActionStrategy
     {
+        private readonly Random _random = new Random();
         public void Execute(IAnimal animal, IEnumerable<IAnimal> animals)
         {
-            var animalsList = animals.ToList();
-            var target = animalsList.FirstOrDefault(a => a.Name == GameConstants.AntelopeName && a.isAlive && animal.Position.DistanceTo(a.Position) <= 1);
+            if (!(animal is Animal lion) || !lion.isAlive)
+                return;
 
-            if (target != null)
+            var animalsList = animals.ToList();
+            var target = animalsList.Where(a =>
+                a.Name == GameConstants.AntelopeName &&
+                a.isAlive &&
+                animal.Position.DistanceTo(a.Position) <= 1).OrderBy(a => animal.Position.DistanceTo(a.Position))
+                .FirstOrDefault();
+
+            if (target is Animal prey)
             {
-                if (animal is Animal predetor && target is Animal prey)
+                double healthGain = Math.Min(GameConstants.MaxHealth - lion.Health, prey.Health);
+
+                lion.Health += healthGain;
+                prey.Health = 0;
+            }
+
+            if(_random.NextDouble() < 0.3)
+            {
+                var nearbyAntelopes = animalsList
+                    .Where(a => a.Name == GameConstants.AntelopeName &&
+                    a.isAlive && animal.Position.DistanceTo(a.Position) < 3);
+
+                foreach(var antelope in nearbyAntelopes)
                 {
-                    predetor.Health = Math.Max(10, predetor.Health + 5);
-                    prey.Health = 0;
-                    //Console.WriteLine(string.Format(GameConstants.LionSpecialActionMessage, animal.Position, target.Position));
+                    if (animal is Animal stunnedAntelope)
+                    {
+                        stunnedAntelope.IsStuned = true;
+                    }
                 }
             }
         }

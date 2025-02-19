@@ -10,6 +10,12 @@ namespace Savanna.Core.Infrastructure
     {
         public override Position Move(IAnimal animal, IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight)
         {
+            if (animal is Animal antelope && antelope.IsStuned)
+            {
+                antelope.IsStuned = false;
+                return antelope.Position;
+            }
+
             var nearbyLion = animals.FirstOrDefault(a =>
                 a.Name == GameConstants.LionName &&
                 animal.Position.DistanceTo(a.Position) <= animal.VisionRange);

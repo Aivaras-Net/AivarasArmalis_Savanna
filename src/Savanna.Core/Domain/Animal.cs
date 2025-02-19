@@ -7,11 +7,11 @@ namespace Savanna.Core.Domain
     {
         public abstract string Name { get; }
         public double Health { get; set; } = GameConstants.InitialHealth;
-        public double Speed { get; protected set;}
-        public double VisionRange { get; protected set;}
-        public Position Position { get; set;}
+        public double Speed { get; protected set; }
+        public double VisionRange { get; protected set; }
+        public Position Position { get; set; }
         public bool isAlive => Health > 0;
-
+        public bool IsStuned { get; set; } = false;
         protected IMovementStrategy MovementStrategy { get; }
         protected ISpecialActionStrategy SpecialActionStrategy { get; }
 

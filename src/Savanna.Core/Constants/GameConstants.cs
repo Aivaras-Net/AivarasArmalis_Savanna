@@ -2,8 +2,8 @@ namespace Savanna.Core.Constants
 {
     public static class GameConstants
     {
-        public const int DefaultFieldWidth = 20;
-        public const int DefaultFieldHeight = 10;
+        public const int DefaultFieldWidth = 40;
+        public const int DefaultFieldHeight = 20;
 
         public const string LionName = "Lion";
         public const string AntelopeName = "Antelope";
@@ -21,5 +21,8 @@ namespace Savanna.Core.Constants
         public const int RequiredMatingTurns = 3;
         public const double HealthGainFromKill = 5.0;
         public const double MaxHealth = 25.0;
+
+        public const double HealthFromGrazing = 1.0;
+        public const int LionRoarRange = 5;
     }
 }
