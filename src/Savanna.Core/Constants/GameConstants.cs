@@ -4,6 +4,7 @@ namespace Savanna.Core.Constants
     {
         public const int DefaultFieldWidth = 20;
         public const int DefaultFieldHeight = 10;
+        public const char FieldFill = ' ';
 
         public const string LionName = "Lion";
         public const string AntelopeName = "Antelope";
@@ -12,6 +13,7 @@ namespace Savanna.Core.Constants
         public const double AntelopeVisionRange = 5;
         public const double LionSpeed = 2;
         public const double AntelopeSpeed = 1;
+        public const double LionHuntingRange = 1.0;
 
         public const string InvalidAnimalName = "Invalid animal name";
         public const string LionSpecialActionMessage = "\n Lion at {0} eats antelope at {1} .";

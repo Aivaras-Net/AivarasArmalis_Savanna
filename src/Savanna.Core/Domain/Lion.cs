@@ -7,7 +7,7 @@ namespace Savanna.Core.Domain
     public class Lion : Animal, IPredator
     {
         public override string Name => GameConstants.LionName;
-        public double HuntingRange => 1.0;
+        public double HuntingRange => GameConstants.LionHuntingRange;
 
         public Lion(double speed, double visionRange, Position position) : base(speed, visionRange, position, new LionMovementStrategy(), new LionSpecialActionStrategy())
         {

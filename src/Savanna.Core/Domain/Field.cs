@@ -1,3 +1,4 @@
+using Savanna.Core.Constants;
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 
@@ -27,7 +28,7 @@ public class Field
         {
             for (int x = 0; x < Width; x++)
             {
-                _grid[y, x] = ' ';
+                _grid[y, x] = GameConstants.FieldFill;
             }
         }
     }
