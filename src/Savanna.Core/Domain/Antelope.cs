@@ -8,12 +8,17 @@ namespace Savanna.Core.Domain
     {
         public override string Name => GameConstants.AntelopeName;
 
-        public Antelope(double speed, double visionRange, Position position) : base(speed, visionRange, position, new AntelopeMovementStrategy(), new NoSpecialActionStrategy()) {
+        public Antelope(double speed, double visionRange, Position position) : base(speed, visionRange, position, new AntelopeMovementStrategy(), new AntelopeSpecialActionStrategy()) {
             {
 
             }
         }
 
+        /// <summary>
+        /// Creates a new antelope instance at the specified position as offspring.
+        /// </summary>
+        /// <param name="position">The birth position.</param>
+        /// <returns>A new antelope instance.</returns>
         public override IAnimal CreateOffspring(Position position)
         {
             return new Antelope(Speed, VisionRange, position);

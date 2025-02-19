@@ -5,6 +5,9 @@ using Savanna.Core.Interfaces;
 
 namespace Savanna.Core.Infrastructure
 {
+    /// <summary>
+    /// Defines the special action strategy for Antelope, enabling it to graze.
+    /// </summary>
     public class AntelopeSpecialActionStrategy : ISpecialActionStrategy
     {
         private readonly Random _random = new Random();
@@ -17,9 +20,9 @@ namespace Savanna.Core.Infrastructure
             var nearbyLions = animals.Any(a =>
                 a.Name == GameConstants.LionName &&
                 a.isAlive &&
-                animal.Position.DistanceTo(a.Position) <= 2);
+                animal.Position.DistanceTo(a.Position) <= GameConstants.AntelopeVisionRange);
 
-            if (nearbyLions && _random.NextDouble() <= 0.8)
+            if (nearbyLions && _random.NextDouble() <= GameConstants.AntelopeGrazeChannce)
             {
                 antelope.Health = Math.Min(GameConstants.MaxHealth, antelope.Health + GameConstants.HealthFromGrazing);
             }

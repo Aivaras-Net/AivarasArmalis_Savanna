@@ -4,6 +4,9 @@ using Savanna.Core.Domain.Interfaces;
 
 namespace Savanna.Core.Infrastructure
 {
+    /// <summary>
+    /// Manages the life cycle of animals
+    /// </summary>
     public class LifeCycleManager
     {
         private readonly Dictionary<IAnimal, int> _matingCounters = new();
@@ -13,6 +16,12 @@ namespace Savanna.Core.Infrastructure
         public event Action<IAnimal>? OnAnimalDeath;
         public event Action<IAnimal,Position>? OnAnimalBirth;
 
+        /// <summary>
+        /// Updates the health and reproduction status of animals.
+        /// </summary>
+        /// <param name="animals">The collection of animals in the simulation.</param>
+        /// <param name="fieldWidth">The width of the field.</param>
+        /// <param name="fieldHeight">The height of the field.</param>
         public void Update(IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight)
         {
             var animalsList = animals.ToList();
@@ -33,6 +42,13 @@ namespace Savanna.Core.Infrastructure
             }
         }
 
+        /// <summary>
+        /// Processes the mating behaviuor for an animal.
+        /// </summary>
+        /// <param name="animal">The animal that may mate.</param>
+        /// <param name="animals">The list of animals in the simulation</param>
+        /// <param name="fieldWidth">The width of the field.</param>
+        /// <param name="fieldHeight">The height of the field.</param>
         private void HandleMating(Animal animal, List<IAnimal> animals, int fieldWidth, int fieldHeight)
         {
             var nearbyMate = animals.FirstOrDefault(a =>
@@ -65,6 +81,14 @@ namespace Savanna.Core.Infrastructure
             }
         }
 
+        /// <summary>
+        /// Determines an available adjacent position for a new offspring relative to the parent.
+        /// </summary>
+        /// <param name="parentPosition">The position of the parent animal.</param>
+        /// <param name="fieldWidth">The width of the field.</param>
+        /// <param name="fieldHeight">The height of the field.</param>
+        /// <param name="animals">The list of animals in the simulation.</param>
+        /// <returns>A valid birth position if available; otherwise, null.</returns>
         private Position? FindBirthPosition(Position parentPosition, int fieldWidth, int fieldHeight, List<IAnimal> animals)
         {
             var possiblePositions = new List<Position>();

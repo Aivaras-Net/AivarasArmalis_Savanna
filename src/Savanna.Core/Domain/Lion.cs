@@ -14,11 +14,20 @@ namespace Savanna.Core.Domain
 
         }
 
+        /// <summary>
+        /// Creates a new lion instance at the specified position as offspring.
+        /// </summary>
+        /// <param name="position">The birth position.</param>
+        /// <returns>A new lion instance.</returns>
         public override IAnimal CreateOffspring(Position position)
         {
             return new Lion(Speed, VisionRange, position);
         }
 
+        /// <summary>
+        /// Hunts the nearest prey at hunting range.
+        /// </summary>
+        /// <param name="prey">The collection of potential prey</param>
         public void Hunt(IEnumerable<IPrey> prey)
         {
             var target = prey

@@ -40,6 +40,11 @@ namespace Savanna.Core.Domain
 
         public event Action<IAnimal>? OnReproduction;
 
+        /// <summary>
+        /// Creates an offspring instance at the specified position.
+        /// </summary>
+        /// <param name="position">The birth position.</param>
+        /// <returns>A new IAnimal instance.</returns>
         public abstract IAnimal CreateOffspring(Position position);
     }
 }

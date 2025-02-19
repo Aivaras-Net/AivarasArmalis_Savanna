@@ -23,6 +23,8 @@ namespace Savanna.Core.Constants
         public const double MaxHealth = 25.0;
 
         public const double HealthFromGrazing = 1.0;
-        public const int LionRoarRange = 5;
+        public const int LionRoarRange = 3;
+        public const double AntelopeGrazeChannce = 0.8;
+        public const double LionRoarChance = 0.3;
     }
 }

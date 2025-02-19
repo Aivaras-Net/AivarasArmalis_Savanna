@@ -1,5 +1,4 @@
 ﻿using Savanna.Core.Constants;
-using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Interfaces;
 
@@ -16,11 +15,11 @@ namespace Savanna.Core.Infrastructure
             if (!(animal is IPredator lion) || !lion.isAlive)
                 return;
 
-            if(_random.NextDouble() < 0.3)
+            if(_random.NextDouble() < GameConstants.LionRoarChance)
             {
                 var nearbyPreys = animals
                     .OfType<IPrey>()
-                    .Where(a =>a.isAlive && animal.Position.DistanceTo(a.Position) < 3);
+                    .Where(a =>a.isAlive && animal.Position.DistanceTo(a.Position) < GameConstants.LionRoarRange);
 
                 foreach(var prey in nearbyPreys)
                 {

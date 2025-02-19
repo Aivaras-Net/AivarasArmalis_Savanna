@@ -1,6 +1,9 @@
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 
+/// <summary>
+/// represents the simulation field where animals reside.
+/// </summary>
 public class Field
 {
     private readonly char[,] _grid;
@@ -15,6 +18,9 @@ public class Field
         Clear();
     }
 
+    /// <summary>
+    /// Clear the field grid by resetting all cells to field fill charachter.
+    /// </summary>
     public void Clear()
     {
         for (int y = 0; y < Height; y++)
@@ -26,12 +32,21 @@ public class Field
         }
     }
 
+    /// <summary>
+    /// Determines whether the given position is within the boundaries of the field.
+    /// </summary>
+    /// <param name="position">The position to evaluate</param>
+    /// <returns>True if position is within bounds; otherwise, false.</returns>
     public bool IsInBounds(Position position)
     {
         return position.X >= 0 && position.X < Width &&
                position.Y >= 0 && position.Y < Height;
     }
 
+    /// <summary>
+    /// Places an animal on the field grid at its current position.
+    /// </summary>
+    /// <param name="animal"></param>
     public void PlaceAnimal(IAnimal animal)
     {
         if (IsInBounds(animal.Position))
