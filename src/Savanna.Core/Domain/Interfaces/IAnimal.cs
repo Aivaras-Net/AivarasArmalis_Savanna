@@ -1,4 +1,4 @@
-﻿namespace Savanna.Core.Domain
+﻿namespace Savanna.Core.Domain.Interfaces
 {
     /// <summary>
     /// Represents an animal in the Savanna simulation
@@ -6,7 +6,7 @@
     public interface IAnimal
     {
         string Name { get; }
-        double Health { get; }
+        double Health { get; set; }
         double Speed { get; }
         double VisionRange { get; }
         Position Position { get; set; }

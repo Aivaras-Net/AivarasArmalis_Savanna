@@ -1,4 +1,5 @@
 ﻿using Savanna.Core.Constants;
+using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Interfaces;
 
 namespace Savanna.Core.Domain

@@ -1,9 +1,10 @@
 ﻿using Savanna.Core.Constants;
+using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure;
 
 namespace Savanna.Core.Domain
 {
-    public class Antelope : Animal
+    public class Antelope : Animal,IPrey
     {
         public override string Name => GameConstants.AntelopeName;
 
