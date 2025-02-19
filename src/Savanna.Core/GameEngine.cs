@@ -12,8 +12,7 @@ namespace Savanna.Core
     public class GameEngine
     {
         private List<IAnimal> _animals = new List<IAnimal>();
-        private readonly int _fieldWidth;
-        private readonly int _fieldHeight;
+        private readonly Field _field;
         private Random _random = new Random();
         private readonly IConsoleRenderer _renderer;
         private readonly LifeCycleManager _lifeCycleManager = new();
@@ -21,8 +20,7 @@ namespace Savanna.Core
         public GameEngine(IConsoleRenderer renderer)
         {
             _renderer = renderer;
-            _fieldWidth = GameConstants.DefaultFieldWidth;
-            _fieldHeight = GameConstants.DefaultFieldHeight;
+            _field = new Field(GameConstants.DefaultFieldWidth, GameConstants.DefaultFieldHeight);
 
             _lifeCycleManager.OnAnimalDeath += (animal) => _animals.Remove(animal);
             _lifeCycleManager.OnAnimalBirth += (parent, position) =>
@@ -41,7 +39,10 @@ namespace Savanna.Core
         /// <param name="animal">The animal instance to add.</param>
         public void AddAnimal(IAnimal animal)
         {
-            animal.Position = new Position(_random.Next(0, _fieldWidth), _random.Next(0, _fieldHeight));
+            animal.Position = new Position(
+                _random.Next(0, _field.Width),
+                _random.Next(0, _field.Height)
+            );
             _animals.Add(animal);
         }
 
@@ -56,7 +57,7 @@ namespace Savanna.Core
 
             foreach (var animal in currentAnimals)
             {
-                animal.Move(_animals, _fieldWidth, _fieldHeight);
+                animal.Move(_animals, _field.Width, _field.Height);
             }
 
             currentAnimals = _animals.ToList();
@@ -66,7 +67,7 @@ namespace Savanna.Core
                 animal.SpecialAction(_animals);
             }
 
-            _lifeCycleManager.Update(_animals,_fieldWidth,_fieldHeight);
+            _lifeCycleManager.Update(_animals, _field.Width, _field.Height);
         }
 
         /// <summary>
@@ -74,25 +75,12 @@ namespace Savanna.Core
         /// </summary>
         public void DrawField()
         {
-            char[,] field = new char[_fieldHeight, _fieldWidth];
-
-            for (int y = 0; y < _fieldHeight; y++)
-            {
-                for (int x = 0; x < _fieldWidth; x++)
-                {
-                    field[y, x] = ' ';
-                }
-            }
-
+            _field.Clear();
             foreach (var animal in _animals)
             {
-                if ((animal.Position.X >= 0 && animal.Position.X <= _fieldWidth) && (animal.Position.Y >= 0 && animal.Position.Y < _fieldHeight))
-                {
-                    field[animal.Position.Y, animal.Position.X] = animal.Name[0];
-                }
+                _field.PlaceAnimal(animal);
             }
-
-            _renderer.RenderField(field);
+            _renderer.RenderField(_field.GetGrid());
         }
     }
 }
