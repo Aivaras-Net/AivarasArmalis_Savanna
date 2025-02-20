@@ -1,4 +1,4 @@
-using Savanna.Core.Constants;
+using Savanna.Core.Config;
 using Savanna.Core.Domain.Interfaces;
 
 namespace Savanna.Core.Infrastructure
@@ -36,7 +36,7 @@ namespace Savanna.Core.Infrastructure
 
             if (target != null)
             {
-                double healthGain = Math.Min(GameConstants.MaxHealth - predator.Health, target.Health);
+                double healthGain = Math.Min(ConfigurationService.Config.General.MaxHealth - predator.Health, target.Health);
                 predator.Health += healthGain;
                 target.Health = 0;
             }

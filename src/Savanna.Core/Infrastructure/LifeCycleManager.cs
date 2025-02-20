@@ -1,4 +1,4 @@
-﻿using Savanna.Core.Constants;
+﻿using Savanna.Core.Config;
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 
@@ -14,7 +14,7 @@ namespace Savanna.Core.Infrastructure
         private readonly Random _random = new Random();
 
         public event Action<IAnimal>? OnAnimalDeath;
-        public event Action<IAnimal,Position>? OnAnimalBirth;
+        public event Action<IAnimal, Position>? OnAnimalBirth;
 
         /// <summary>
         /// Updates the health and reproduction status of animals.
@@ -30,14 +30,14 @@ namespace Savanna.Core.Infrastructure
             {
                 if (animal is Animal a)
                 {
-                    a.Health -= GameConstants.HealthDecresePerTurn;
+                    a.Health -= ConfigurationService.Config.General.HealthDecreasePerTurn;
 
                     if (!a.isAlive)
                     {
                         OnAnimalDeath.Invoke(a);
                         continue;
                     }
-                    HandleMating(a, animalsList,fieldWidth,fieldHeight);
+                    HandleMating(a, animalsList, fieldWidth, fieldHeight);
                 }
             }
         }
@@ -66,11 +66,11 @@ namespace Savanna.Core.Infrastructure
             if (nearbyMate != null)
             {
                 _matingCounters[animal] = _matingCounters.GetValueOrDefault(animal) + 1;
-                if (_matingCounters[animal] >= GameConstants.RequiredMatingTurns)
+                if (_matingCounters[animal] >= ConfigurationService.Config.General.RequiredMatingTurns)
                 {
                     if (animal.GetHashCode() < nearbyMate.GetHashCode())
                     {
-                        var birthPosition = FindBirthPosition(animal.Position, fieldWidth, fieldHeight,animals);
+                        var birthPosition = FindBirthPosition(animal.Position, fieldWidth, fieldHeight, animals);
                         if (birthPosition != null)
                         {
                             OnAnimalBirth?.Invoke(animal, birthPosition);
@@ -93,16 +93,16 @@ namespace Savanna.Core.Infrastructure
         {
             var possiblePositions = new List<Position>();
 
-            for (int dx = -1; dx<= 1;  dx++)
+            for (int dx = -1; dx <= 1; dx++)
             {
-                for(int dy = -1; dy<= 1; dy++)
+                for (int dy = -1; dy <= 1; dy++)
                 {
                     if (dx == 0 && dy == 0) continue;
 
                     var newX = parentPosition.X + dx;
                     var newY = parentPosition.Y + dy;
 
-                    if(newX >= 0 && newX < fieldWidth && newY >= 0 && newY < fieldHeight && !animals.Any(a => a.Position.X == newX && a.Position.Y == newY))
+                    if (newX >= 0 && newX < fieldWidth && newY >= 0 && newY < fieldHeight && !animals.Any(a => a.Position.X == newX && a.Position.Y == newY))
                     {
                         possiblePositions.Add(new Position(newX, newY));
                     }

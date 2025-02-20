@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using Savanna.Core.Constants;
 using Savanna.Core.Interfaces;
 
 namespace Savanna.CLI
@@ -68,7 +69,7 @@ namespace Savanna.CLI
             }
             else
             {
-                Console.Write(new string(ConsoleConstants.FieldFill, cols + 2));
+                Console.Write(new string(GameConstants.FieldFill, cols + 2));
             }
         }
     }

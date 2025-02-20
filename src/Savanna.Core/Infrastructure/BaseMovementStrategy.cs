@@ -1,4 +1,4 @@
-using Savanna.Core.Constants;
+using Savanna.Core.Config;
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Interfaces;
@@ -35,7 +35,7 @@ namespace Savanna.Core.Infrastructure
         }
         protected bool ShouldStayForMating(IAnimal animal, IEnumerable<IAnimal> animals)
         {
-            if(animals is Animal a && a.Health < GameConstants.InitialHealth/2)
+            if (animals is Animal a && a.Health < ConfigurationService.Config.General.InitialHealth / 2)
             {
                 var nearbyMate = animals.FirstOrDefault(other =>
                     other != animal &&

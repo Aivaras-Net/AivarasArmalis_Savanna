@@ -1,4 +1,4 @@
-﻿using Savanna.Core.Constants;
+﻿using Savanna.Core.Config;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Interfaces;
 
@@ -6,8 +6,10 @@ namespace Savanna.Core.Domain
 {
     public abstract class Animal : IAnimal
     {
+        private static readonly GeneralConfig GeneralConfig = ConfigurationService.Config.General;
+
         public abstract string Name { get; }
-        public double Health { get; set; } = GameConstants.InitialHealth;
+        public double Health { get; set; } = GeneralConfig.InitialHealth;
         public double Speed { get; protected set; }
         public double VisionRange { get; protected set; }
         public Position Position { get; set; }
@@ -29,7 +31,7 @@ namespace Savanna.Core.Domain
         {
             if (!isAlive) return;
             Position = MovementStrategy.Move(this, animals, fieldWidth, fieldHeight);
-            Health -= 0.5;
+            Health -= GeneralConfig.HealthDecreasePerTurn;
         }
 
         public void SpecialAction(IEnumerable<IAnimal> animals)

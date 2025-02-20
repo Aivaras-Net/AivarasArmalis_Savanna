@@ -6,27 +6,17 @@ namespace Savanna.Core.Constants
         public const int DefaultFieldHeight = 10;
         public const char FieldFill = ' ';
 
+        public const string ConfigFileName = "animals.json";
+        public const string ConfigFileDirectory = "Config";
+        public const string ConfigFileNotFound = "Configuration file not found at: {0}";
+        public const string ConfigFileEmpty = "Configuration file is empty or invalid";
+        public const string ConfigParseError = "Error parsing configuration file: {0}";
+        public const string AnimalTypeNotFound = "Configuration not found for animal type: {0}. Available types: {1}";
+
         public const string LionName = "Lion";
         public const string AntelopeName = "Antelope";
 
-        public const double LionVisionRange = 10;
-        public const double AntelopeVisionRange = 5;
-        public const double LionSpeed = 2;
-        public const double AntelopeSpeed = 1;
-        public const double LionHuntingRange = 1.0;
-
         public const string InvalidAnimalName = "Invalid animal name";
         public const string LionSpecialActionMessage = "\n Lion at {0} eats antelope at {1} .";
-
-        public const double InitialHealth = 20.0;
-        public const double HealthDecresePerTurn = 0.5;
-        public const int RequiredMatingTurns = 3;
-        public const double HealthGainFromKill = 5.0;
-        public const double MaxHealth = 25.0;
-
-        public const double HealthFromGrazing = 1.0;
-        public const int LionRoarRange = 3;
-        public const double AntelopeGrazeChannce = 0.8;
-        public const double LionRoarChance = 0.3;
     }
 }
