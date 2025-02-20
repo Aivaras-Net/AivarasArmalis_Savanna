@@ -1,18 +1,18 @@
-﻿using Savanna.Core.Constants;
-using Savanna.Core.Domain;
+﻿using Savanna.Core.Domain;
+using Savanna.Core.Domain.Interfaces;
 
 namespace Savanna.Core.Infrastructure
 {
     /// <summary>
-    /// Implements movement strategy for Lions, pursuing nearby Antelopes
+    /// Implements movement strategy for Lions, pursuing nearby Prey
     /// </summary>
     public class LionMovementStrategy : BaseMovementStrategy
     {
         public override Position Move(IAnimal animal, IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight)
         {
-            var nearbyAntelope = animals.FirstOrDefault(a =>
-                a.Name == GameConstants.AntelopeName &&
-                animal.Position.DistanceTo(a.Position) <= animal.VisionRange);
+            var nearbyAntelope = animals.OfType<IPrey>()
+                .Where(p => animal.Position.DistanceTo(p.Position) <= animal.VisionRange)
+                .FirstOrDefault();
 
             if (nearbyAntelope != null)
             {

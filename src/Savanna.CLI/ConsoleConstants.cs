@@ -18,6 +18,5 @@
         public const char BorderCorner = '+';
         public const char HorizontalBorder = '-';
         public const char VerticalBorder = '|';
-        public const char FieldFill = ' ';
     }
 }
