@@ -2,12 +2,18 @@ using System.Text.Json.Serialization;
 
 namespace Savanna.Core.Config
 {
+    /// <summary>
+    /// Root configuration class containing all animal and general game settings
+    /// </summary>
     public class AnimalConfig
     {
         public Dictionary<string, AnimalTypeConfig> Animals { get; set; } = new();
         public GeneralConfig General { get; set; } = new();
     }
 
+    /// <summary>
+    /// Configuration settings specific to each animal type
+    /// </summary>
     public class AnimalTypeConfig
     {
         public double Speed { get; set; }
@@ -20,6 +26,9 @@ namespace Savanna.Core.Config
         public double? HealthFromGrazing { get; set; }
     }
 
+    /// <summary>
+    /// General game settings that apply to all animals
+    /// </summary>
     public class GeneralConfig
     {
         public double InitialHealth { get; set; }
