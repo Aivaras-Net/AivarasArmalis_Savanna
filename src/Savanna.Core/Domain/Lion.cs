@@ -10,9 +10,11 @@ namespace Savanna.Core.Domain
         public override string Name => GameConstants.LionName;
         public double HuntingRange => ConfigurationService.GetAnimalConfig(GameConstants.LionName).HuntingRange ?? 1.0;
 
-        public Lion(double speed, double visionRange, Position position) : base(speed, visionRange, position, new LionMovementStrategy(), new LionSpecialActionStrategy())
+        public Lion(double speed, double visionRange, Position position)
+            : base(speed, visionRange, position,
+                   new LionMovementStrategy(ConfigurationService.Config),
+                   new LionSpecialActionStrategy(ConfigurationService.Config))
         {
-
         }
 
         /// <summary>

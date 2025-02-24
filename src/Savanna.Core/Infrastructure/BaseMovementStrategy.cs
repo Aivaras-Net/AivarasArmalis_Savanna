@@ -11,6 +11,12 @@ namespace Savanna.Core.Infrastructure
     public abstract class BaseMovementStrategy : IMovementStrategy
     {
         private readonly Random _random = new Random();
+        protected readonly AnimalConfig _config;
+
+        protected BaseMovementStrategy(AnimalConfig config)
+        {
+            _config = config;
+        }
 
         public abstract Position Move(IAnimal animal, IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight);
 
@@ -33,6 +39,7 @@ namespace Savanna.Core.Infrastructure
             int newY = Math.Max(0, Math.Min(fieldHeight - 1, y));
             return new Position(newX, newY);
         }
+
         protected bool ShouldStayForMating(IAnimal animal, IEnumerable<IAnimal> animals)
         {
             if (animals is Animal a && a.Health < ConfigurationService.Config.General.InitialHealth / 2)
@@ -46,6 +53,11 @@ namespace Savanna.Core.Infrastructure
                 return nearbyMate != null;
             }
             return false;
+        }
+
+        protected virtual double GetRandomValue()
+        {
+            return _random.NextDouble();
         }
     }
 }

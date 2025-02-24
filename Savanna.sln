@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Savanna.CLI", "src\Savanna.CLI\Savanna.CLI.csproj", "{9D5EAFD0-D0E8-45A3-A605-123C25FCCFED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Savanna.CLI", "src\Savanna.CLI\Savanna.CLI.csproj", "{9D5EAFD0-D0E8-45A3-A605-123C25FCCFED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Savanna.Core", "src\Savanna.Core\Savanna.Core.csproj", "{192162F6-096B-4F8A-8BCB-EFCE48978DD6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Savanna.Core", "src\Savanna.Core\Savanna.Core.csproj", "{192162F6-096B-4F8A-8BCB-EFCE48978DD6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SavannaCore.Tests", "tests\SavannaCore.Tests\SavannaCore.Tests.csproj", "{7B87005D-15A6-452F-9B3F-DAF82B4CC5AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,8 +23,15 @@ Global
 		{192162F6-096B-4F8A-8BCB-EFCE48978DD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{192162F6-096B-4F8A-8BCB-EFCE48978DD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{192162F6-096B-4F8A-8BCB-EFCE48978DD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B87005D-15A6-452F-9B3F-DAF82B4CC5AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B87005D-15A6-452F-9B3F-DAF82B4CC5AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B87005D-15A6-452F-9B3F-DAF82B4CC5AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B87005D-15A6-452F-9B3F-DAF82B4CC5AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E82D8E1A-D3B4-40D0-91D4-7F82CD9490F6}
 	EndGlobalSection
 EndGlobal

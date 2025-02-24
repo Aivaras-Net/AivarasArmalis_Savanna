@@ -11,19 +11,30 @@ namespace Savanna.Core.Infrastructure
     public class LionSpecialActionStrategy : ISpecialActionStrategy
     {
         private readonly Random _random = new Random();
+        private readonly AnimalConfig _config;
+
+        public LionSpecialActionStrategy(AnimalConfig config)
+        {
+            _config = config;
+        }
+
+        protected virtual double GetRandomValue()
+        {
+            return _random.NextDouble();
+        }
 
         public void Execute(IAnimal animal, IEnumerable<IAnimal> animals)
         {
             if (!(animal is IPredator lion) || !lion.isAlive)
                 return;
 
-            var config = ConfigurationService.GetAnimalConfig(GameConstants.LionName);
+            var lionConfig = _config.Animals[GameConstants.LionName];
 
-            if (_random.NextDouble() < config.RoarChance)
+            if (GetRandomValue() < lionConfig.RoarChance)
             {
                 var preyInRoarRange = animals
                     .OfType<IPrey>()
-                    .Where(a => a.isAlive && animal.Position.DistanceTo(a.Position) < config.RoarRange);
+                    .Where(a => a.isAlive && animal.Position.DistanceTo(a.Position) < lionConfig.RoarRange);
 
                 foreach (var prey in preyInRoarRange)
                 {

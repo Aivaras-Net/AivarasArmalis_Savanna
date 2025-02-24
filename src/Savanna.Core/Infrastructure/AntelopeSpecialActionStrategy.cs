@@ -12,23 +12,34 @@ namespace Savanna.Core.Infrastructure
     public class AntelopeSpecialActionStrategy : ISpecialActionStrategy
     {
         private readonly Random _random = new Random();
+        private readonly AnimalConfig _config;
+
+        public AntelopeSpecialActionStrategy(AnimalConfig config)
+        {
+            _config = config;
+        }
+
+        protected virtual double GetRandomValue()
+        {
+            return _random.NextDouble();
+        }
 
         public void Execute(IAnimal animal, IEnumerable<IAnimal> animals)
         {
             if (!(animal is Animal antelope) || !antelope.isAlive)
                 return;
 
-            var config = ConfigurationService.GetAnimalConfig(GameConstants.AntelopeName);
+            var antelopeConfig = _config.Animals[GameConstants.AntelopeName];
 
             var nearbyLions = animals.Any(a =>
                 a.Name == GameConstants.LionName &&
                 a.isAlive &&
                 animal.Position.DistanceTo(a.Position) <= animal.VisionRange);
 
-            if (nearbyLions && _random.NextDouble() <= config.GrazeChance)
+            if (!nearbyLions && GetRandomValue() <= antelopeConfig.GrazeChance)
             {
-                antelope.Health = Math.Min(ConfigurationService.Config.General.MaxHealth,
-                    antelope.Health + (config.HealthFromGrazing ?? 0));
+                antelope.Health = Math.Min(_config.General.MaxHealth,
+                    antelope.Health + (antelopeConfig.HealthFromGrazing ?? 0));
             }
         }
     }
