@@ -1,4 +1,5 @@
-﻿using Savanna.Core.Domain;
+﻿using Savanna.Core.Config;
+using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 
 namespace Savanna.Core.Infrastructure
@@ -8,6 +9,10 @@ namespace Savanna.Core.Infrastructure
     /// </summary>
     public class LionMovementStrategy : BaseMovementStrategy
     {
+        public LionMovementStrategy(AnimalConfig config) : base(config)
+        {
+        }
+
         public override Position Move(IAnimal animal, IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight)
         {
             var nearbyAntelope = animals.OfType<IPrey>()

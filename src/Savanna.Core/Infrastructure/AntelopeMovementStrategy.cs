@@ -1,4 +1,5 @@
-﻿using Savanna.Core.Constants;
+﻿using Savanna.Core.Config;
+using Savanna.Core.Constants;
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 
@@ -9,12 +10,16 @@ namespace Savanna.Core.Infrastructure
     /// </summary>
     public class AntelopeMovementStrategy : BaseMovementStrategy
     {
+        public AntelopeMovementStrategy(AnimalConfig config) : base(config)
+        {
+        }
+
         public override Position Move(IAnimal animal, IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight)
         {
-            if (animal is Animal antelope && antelope.IsStuned)
+            if (animal is IPrey prey && prey.IsStuned)
             {
-                antelope.IsStuned = false;
-                return antelope.Position;
+                prey.IsStuned = false;
+                return animal.Position;
             }
 
             var nearbyLion = animals.FirstOrDefault(a =>
