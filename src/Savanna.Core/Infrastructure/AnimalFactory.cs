@@ -10,6 +10,13 @@ namespace Savanna.Core.Infrastructure
     /// </summary>
     public static class AnimalFactory
     {
+        private static readonly Dictionary<string, IAnimalBehavior> _behaviors = new();
+
+        public static void RegisterBehavior(IAnimalBehavior behavior)
+        {
+            _behaviors[behavior.AnimalName] = behavior;
+        }
+
         /// <summary>
         /// Creates an animal instance with the provided type, speed, vision range, and initial position.
         /// </summary>
@@ -21,6 +28,12 @@ namespace Savanna.Core.Infrastructure
         {
             var config = ConfigurationService.GetAnimalConfig(type);
 
+            if (_behaviors.TryGetValue(type, out var behavior))
+            {
+                return behavior.CreateAnimal(config.Speed, config.VisionRange, position);
+            }
+
+            // Fallback to built-in animals
             switch (type)
             {
                 case GameConstants.AntelopeName:

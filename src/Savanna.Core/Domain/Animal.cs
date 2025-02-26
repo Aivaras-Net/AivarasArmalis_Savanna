@@ -18,13 +18,13 @@ namespace Savanna.Core.Domain
         protected IMovementStrategy MovementStrategy { get; }
         protected ISpecialActionStrategy SpecialActionStrategy { get; }
 
-        public Animal(double speed, double visionRange, Position position, IMovementStrategy movementStrategy, ISpecialActionStrategy specialActionStrategy)
+        protected Animal(double speed, double visionRange, Position position, IAnimalBehavior behavior)
         {
             Speed = speed;
             VisionRange = visionRange;
             Position = position;
-            MovementStrategy = movementStrategy;
-            SpecialActionStrategy = specialActionStrategy;
+            MovementStrategy = behavior.CreateMovementStrategy(ConfigurationService.Config);
+            SpecialActionStrategy = behavior.CreateSpecialActionStrategy(ConfigurationService.Config);
         }
 
         public void Move(IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight)
