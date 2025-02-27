@@ -8,6 +8,11 @@
       "roarChance": 0.3,
       "healthGainFromKill": 5.0
     },
+    "Tiger": {
+      "Speed": 3.0,
+      "VisionRange": 5.0,
+      "HuntingRange": 2.0
+    },
     "Antelope": {
       "speed": 1.0,
       "visionRange": 5.0,

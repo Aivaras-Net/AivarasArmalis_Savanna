@@ -1,0 +1,18 @@
+{
+  "Animals": {
+    "Tiger": {
+      "Speed": 3.0,
+      "VisionRange": 5.0,
+      "HuntingRange": 2.0
+    },
+    "Lion": {
+      "Speed": 2.0,
+      "VisionRange": 4.0,
+      "HuntingRange": 1.0
+    },
+    "Antelope": {
+      "Speed": 4.0,
+      "VisionRange": 3.0
+    }
+  }
+} 

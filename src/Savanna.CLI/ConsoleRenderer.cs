@@ -40,6 +40,12 @@ namespace Savanna.CLI
             int rows = field.GetLength(0);
             int cols = field.GetLength(1);
 
+            for (int i = HeaderOffset; i < HeaderOffset + rows + 2; i++)
+            {
+                Console.SetCursorPosition(0, i);
+                Console.Write(new string(' ', cols + 2));
+            }
+
             string topBorder = ConsoleConstants.BorderCorner + new string(ConsoleConstants.HorizontalBorder, cols) + ConsoleConstants.BorderCorner;
             Console.SetCursorPosition(0, HeaderOffset);
             Console.Write(topBorder);
@@ -60,7 +66,7 @@ namespace Savanna.CLI
             Console.SetCursorPosition(0, HeaderOffset + 1 + rows);
             Console.WriteLine(topBorder);
 
-            int messageLine = HeaderOffset +2 + rows;
+            int messageLine = HeaderOffset + 2 + rows;
             Console.SetCursorPosition(0, messageLine);
             if (_messageFrames > 0)
             {
@@ -69,7 +75,7 @@ namespace Savanna.CLI
             }
             else
             {
-                Console.Write(new string(GameConstants.FieldFill, cols + 2));
+                Console.Write(new string(' ', cols + 2));
             }
         }
     }

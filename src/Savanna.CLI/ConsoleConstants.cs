@@ -3,10 +3,11 @@
     public static class ConsoleConstants
     {
         public const int IterationDuration = 500;
-        public const int HeaderHeight = 2;
+        public const int HeaderHeight = 1;
+        public const int CommandGuideHeight = 7;
+        public const int TotalHeaderOffset = HeaderHeight + CommandGuideHeight;
 
         public const string Header = "Savanna simulation";
-        public const string CommandGuide = "Press A to add Antelope, L to add Lion, Q to quit";
 
         public const string AntelopeAditionMessage = "Antelope added";
         public const string LionAdditionMessage = "Lion added";
