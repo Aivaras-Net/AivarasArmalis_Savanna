@@ -30,7 +30,7 @@ namespace Savanna.Core.Config
         /// </summary>
         /// <exception cref="FileNotFoundException">Thrown when the configuration file cannot be found</exception>
         /// <exception cref="InvalidOperationException">Thrown when the configuration file is empty or invalid</exception>
-        private static void LoadConfig()
+        public static void LoadConfig()
         {
             var basePath = AppDomain.CurrentDomain.BaseDirectory;
             var configPath = Path.Combine(basePath, GameConstants.ConfigFileDirectory, GameConstants.ConfigFileName);

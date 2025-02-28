@@ -5,6 +5,7 @@ namespace Savanna.Core.Constants
         public const int DefaultFieldWidth = 20;
         public const int DefaultFieldHeight = 10;
         public const char FieldFill = ' ';
+        public const int MessageDuration = 3;
 
         public const string ConfigFileName = "animals.json";
         public const string ConfigFileDirectory = "Config";

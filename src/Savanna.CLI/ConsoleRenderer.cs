@@ -10,14 +10,14 @@ namespace Savanna.CLI
     public class ConsoleRenderer : IConsoleRenderer
     {
         public int HeaderOffset { get; set; }
-        private string _message;
-        private int _messageFrames;
+        private readonly Queue<(string Message, int RemainingFrames)> _messageQueue = new Queue<(string, int)>();
+        private readonly int _maxMessages = 5;
+        private readonly int _messageAreaHeight;
 
         public ConsoleRenderer(int headerOffset = 0)
         {
             HeaderOffset = headerOffset;
-            _message = string.Empty;
-            _messageFrames = 0;
+            _messageAreaHeight = _maxMessages + 1;
         }
 
         /// <summary>
@@ -27,8 +27,12 @@ namespace Savanna.CLI
         /// <param name="frames">The duration (in frames) for which the message is visible.</param>
         public void ShowMessage(string message, int frames)
         {
-            _message = message;
-            _messageFrames = frames;
+            _messageQueue.Enqueue((message, frames));
+
+            while (_messageQueue.Count > _maxMessages * 2)
+            {
+                _messageQueue.Dequeue();
+            }
         }
 
         /// <summary>
@@ -40,12 +44,11 @@ namespace Savanna.CLI
             int rows = field.GetLength(0);
             int cols = field.GetLength(1);
 
-            for (int i = HeaderOffset; i < HeaderOffset + rows + 2; i++)
+            for (int i = HeaderOffset; i < Console.WindowHeight; i++)
             {
                 Console.SetCursorPosition(0, i);
-                Console.Write(new string(' ', cols + 2));
+                Console.Write(new string(' ', Console.WindowWidth));
             }
-
             string topBorder = ConsoleConstants.BorderCorner + new string(ConsoleConstants.HorizontalBorder, cols) + ConsoleConstants.BorderCorner;
             Console.SetCursorPosition(0, HeaderOffset);
             Console.Write(topBorder);
@@ -66,17 +69,62 @@ namespace Savanna.CLI
             Console.SetCursorPosition(0, HeaderOffset + 1 + rows);
             Console.WriteLine(topBorder);
 
-            int messageLine = HeaderOffset + 2 + rows;
-            Console.SetCursorPosition(0, messageLine);
-            if (_messageFrames > 0)
+            UpdateMessageQueue();
+
+            DrawMessageArea(cols, HeaderOffset + 2 + rows);
+        }
+
+        /// <summary>
+        /// Updates the message queue by decrementing frame counters and removing expired messages.
+        /// </summary>
+        private void UpdateMessageQueue()
+        {
+            int count = _messageQueue.Count;
+            for (int i = 0; i < count; i++)
             {
-                Console.Write(_message.PadRight(cols + 2));
-                _messageFrames--;
+                var (message, frames) = _messageQueue.Dequeue();
+                if (frames > 1)
+                {
+                    _messageQueue.Enqueue((message, frames - 1));
+                }
             }
-            else
+        }
+
+        /// <summary>
+        /// Draws the message area with all active messages.
+        /// </summary>
+        /// <param name="fieldWidth">Width of the game field for formatting.</param>
+        /// <param name="startLine">Starting line for the message area.</param>
+        private void DrawMessageArea(int fieldWidth, int startLine)
+        {
+            Console.SetCursorPosition(0, startLine);
+            Console.WriteLine("Messages:");
+
+            int line = startLine + 1;
+            int displayCount = Math.Min(_messageQueue.Count, _maxMessages);
+            var messagesToDisplay = _messageQueue.TakeLast(displayCount).ToArray();
+
+            for (int i = 0; i < displayCount; i++)
             {
-                Console.Write(new string(' ', cols + 2));
+                Console.SetCursorPosition(0, line + i);
+                Console.Write(messagesToDisplay[i].Message.PadRight(fieldWidth + 2));
             }
+
+            for (int i = displayCount; i < _maxMessages; i++)
+            {
+                Console.SetCursorPosition(0, line + i);
+                Console.Write(new string(' ', fieldWidth + 2));
+            }
+        }
+
+        /// <summary>
+        /// Gets the total height required for the console display.
+        /// </summary>
+        /// <param name="fieldHeight">Height of the game field.</param>
+        /// <returns>Total height needed for the display.</returns>
+        public int GetTotalDisplayHeight(int fieldHeight)
+        {
+            return HeaderOffset + fieldHeight + 2 + _messageAreaHeight; // Header + field + borders + message area
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Savanna.Core;
 using Savanna.Core.Constants;
+using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure;
 using System.Reflection;
@@ -19,14 +20,36 @@ namespace Savanna.CLI
 
         static void Main(string[] args)
         {
-            Assembly customAssembly = Assembly.LoadFrom("Savanna.Animals.Custom.dll");
+            Console.CursorVisible = false;
+            string currentDirectory = Directory.GetCurrentDirectory();
+            string projectRoot = Path.GetFullPath(Path.Combine(currentDirectory, @"..\..\..\..\.."));
+            string importsFolder = Path.Combine(projectRoot, "Imports");
 
-            foreach (Type type in customAssembly.GetTypes()
-                .Where(t => typeof(IAnimalBehavior).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract))
+            if (!Directory.Exists(importsFolder))
             {
-                var behavior = (IAnimalBehavior)Activator.CreateInstance(type);
-                AnimalFactory.RegisterBehavior(behavior);
-                AssignKeyForAnimal(behavior.AnimalName);
+                Directory.CreateDirectory(importsFolder);
+            }
+
+            string[] dllFiles = Directory.GetFiles(importsFolder, "*.dll");
+
+            foreach (string dllFile in dllFiles)
+            {
+                try
+                {
+                    Assembly customAssembly = Assembly.LoadFrom(dllFile);
+
+                    foreach (Type type in customAssembly.GetTypes()
+                        .Where(t => typeof(IAnimalBehavior).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract))
+                    {
+                        var behavior = (IAnimalBehavior)Activator.CreateInstance(type);
+                        AnimalFactory.RegisterBehavior(behavior);
+                        AssignKeyForAnimal(behavior.AnimalName);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error loading assembly {Path.GetFileName(dllFile)}: {ex.Message}");
+                }
             }
 
             AssignKeyForAnimal(GameConstants.AntelopeName);
@@ -60,8 +83,8 @@ namespace Savanna.CLI
                 }
 
                 engine.Update();
-                engine.DrawField();
                 DisplayCommandGuide();
+                engine.DrawField();
                 Thread.Sleep(ConsoleConstants.IterationDuration);
             }
         }
@@ -92,15 +115,21 @@ namespace Savanna.CLI
         private static void DisplayCommandGuide()
         {
             Console.SetCursorPosition(0, ConsoleConstants.HeaderHeight);
-            Console.WriteLine("\nAvailable animals:");
+            Console.WriteLine("Available animals:");
+
+            int line = ConsoleConstants.HeaderHeight + 1;
             foreach (var mapping in _animalKeyMappings)
             {
+                Console.SetCursorPosition(0, line++);
                 Console.WriteLine($"[{mapping.Key}] - Spawn {mapping.Value}");
             }
-            Console.WriteLine("\n[Q] - Quit the game");
 
-            for (int i = Console.CursorTop; i < ConsoleConstants.TotalHeaderOffset; i++)
+            Console.SetCursorPosition(0, line++);
+            Console.WriteLine("[Q] - Quit the game");
+
+            for (int i = line; i < ConsoleConstants.TotalHeaderOffset; i++)
             {
+                Console.SetCursorPosition(0, i);
                 Console.WriteLine(new string(' ', Console.WindowWidth));
             }
         }
