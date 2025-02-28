@@ -5,21 +5,22 @@ using Savanna.Core.Interfaces;
 namespace Savanna.CLI
 {
     /// <summary>
-    /// Provides console-based rendering functionality for displaying fields and messages.
+    /// Provides console-based rendering functionality for displaying fields and logs.
     /// </summary>
     public class ConsoleRenderer : IConsoleRenderer
     {
         public int HeaderOffset { get; set; }
-        private readonly Queue<(string Message, int RemainingFrames)> _messageQueue = new Queue<(string, int)>();
-        private readonly int _maxMessages = 5;
-        private readonly int _messageAreaHeight;
+        private readonly Queue<(string Message, int RemainingFrames, int FrameCreated)> _logQueue = new Queue<(string, int, int)>();
+        private readonly int _maxLogs = 5;
+        private readonly int _logAreaHeight;
         private readonly Dictionary<string, ConsoleColor> _animalColors = new Dictionary<string, ConsoleColor>();
         private readonly Random _random = new Random();
+        private int _frameCounter = 0;
 
         public ConsoleRenderer(int headerOffset = 0)
         {
             HeaderOffset = headerOffset;
-            _messageAreaHeight = _maxMessages + 1;
+            _logAreaHeight = _maxLogs + 1;
 
             _animalColors[GameConstants.AntelopeName] = ConsoleConstants.AntelopeColor;
             _animalColors[GameConstants.LionName] = ConsoleConstants.LionColor;
@@ -77,27 +78,26 @@ namespace Savanna.CLI
         }
 
         /// <summary>
-        /// Displays a temporary message for a specified number of frames.
+        /// Displays a temporary log entry for a specified number of frames.
         /// </summary>
-        /// <param name="message">The message to be displayed.</param>
-        /// <param name="frames">The duration (in frames) for which the message is visible.</param>
-        public void ShowMessage(string message, int frames)
+        /// <param name="message">The log message to be displayed.</param>
+        /// <param name="frames">The duration (in frames) for which the log is visible.</param>
+        public void ShowLog(string message, int frames)
         {
-            Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
-            _messageQueue.Enqueue((message, frames));
+            _logQueue.Enqueue((message, frames, _frameCounter));
 
-            while (_messageQueue.Count > _maxMessages * 2)
+            while (_logQueue.Count > _maxLogs * 3)
             {
-                _messageQueue.Dequeue();
+                _logQueue.Dequeue();
             }
         }
-
         /// <summary>
-        /// Renders the field with borders and an optional message.
+        /// Renders the field with borders and an optional log area.
         /// </summary>
         /// <param name="field">A two-dimensional character array representing the field to render.</param>
         public void RenderField(char[,] field)
         {
+            _frameCounter++;
             int rows = field.GetLength(0);
             int cols = field.GetLength(1);
 
@@ -149,9 +149,9 @@ namespace Savanna.CLI
             Console.SetCursorPosition(0, HeaderOffset + 1 + rows);
             Console.WriteLine(topBorder);
 
-            UpdateMessageQueue();
+            UpdateLogQueue();
 
-            DrawMessageArea(cols, HeaderOffset + 2 + rows);
+            DrawLogArea(cols, HeaderOffset + 2 + rows);
 
             Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
         }
@@ -175,43 +175,49 @@ namespace Savanna.CLI
         }
 
         /// <summary>
-        /// Updates the message queue by decrementing frame counters and removing expired messages.
+        /// Updates the log queue by decrementing frame counters and removing expired logs.
         /// </summary>
-        private void UpdateMessageQueue()
+        private void UpdateLogQueue()
         {
-            int count = _messageQueue.Count;
+            int count = _logQueue.Count;
             for (int i = 0; i < count; i++)
             {
-                var (message, frames) = _messageQueue.Dequeue();
+                var (message, frames, frameCreated) = _logQueue.Dequeue();
                 if (frames > 1)
                 {
-                    _messageQueue.Enqueue((message, frames - 1));
+                    _logQueue.Enqueue((message, frames - 1, frameCreated));
                 }
             }
         }
 
         /// <summary>
-        /// Draws the message area with all active messages.
+        /// Draws the log area with all active logs.
         /// </summary>
         /// <param name="fieldWidth">Width of the game field for formatting.</param>
-        /// <param name="startLine">Starting line for the message area.</param>
-        private void DrawMessageArea(int fieldWidth, int startLine)
+        /// <param name="startLine">Starting line for the log area.</param>
+        private void DrawLogArea(int fieldWidth, int startLine)
         {
-            Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
+            Console.ForegroundColor = ConsoleConstants.LogHeaderColor;
             Console.SetCursorPosition(0, startLine);
-            Console.WriteLine("Messages:");
+            Console.WriteLine($"Game Log (Current Frame: {_frameCounter}):");
 
             int line = startLine + 1;
-            int displayCount = Math.Min(_messageQueue.Count, _maxMessages);
-            var messagesToDisplay = _messageQueue.TakeLast(displayCount).ToArray();
+            int displayCount = Math.Min(_logQueue.Count, _maxLogs);
+            var logsToDisplay = _logQueue.TakeLast(displayCount).ToArray();
+
+            Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
 
             for (int i = 0; i < displayCount; i++)
             {
+                var (message, frames, frameCreated) = logsToDisplay[i];
+
                 Console.SetCursorPosition(0, line + i);
-                Console.Write(messagesToDisplay[i].Message.PadRight(fieldWidth + 2));
+
+                string formattedLog = $"[Frame: {frameCreated}] {message}";
+                Console.Write(formattedLog.PadRight(fieldWidth + 2));
             }
 
-            for (int i = displayCount; i < _maxMessages; i++)
+            for (int i = displayCount; i < _maxLogs; i++)
             {
                 Console.SetCursorPosition(0, line + i);
                 Console.Write(new string(' ', fieldWidth + 2));
@@ -225,7 +231,7 @@ namespace Savanna.CLI
         /// <returns>Total height needed for the display.</returns>
         public int GetTotalDisplayHeight(int fieldHeight)
         {
-            return HeaderOffset + fieldHeight + 2 + _messageAreaHeight; // Header + field + borders + message area
+            return HeaderOffset + fieldHeight + 2 + _logAreaHeight; // Header + field + borders + log area
         }
     }
 }

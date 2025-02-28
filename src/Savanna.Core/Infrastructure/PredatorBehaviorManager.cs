@@ -9,6 +9,11 @@ namespace Savanna.Core.Infrastructure
     public class PredatorBehaviorManager
     {
         /// <summary>
+        /// Event triggered when a predator successfully hunts a prey
+        /// </summary>
+        public event Action<IPredator, IPrey>? OnHunt;
+
+        /// <summary>
         /// Updates predator behaviors for all predators in the simulation
         /// </summary>
         /// <param name="animals">All animals in the simulation</param>
@@ -26,7 +31,8 @@ namespace Savanna.Core.Infrastructure
         /// <summary>
         /// Attempts to hunt prey within range.
         /// </summary>
-        /// <param name="preys">The collection of potential prey.</param>
+        /// <param name="predator">The predator attempting to hunt</param>
+        /// <param name="prey">The collection of potential prey.</param>
         private void Hunt(IPredator predator, IEnumerable<IPrey> prey)
         {
             var target = prey
@@ -39,6 +45,7 @@ namespace Savanna.Core.Infrastructure
                 double healthGain = Math.Min(ConfigurationService.Config.General.MaxHealth - predator.Health, target.Health);
                 predator.Health += healthGain;
                 target.Health = 0;
+                OnHunt?.Invoke(predator, target);
             }
         }
     }

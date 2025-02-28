@@ -9,9 +9,9 @@
 
         public const string Header = "Savanna simulation";
 
-        public const string AntelopeAditionMessage = "Antelope added";
-        public const string LionAdditionMessage = "Lion added";
-        public const int MessageDuration = 3;
+        public const int LogDurationShort = 3;
+        public const int LogDurationMedium = 5;
+        public const int LogDurationLong = 8;
 
         public const double DefaultSpeed = 1;
         public const double DefaultViewRange = 5;
@@ -23,5 +23,6 @@
         public const ConsoleColor AntelopeColor = ConsoleColor.Green;
         public const ConsoleColor LionColor = ConsoleColor.Red;
         public const ConsoleColor DefaultFieldColor = ConsoleColor.White;
+        public const ConsoleColor LogHeaderColor = ConsoleColor.Yellow;
     }
 }

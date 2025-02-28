@@ -23,14 +23,25 @@ namespace Savanna.Core
             _renderer = renderer;
             _field = new Field(GameConstants.DefaultFieldWidth, GameConstants.DefaultFieldHeight);
 
-            _lifeCycleManager.OnAnimalDeath += (animal) => _animals.Remove(animal);
+            _lifeCycleManager.OnAnimalDeath += (animal) =>
+            {
+                _animals.Remove(animal);
+                _renderer.ShowLog($"{animal.Name} died at position ({animal.Position.X},{animal.Position.Y})", GameConstants.LogDurationLong);
+            };
+
             _lifeCycleManager.OnAnimalBirth += (parent, position) =>
             {
                 var offspring = (parent as Animal)?.CreateOffspring(position);
                 if (offspring != null)
                 {
-                    AddAnimal(offspring);
+                    AddAnimal(offspring, false);
+                    _renderer.ShowLog($"New {offspring.Name} born at position ({position.X},{position.Y})", GameConstants.LogDurationLong);
                 }
+            };
+
+            _predatorManager.OnHunt += (predator, prey) =>
+            {
+                _renderer.ShowLog($"{predator.Name} hunted {prey.Name} at position ({prey.Position.X},{prey.Position.Y})", GameConstants.LogDurationMedium);
             };
         }
 
@@ -38,7 +49,8 @@ namespace Savanna.Core
         /// Adds an animal to the simulation and assigns it a random position within the field boundaries.
         /// </summary>
         /// <param name="animal">The animal instance to add.</param>
-        public void AddAnimal(IAnimal animal)
+        /// <param name="logSpawn">Whether to log the spawning event (default: true).</param>
+        public void AddAnimal(IAnimal animal, bool logSpawn = true)
         {
             if (animal.Position == Position.Null)
             {
@@ -48,6 +60,11 @@ namespace Savanna.Core
                 );
             }
             _animals.Add(animal);
+
+            if (logSpawn)
+            {
+                _renderer.ShowLog($"{animal.Name} spawned at position ({animal.Position.X},{animal.Position.Y})", GameConstants.LogDurationMedium);
+            }
         }
 
         /// <summary>
