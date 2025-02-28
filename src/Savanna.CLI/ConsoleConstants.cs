@@ -19,5 +19,9 @@
         public const char BorderCorner = '+';
         public const char HorizontalBorder = '-';
         public const char VerticalBorder = '|';
+
+        public const ConsoleColor AntelopeColor = ConsoleColor.Green;
+        public const ConsoleColor LionColor = ConsoleColor.Red;
+        public const ConsoleColor DefaultFieldColor = ConsoleColor.White;
     }
 }

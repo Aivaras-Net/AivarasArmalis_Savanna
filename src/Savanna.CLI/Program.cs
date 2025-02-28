@@ -17,6 +17,7 @@ namespace Savanna.CLI
             ConsoleKey.O, ConsoleKey.P, ConsoleKey.R, ConsoleKey.S, ConsoleKey.T, ConsoleKey.U, ConsoleKey.V,
             ConsoleKey.W, ConsoleKey.X, ConsoleKey.Y, ConsoleKey.Z
         };
+        private static ConsoleRenderer _renderer;
 
         static void Main(string[] args)
         {
@@ -29,6 +30,14 @@ namespace Savanna.CLI
             {
                 Directory.CreateDirectory(importsFolder);
             }
+
+            _renderer = new ConsoleRenderer(ConsoleConstants.TotalHeaderOffset);
+            GameEngine engine = new GameEngine(_renderer);
+
+            AssignKeyForAnimal(GameConstants.AntelopeName);
+            AssignKeyForAnimal(GameConstants.LionName);
+            _renderer.RegisterAnimalColor(GameConstants.AntelopeName);
+            _renderer.RegisterAnimalColor(GameConstants.LionName);
 
             string[] dllFiles = Directory.GetFiles(importsFolder, "*.dll");
 
@@ -44,6 +53,7 @@ namespace Savanna.CLI
                         var behavior = (IAnimalBehavior)Activator.CreateInstance(type);
                         AnimalFactory.RegisterBehavior(behavior);
                         AssignKeyForAnimal(behavior.AnimalName);
+                        _renderer.RegisterAnimalColor(behavior.AnimalName);
                     }
                 }
                 catch (Exception ex)
@@ -51,12 +61,6 @@ namespace Savanna.CLI
                     Console.WriteLine($"Error loading assembly {Path.GetFileName(dllFile)}: {ex.Message}");
                 }
             }
-
-            AssignKeyForAnimal(GameConstants.AntelopeName);
-            AssignKeyForAnimal(GameConstants.LionName);
-
-            ConsoleRenderer renderer = new ConsoleRenderer(ConsoleConstants.TotalHeaderOffset);
-            GameEngine engine = new GameEngine(renderer);
 
             Console.SetCursorPosition(0, 0);
             Console.WriteLine(ConsoleConstants.Header);
@@ -115,16 +119,24 @@ namespace Savanna.CLI
         private static void DisplayCommandGuide()
         {
             Console.SetCursorPosition(0, ConsoleConstants.HeaderHeight);
+            Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
             Console.WriteLine("Available animals:");
 
             int line = ConsoleConstants.HeaderHeight + 1;
             foreach (var mapping in _animalKeyMappings)
             {
-                Console.SetCursorPosition(0, line++);
-                Console.WriteLine($"[{mapping.Key}] - Spawn {mapping.Value}");
+                Console.SetCursorPosition(0, line);
+                Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
+                Console.Write($"[{mapping.Key}] - Spawn ");
+
+                string animalName = mapping.Value;
+                Console.ForegroundColor = _renderer.GetAnimalColor(animalName);
+                Console.WriteLine(animalName);
+                line++;
             }
 
             Console.SetCursorPosition(0, line++);
+            Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
             Console.WriteLine("[Q] - Quit the game");
 
             for (int i = line; i < ConsoleConstants.TotalHeaderOffset; i++)
@@ -132,6 +144,8 @@ namespace Savanna.CLI
                 Console.SetCursorPosition(0, i);
                 Console.WriteLine(new string(' ', Console.WindowWidth));
             }
+
+            Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
         }
     }
 }
