@@ -31,8 +31,29 @@ namespace Savanna.CLI
                 Directory.CreateDirectory(importsFolder);
             }
 
+            int fieldWidth = GetFieldDimension("width", GameConstants.DefaultFieldWidth);
+            int fieldHeight = GetFieldDimension("height", GameConstants.DefaultFieldHeight);
+
             _renderer = new ConsoleRenderer(ConsoleConstants.TotalHeaderOffset);
-            GameEngine engine = new GameEngine(_renderer);
+            GameEngine engine = new GameEngine(_renderer, fieldWidth, fieldHeight);
+
+            int requiredWidth = Math.Max(fieldWidth + 5, 60);
+            int requiredHeight = Math.Max(_renderer.GetTotalDisplayHeight(fieldHeight), 20);
+
+            try
+            {
+                Console.WindowWidth = Math.Max(Console.WindowWidth, requiredWidth);
+                Console.WindowHeight = Math.Max(Console.WindowHeight, requiredHeight);
+            }
+            catch (Exception ex)
+            {
+                Console.Clear();
+                Console.WriteLine($"Warning: Console window might be too small for the selected field size.");
+                Console.WriteLine($"Recommended minimum size: {requiredWidth}x{requiredHeight}");
+                Console.WriteLine("Press any key to continue anyway...");
+                Console.ReadKey(true);
+                Console.Clear();
+            }
 
             AssignKeyForAnimal(GameConstants.AntelopeName);
             AssignKeyForAnimal(GameConstants.LionName);
@@ -61,7 +82,7 @@ namespace Savanna.CLI
                     Console.WriteLine($"Error loading assembly {Path.GetFileName(dllFile)}: {ex.Message}");
                 }
             }
-
+            Console.Clear();
             Console.SetCursorPosition(0, 0);
             Console.WriteLine(ConsoleConstants.Header);
             DisplayCommandGuide();
@@ -146,6 +167,46 @@ namespace Savanna.CLI
             }
 
             Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
+        }
+
+        private static int GetFieldDimension(string dimensionName, int defaultValue)
+        {
+            Console.Clear();
+            Console.CursorVisible = true;
+            Console.WriteLine($"Enter field {dimensionName} (default: {defaultValue}, minimum: 5, press Enter to use default):");
+            string input = Console.ReadLine();
+            Console.CursorVisible = false;
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return defaultValue;
+            }
+
+            if (int.TryParse(input, out int dimension) && dimension >= 5)
+            {
+                if (dimensionName == "width" && dimension > Console.LargestWindowWidth - 5)
+                {
+                    Console.WriteLine($"Requested width is too large for your console. Maximum allowed: {Console.LargestWindowWidth - 5}");
+                    Console.WriteLine($"Using maximum allowed width: {Console.LargestWindowWidth - 5}");
+                    Thread.Sleep(2000);
+                    return Console.LargestWindowWidth - 5;
+                }
+                else if (dimensionName == "height" && dimension > Console.LargestWindowHeight - ConsoleConstants.TotalHeaderOffset - 7)
+                {
+                    int maxHeight = Console.LargestWindowHeight - ConsoleConstants.TotalHeaderOffset - 7;
+                    Console.WriteLine($"Requested height is too large for your console. Maximum allowed: {maxHeight}");
+                    Console.WriteLine($"Using maximum allowed height: {maxHeight}");
+                    Thread.Sleep(2000);
+                    return maxHeight;
+                }
+                return dimension;
+            }
+            else
+            {
+                Console.WriteLine($"Invalid input. Using default {dimensionName}: {defaultValue}");
+                Thread.Sleep(1500);
+                return defaultValue;
+            }
         }
     }
 }

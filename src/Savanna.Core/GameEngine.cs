@@ -45,6 +45,18 @@ namespace Savanna.Core
             };
         }
 
+        public GameEngine(IConsoleRenderer renderer, int fieldWidth, int fieldHeight)
+        {
+            _renderer = renderer;
+            _field = new Field(fieldWidth, fieldHeight);
+
+            _lifeCycleManager.OnAnimalDeath += (animal) =>
+            {
+                _animals.Remove(animal);
+                _renderer.ShowLog($"{animal.Name} died at position ({animal.Position.X},{animal.Position.Y})", GameConstants.LogDurationLong);
+            };
+        }
+
         /// <summary>
         /// Adds an animal to the simulation and assigns it a random position within the field boundaries.
         /// </summary>
