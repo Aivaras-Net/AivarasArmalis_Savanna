@@ -13,6 +13,7 @@ namespace Savanna.Core.Infrastructure
     public class AnimalFactory : IAnimalFactory
     {
         private static readonly Dictionary<string, IAnimalBehavior> _behaviors = new();
+        private readonly Dictionary<string, Type> _customAnimalTypes = new();
 
         /// <summary>
         /// Registers an animal behavior
@@ -21,6 +22,19 @@ namespace Savanna.Core.Infrastructure
         public static void RegisterBehavior(IAnimalBehavior behavior)
         {
             _behaviors[behavior.AnimalName] = behavior;
+        }
+
+        /// <summary>
+        /// Registers a custom animal type that can be instantiated directly
+        /// </summary>
+        /// <param name="animalType">The animal type to register</param>
+        public void RegisterCustomAnimal(Type animalType)
+        {
+            if (typeof(IAnimal).IsAssignableFrom(animalType) && !animalType.IsAbstract)
+            {
+                var tempInstance = (IAnimal)Activator.CreateInstance(animalType, new Position(0, 0));
+                _customAnimalTypes[tempInstance.Name] = animalType;
+            }
         }
 
         /// <summary>
@@ -42,21 +56,33 @@ namespace Savanna.Core.Infrastructure
         {
             animal = null;
 
-            if (!_behaviors.TryGetValue(animalType, out var behavior))
+            if (_behaviors.TryGetValue(animalType, out var behavior))
             {
-                return false;
+                try
+                {
+                    var config = ConfigurationService.GetAnimalConfig(animalType);
+                    animal = behavior.CreateAnimal(config.Speed, config.VisionRange, Position.Null);
+                    return true;
+                }
+                catch
+                {
+                }
             }
 
-            try
+            if (_customAnimalTypes.TryGetValue(animalType, out var type))
             {
-                var config = ConfigurationService.GetAnimalConfig(animalType);
-                animal = behavior.CreateAnimal(config.Speed, config.VisionRange, Position.Null);
-                return true;
+                try
+                {
+                    animal = (IAnimal)Activator.CreateInstance(type, Position.Null);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
-            catch
-            {
-                return false;
-            }
+
+            return false;
         }
 
         /// <summary>

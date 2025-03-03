@@ -4,7 +4,7 @@
     {
         public const int IterationDuration = 500;
         public const int HeaderHeight = 1;
-        public const int CommandGuideHeight = 7;
+        public const int CommandGuideHeight = 8;
         public const int TotalHeaderOffset = HeaderHeight + CommandGuideHeight;
 
         public const string Header = "Savanna simulation";
