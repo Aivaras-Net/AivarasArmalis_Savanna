@@ -86,7 +86,7 @@ namespace Savanna.CLI.Services
                     return result;
                 }
 
-                Console.WriteLine($"Please enter a number between {minValue} and {maxValue}.");
+                Console.WriteLine(string.Format(ConsoleConstants.NumericInputErrorFormat, minValue, maxValue));
             }
         }
 
@@ -100,7 +100,7 @@ namespace Savanna.CLI.Services
 
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.SetCursorPosition(0, currentLine);
-            Console.WriteLine("Available animals:");
+            Console.WriteLine(ConsoleConstants.AvailableAnimals);
             currentLine++;
 
             foreach (var mapping in _animalKeyMappings)
@@ -110,19 +110,19 @@ namespace Savanna.CLI.Services
 
             Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
             Console.SetCursorPosition(0, currentLine + 1);
-            Console.WriteLine("Commands:");
+            Console.WriteLine(ConsoleConstants.CommandsHeader);
             currentLine += 2;
 
             Console.SetCursorPosition(0, currentLine);
-            Console.WriteLine("[S] - Save game");
+            Console.WriteLine(ConsoleConstants.SaveGameCommand);
             currentLine++;
 
             Console.SetCursorPosition(0, currentLine);
-            Console.WriteLine("[Space] - Pause/Resume");
+            Console.WriteLine(ConsoleConstants.PauseResumeCommand);
             currentLine++;
 
             Console.SetCursorPosition(0, currentLine);
-            Console.WriteLine("[Esc] - Return to main menu");
+            Console.WriteLine(ConsoleConstants.ExitCommand);
             currentLine++;
 
             return currentLine - ConsoleConstants.HeaderHeight;
@@ -150,7 +150,7 @@ namespace Savanna.CLI.Services
         {
             Console.SetCursorPosition(0, line);
             Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
-            Console.Write($"[{key}] - Add ");
+            Console.Write(string.Format(ConsoleConstants.AddAnimalCommandFormat, key, animalName));
 
             Console.ForegroundColor = _renderer.GetAnimalColor(animalName);
             Console.WriteLine(animalName);

@@ -29,7 +29,9 @@ namespace Savanna.Core
             _lifeCycleManager.OnAnimalDeath += (animal) =>
             {
                 _animals.Remove(animal);
-                _renderer.ShowLog($"{animal.Name} died at position ({animal.Position.X},{animal.Position.Y})", GameConstants.LogDurationLong);
+                _renderer.ShowLog(string.Format(GameConstants.AnimalDiedMessage,
+                    animal.Name, animal.Position.X, animal.Position.Y),
+                    GameConstants.LogDurationLong);
             };
 
             _lifeCycleManager.OnAnimalBirth += (parent, position) =>
@@ -38,13 +40,17 @@ namespace Savanna.Core
                 if (offspring != null)
                 {
                     AddAnimal(offspring, false);
-                    _renderer.ShowLog($"New {offspring.Name} born at position ({position.X},{position.Y})", GameConstants.LogDurationLong);
+                    _renderer.ShowLog(string.Format(GameConstants.AnimalBornMessage,
+                        offspring.Name, position.X, position.Y),
+                        GameConstants.LogDurationLong);
                 }
             };
 
             _predatorManager.OnHunt += (predator, prey) =>
             {
-                _renderer.ShowLog($"{predator.Name} hunted {prey.Name} at position ({prey.Position.X},{prey.Position.Y})", GameConstants.LogDurationMedium);
+                _renderer.ShowLog(string.Format(GameConstants.AnimalHuntedMessage,
+                    predator.Name, prey.Name, prey.Position.X, prey.Position.Y),
+                    GameConstants.LogDurationMedium);
             };
         }
 
@@ -57,7 +63,9 @@ namespace Savanna.Core
             _lifeCycleManager.OnAnimalDeath += (animal) =>
             {
                 _animals.Remove(animal);
-                _renderer.ShowLog($"{animal.Name} died at position ({animal.Position.X},{animal.Position.Y})", GameConstants.LogDurationLong);
+                _renderer.ShowLog(string.Format(GameConstants.AnimalDiedMessage,
+                    animal.Name, animal.Position.X, animal.Position.Y),
+                    GameConstants.LogDurationLong);
             };
         }
 
@@ -79,7 +87,9 @@ namespace Savanna.Core
 
             if (logSpawn)
             {
-                _renderer.ShowLog($"{animal.Name} spawned at position ({animal.Position.X},{animal.Position.Y})", GameConstants.LogDurationMedium);
+                _renderer.ShowLog(string.Format(GameConstants.AnimalSpawnedMessage,
+                    animal.Name, animal.Position.X, animal.Position.Y),
+                    GameConstants.LogDurationMedium);
             }
         }
 

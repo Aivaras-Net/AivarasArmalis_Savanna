@@ -74,7 +74,7 @@ namespace Savanna.Core.Infrastructure
                 Directory.CreateDirectory(savesDir);
             }
 
-            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string timestamp = DateTime.Now.ToString(GameConstants.DateTimeFormat);
             string fileName = string.Format(GameConstants.SaveFilePattern, timestamp);
             string savePath = Path.Combine(savesDir, fileName);
 
@@ -116,7 +116,9 @@ namespace Savanna.Core.Infrastructure
 
                 if (field.Width != gameState.FieldWidth || field.Height != gameState.FieldHeight)
                 {
-                    _renderer.ShowLog($"Field size mismatch. Save: {gameState.FieldWidth}x{gameState.FieldHeight}, Current: {field.Width}x{field.Height}", GameConstants.LogDurationLong);
+                    _renderer.ShowLog(string.Format(GameConstants.FieldSizeMismatchMessage,
+                        gameState.FieldWidth, gameState.FieldHeight, field.Width, field.Height),
+                        GameConstants.LogDurationLong);
                     return (false, loadedAnimals);
                 }
 
@@ -130,7 +132,8 @@ namespace Savanna.Core.Infrastructure
                     }
                     else
                     {
-                        _renderer.ShowLog($"Could not create animal of type: {savedAnimal.Type}", GameConstants.LogDurationShort);
+                        _renderer.ShowLog(string.Format(GameConstants.CouldNotCreateAnimalMessage,
+                            savedAnimal.Type), GameConstants.LogDurationShort);
                     }
                 }
 
@@ -205,7 +208,8 @@ namespace Savanna.Core.Infrastructure
                         string minute = timeStr.Substring(2, 2);
                         string second = timeStr.Substring(4, 2);
 
-                        return $"Save from {year}-{month}-{day} {hour}:{minute}:{second}";
+                        return string.Format(GameConstants.SaveFromDateTimeFormat,
+                            year, month, day, hour, minute, second);
                     }
                 }
 

@@ -1,5 +1,5 @@
 using Savanna.CLI.Interfaces;
-
+using Savanna.Core.Constants;
 namespace Savanna.CLI.Services
 {
     /// <summary>
@@ -13,7 +13,7 @@ namespace Savanna.CLI.Services
         private int _frameCounter = 0;
         private readonly int _maxLogCapacity;
 
-        public LogService(int maxLogCapacity = 15)
+        public LogService(int maxLogCapacity = ConsoleConstants.MaxLogCapacity)
         {
             _maxLogCapacity = maxLogCapacity;
         }

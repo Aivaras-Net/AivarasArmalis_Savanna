@@ -11,7 +11,7 @@ namespace Savanna.CLI
     {
         public int HeaderOffset { get; set; }
         private readonly Queue<(string Message, int RemainingFrames, int FrameCreated)> _logQueue = new Queue<(string, int, int)>();
-        private readonly int _maxLogs = 5;
+        private readonly int _maxLogs = ConsoleConstants.DefaultMaxLogs;
         private readonly int _logAreaHeight;
         private readonly Dictionary<string, ConsoleColor> _animalColors = new Dictionary<string, ConsoleColor>();
         private readonly Random _random = new Random();
@@ -86,7 +86,7 @@ namespace Savanna.CLI
         {
             _logQueue.Enqueue((message, frames, _frameCounter));
 
-            while (_logQueue.Count > _maxLogs * 3)
+            while (_logQueue.Count > ConsoleConstants.MaxLogQueueSize)
             {
                 _logQueue.Dequeue();
             }
@@ -199,7 +199,7 @@ namespace Savanna.CLI
         {
             Console.ForegroundColor = ConsoleConstants.LogHeaderColor;
             Console.SetCursorPosition(0, startLine);
-            Console.WriteLine($"Game Log (Current Frame: {_frameCounter}):");
+            Console.WriteLine(string.Format(ConsoleConstants.GameLogHeaderFormat, _frameCounter));
 
             int line = startLine + 1;
             int displayCount = Math.Min(_logQueue.Count, _maxLogs);
@@ -213,7 +213,7 @@ namespace Savanna.CLI
 
                 Console.SetCursorPosition(0, line + i);
 
-                string formattedLog = $"[Frame: {frameCreated}] {message}";
+                string formattedLog = string.Format(ConsoleConstants.FrameInfoFormat, frameCreated, message);
                 Console.Write(formattedLog.PadRight(fieldWidth + 2));
             }
 

@@ -6,7 +6,6 @@ namespace Savanna.Core.Constants
         public const int DefaultFieldHeight = 10;
         public const char FieldFill = ' ';
 
-        public const int MessageDuration = 3;
         public const int LogDurationShort = 3;
         public const int LogDurationMedium = 5;
         public const int LogDurationLong = 8;
@@ -19,11 +18,8 @@ namespace Savanna.Core.Constants
         public const string AnimalTypeNotFound = "Configuration not found for animal type: {0}. Available types: {1}";
 
         public const string SaveGameDirectory = "Saves";
-        public const string DefaultSaveFileName = "savegame.json";
         public const string SaveFilePattern = "savegame_{0}.json";
         public const string SaveFileExtension = ".json";
-        public const string NoSavesFoundMessage = "No saved games found.";
-        public const string SelectSaveFileMessage = "Select a save file to load:";
         public const string GameSavedMessage = "Game saved to {0}";
         public const string GameSaveErrorMessage = "Error saving game: {0}";
         public const string GameLoadedMessage = "Game loaded from {0}";
@@ -33,8 +29,13 @@ namespace Savanna.Core.Constants
 
         public const string LionName = "Lion";
         public const string AntelopeName = "Antelope";
-
-        public const string InvalidAnimalName = "Invalid animal name";
-        public const string LionSpecialActionMessage = "\n Lion at {0} eats antelope at {1} .";
+        public const string FieldSizeMismatchMessage = "Field size mismatch. Save: {0}x{1}, Current: {2}x{3}";
+        public const string CouldNotCreateAnimalMessage = "Could not create animal of type: {0}";
+        public const string SaveFromDateTimeFormat = "Save from {0}-{1}-{2} {3}:{4}:{5}";
+        public const string AnimalDiedMessage = "{0} died at position ({1},{2})";
+        public const string AnimalBornMessage = "New {0} born at position ({1},{2})";
+        public const string AnimalHuntedMessage = "{0} hunted {1} at position ({2},{3})";
+        public const string AnimalSpawnedMessage = "{0} spawned at position ({1},{2})";
+        public const string DateTimeFormat = "yyyyMMdd_HHmmss";
     }
 }

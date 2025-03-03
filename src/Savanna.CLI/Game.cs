@@ -43,12 +43,12 @@ namespace Savanna.CLI
             _renderer.RegisterAnimalColor(GameConstants.AntelopeName);
             _renderer.RegisterAnimalColor(GameConstants.LionName);
 
-            _animalKeyMappings[ConsoleKey.A] = GameConstants.AntelopeName;
-            _animalKeyMappings[ConsoleKey.L] = GameConstants.LionName;
+            _animalKeyMappings[ConsoleConstants.AntelopeKey] = GameConstants.AntelopeName;
+            _animalKeyMappings[ConsoleConstants.LionKey] = GameConstants.LionName;
 
             string currentDirectory = Directory.GetCurrentDirectory();
-            string projectRoot = Path.GetFullPath(Path.Combine(currentDirectory, @"..\..\..\..\.."));
-            _pluginsFolder = Path.Combine(projectRoot, "Imports");
+            string projectRoot = Path.GetFullPath(Path.Combine(currentDirectory, ConsoleConstants.ProjectRootPath));
+            _pluginsFolder = Path.Combine(projectRoot, ConsoleConstants.ImportsFolder);
 
             if (!Directory.Exists(_pluginsFolder))
             {
@@ -81,18 +81,18 @@ namespace Savanna.CLI
         {
             string[] menuOptions = new string[]
             {
-                "Start New Game",
-                "Load Saved Game",
-                "Exit"
+                ConsoleConstants.StartNewGameOption,
+                ConsoleConstants.LoadSavedGameOption,
+                ConsoleConstants.ExitOption
             };
 
-            int selection = _menuService.GetSelectionFromOptions("Savanna Simulation", menuOptions);
+            int selection = _menuService.GetSelectionFromOptions(ConsoleConstants.SavannaSimulationTitle, menuOptions);
 
             switch (selection)
             {
                 case 0: // Start New Game
-                    int width = _menuService.GetNumericInput("Enter field width", GameConstants.DefaultFieldWidth, 5, 50);
-                    int height = _menuService.GetNumericInput("Enter field height", GameConstants.DefaultFieldHeight, 5, 20);
+                    int width = _menuService.GetNumericInput(ConsoleConstants.EnterFieldWidthPrompt, GameConstants.DefaultFieldWidth, ConsoleConstants.MinFieldDimension, ConsoleConstants.MaxFieldWidth);
+                    int height = _menuService.GetNumericInput(ConsoleConstants.EnterFieldHeightPrompt, GameConstants.DefaultFieldHeight, ConsoleConstants.MinFieldDimension, ConsoleConstants.MaxFieldHeight);
 
                     _gameEngine = new GameEngine(_consoleRenderer, width, height);
                     RunGame(_gameEngine);
@@ -102,8 +102,8 @@ namespace Savanna.CLI
                     if (!GameEngine.SaveFilesExist())
                     {
                         _menuService.ClearScreen();
-                        Console.WriteLine("No save files found.");
-                        Console.WriteLine("Press any key to continue...");
+                        Console.WriteLine(ConsoleConstants.NoSaveFilesFound);
+                        Console.WriteLine(ConsoleConstants.PressAnyKeyToContinue);
                         Console.ReadKey(true);
                         return false;
                     }
@@ -112,8 +112,8 @@ namespace Savanna.CLI
                     if (saveFiles.Count == 0)
                     {
                         _menuService.ClearScreen();
-                        Console.WriteLine("No save files available.");
-                        Console.WriteLine("Press any key to continue...");
+                        Console.WriteLine(ConsoleConstants.NoSaveFilesAvailable);
+                        Console.WriteLine(ConsoleConstants.PressAnyKeyToContinue);
                         Console.ReadKey(true);
                         return false;
                     }
@@ -121,7 +121,7 @@ namespace Savanna.CLI
                     string[] displayNames = saveFiles.Keys.ToArray();
                     string[] filePaths = saveFiles.Values.ToArray();
 
-                    int saveSelection = _menuService.GetSelectionFromOptions("Select a save file to load:", displayNames);
+                    int saveSelection = _menuService.GetSelectionFromOptions(ConsoleConstants.SelectSaveFilePrompt, displayNames);
                     string selectedFilePath = filePaths[saveSelection];
 
                     if (GameEngine.TryGetSaveFileDimensions(selectedFilePath, out int saveWidth, out int saveHeight))
@@ -129,7 +129,7 @@ namespace Savanna.CLI
                         _gameEngine = new GameEngine(_consoleRenderer, saveWidth, saveHeight);
                         if (_gameEngine.LoadGame(selectedFilePath, _animalFactory))
                         {
-                            _renderer.ShowLog($"Loaded: {Path.GetFileName(selectedFilePath)}", ConsoleConstants.LogDurationMedium);
+                            _renderer.ShowLog(string.Format(ConsoleConstants.LoadedGameFormat, Path.GetFileName(selectedFilePath)), ConsoleConstants.LogDurationMedium);
                             RunGame(_gameEngine);
                         }
                     }
@@ -183,17 +183,17 @@ namespace Savanna.CLI
                             break;
                         case ConsoleKey.Spacebar:
                             isPaused = !isPaused;
-                            _renderer.ShowLog(isPaused ? "Game paused" : "Game resumed", ConsoleConstants.LogDurationShort);
+                            _renderer.ShowLog(isPaused ? ConsoleConstants.GamePaused : ConsoleConstants.GameResumed, ConsoleConstants.LogDurationShort);
                             break;
                         case ConsoleKey.S:
                             string saveResult = engine.SaveGame();
                             if (!string.IsNullOrEmpty(saveResult))
                             {
-                                _renderer.ShowLog("Game saved successfully", ConsoleConstants.LogDurationMedium);
+                                _renderer.ShowLog(ConsoleConstants.GameSavedSuccessfully, ConsoleConstants.LogDurationMedium);
                             }
                             else
                             {
-                                _renderer.ShowLog("Failed to save game", ConsoleConstants.LogDurationMedium);
+                                _renderer.ShowLog(ConsoleConstants.GameSaveFailed, ConsoleConstants.LogDurationMedium);
                             }
                             break;
                         default:
@@ -211,7 +211,7 @@ namespace Savanna.CLI
                     }
                 }
 
-                Thread.Sleep(50);
+                Thread.Sleep(ConsoleConstants.ThreadSleepDuration);
             }
         }
 
@@ -247,7 +247,7 @@ namespace Savanna.CLI
         {
             try
             {
-                string[] dllFiles = Directory.GetFiles(importsFolder, "*.dll");
+                string[] dllFiles = Directory.GetFiles(importsFolder, ConsoleConstants.DllSearchPattern);
 
                 foreach (string dllFile in dllFiles)
                 {
@@ -268,19 +268,19 @@ namespace Savanna.CLI
 
                                 _renderer.RegisterAnimalColor(animalName);
 
-                                _renderer.ShowLog($"Loaded animal: {animalName}", ConsoleConstants.LogDurationMedium);
+                                _renderer.ShowLog(string.Format(ConsoleConstants.LoadedAnimalFormat, animalName), ConsoleConstants.LogDurationMedium);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        _renderer.ShowLog($"Error loading plugin {Path.GetFileName(dllFile)}: {ex.Message}", ConsoleConstants.LogDurationLong);
+                        _renderer.ShowLog(string.Format(ConsoleConstants.ErrorLoadingPluginFormat, Path.GetFileName(dllFile), ex.Message), ConsoleConstants.LogDurationLong);
                     }
                 }
             }
             catch (Exception ex)
             {
-                _renderer.ShowLog($"Error loading plugins: {ex.Message}", ConsoleConstants.LogDurationLong);
+                _renderer.ShowLog(string.Format(ConsoleConstants.ErrorLoadingPluginsFormat, ex.Message), ConsoleConstants.LogDurationLong);
             }
         }
 

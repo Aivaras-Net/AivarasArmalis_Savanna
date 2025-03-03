@@ -1,3 +1,5 @@
+using Savanna.Core.Constants;
+
 namespace Savanna.CLI
 {
     internal static class ConsoleSelectionUtility

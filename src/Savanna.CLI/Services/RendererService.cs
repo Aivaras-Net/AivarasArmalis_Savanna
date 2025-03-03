@@ -133,7 +133,7 @@ namespace Savanna.CLI.Services
             for (int i = 0; i < options.Length; i++)
             {
                 string prefix = (i == selectedIndex) ? ConsoleConstants.ArrowPointer : ConsoleConstants.NoArrowPrefix;
-                Console.ForegroundColor = (i == selectedIndex) ? ConsoleColor.Cyan : ConsoleConstants.DefaultFieldColor;
+                Console.ForegroundColor = (i == selectedIndex) ? ConsoleConstants.SelectedMenuItemColor : ConsoleConstants.DefaultFieldColor;
                 Console.WriteLine($"{prefix}{options[i]}");
             }
 
@@ -147,11 +147,9 @@ namespace Savanna.CLI.Services
         /// <returns>Total height needed for display</returns>
         public int GetTotalDisplayHeight(int fieldHeight)
         {
-            const int logAreaHeight = 6; // Header + 5 log lines
-            return HeaderOffset + fieldHeight + 2 + logAreaHeight; // +2 for borders
+            return HeaderOffset + fieldHeight + 2 + ConsoleConstants.DefaultLogAreaHeight;
         }
 
-        #region Private Helper Methods
 
         private void ClearDisplay()
         {
@@ -223,15 +221,14 @@ namespace Savanna.CLI.Services
 
         private void DrawLogArea(int fieldWidth, int startLine)
         {
-            int maxLogs = 5;
             int frameCounter = _logService.GetCurrentFrame();
 
             Console.ForegroundColor = ConsoleConstants.LogHeaderColor;
             Console.SetCursorPosition(0, startLine);
-            Console.WriteLine($"Game Log (Current Frame: {frameCounter}):");
+            Console.WriteLine(string.Format(ConsoleConstants.GameLogHeaderFormat, frameCounter));
 
             int line = startLine + 1;
-            var logsToDisplay = _logService.GetCurrentLogs(maxLogs);
+            var logsToDisplay = _logService.GetCurrentLogs(ConsoleConstants.DefaultMaxLogs);
             int displayCount = logsToDisplay.Length;
 
             Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
@@ -242,17 +239,15 @@ namespace Savanna.CLI.Services
 
                 Console.SetCursorPosition(0, line + i);
 
-                string formattedLog = $"[Frame: {frameCreated}] {message}";
+                string formattedLog = string.Format(ConsoleConstants.FrameInfoFormat, frameCreated, message);
                 Console.Write(formattedLog.PadRight(fieldWidth + 2));
             }
 
-            for (int i = displayCount; i < maxLogs; i++)
+            for (int i = displayCount; i < ConsoleConstants.DefaultMaxLogs; i++)
             {
                 Console.SetCursorPosition(0, line + i);
                 Console.Write(new string(' ', fieldWidth + 2));
             }
         }
-
-        #endregion
     }
 }
