@@ -1,22 +1,19 @@
 ﻿using Savanna.Core.Config;
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
-using Savanna.Core.Interfaces;
+using Savanna.Core.Infrastructure;
 
 namespace Savanna.Animals.Custom
 {
-    public class TigerMovementStrategy : IMovementStrategy
+    public class TigerMovementStrategy : BaseMovementStrategy
     {
-        private readonly AnimalConfig _config;
-
-        public TigerMovementStrategy(AnimalConfig config)
+        public TigerMovementStrategy(AnimalConfig config) : base(config)
         {
-            _config = config;
         }
 
-        public Position Move(IAnimal animal, IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight)
+        public override Position Move(IAnimal animal, IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight)
         {
-            return animal.Position;
+            return RandomMove(animal, fieldWidth, fieldHeight);
         }
     }
 }

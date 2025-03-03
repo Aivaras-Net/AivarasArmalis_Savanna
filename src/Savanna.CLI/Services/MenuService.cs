@@ -93,28 +93,54 @@ namespace Savanna.CLI.Services
         /// <summary>
         /// Displays the game command guide
         /// </summary>
-        public void DisplayCommandGuide()
+        /// <returns>The total height used by the command guide</returns>
+        public int DisplayCommandGuide()
         {
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.SetCursorPosition(0, ConsoleConstants.HeaderHeight);
-            Console.WriteLine("Available animals:");
+            int currentLine = ConsoleConstants.HeaderHeight;
 
-            int line = ConsoleConstants.HeaderHeight + 1;
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.SetCursorPosition(0, currentLine);
+            Console.WriteLine("Available animals:");
+            currentLine++;
 
             foreach (var mapping in _animalKeyMappings)
             {
-                DisplayAnimalCommand(mapping.Key, mapping.Value, ref line);
+                DisplayAnimalCommand(mapping.Key, mapping.Value, ref currentLine);
             }
 
             Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
-            Console.SetCursorPosition(0, line + 1);
+            Console.SetCursorPosition(0, currentLine + 1);
             Console.WriteLine("Commands:");
-            Console.SetCursorPosition(0, line + 2);
+            currentLine += 2;
+
+            Console.SetCursorPosition(0, currentLine);
             Console.WriteLine("[S] - Save game");
-            Console.SetCursorPosition(0, line + 3);
+            currentLine++;
+
+            Console.SetCursorPosition(0, currentLine);
             Console.WriteLine("[Space] - Pause/Resume");
-            Console.SetCursorPosition(0, line + 4);
+            currentLine++;
+
+            Console.SetCursorPosition(0, currentLine);
             Console.WriteLine("[Esc] - Return to main menu");
+            currentLine++;
+
+            return currentLine - ConsoleConstants.HeaderHeight;
+        }
+
+        /// <summary>
+        /// Gets the total height needed for the command guide
+        /// </summary>
+        /// <returns>The height needed for the command guide</returns>
+        public int GetCommandGuideHeight()
+        {
+            // Calculate height:
+            // 1 line for "Available animals:" header
+            // 1 line per animal mapping
+            // 1 empty line
+            // 1 line for "Commands:" header
+            // 3 lines for standard commands (Save, Pause/Resume, Exit)
+            return 1 + _animalKeyMappings.Count + 1 + 1 + 3;
         }
 
         /// <summary>

@@ -26,7 +26,14 @@ namespace Savanna.CLI.Interfaces
         /// <summary>
         /// Displays the game command guide
         /// </summary>
-        void DisplayCommandGuide();
+        /// <returns>The total height used by the command guide</returns>
+        int DisplayCommandGuide();
+
+        /// <summary>
+        /// Gets the total height needed for the command guide
+        /// </summary>
+        /// <returns>The height needed for the command guide</returns>
+        int GetCommandGuideHeight();
 
         /// <summary>
         /// Clears the console screen

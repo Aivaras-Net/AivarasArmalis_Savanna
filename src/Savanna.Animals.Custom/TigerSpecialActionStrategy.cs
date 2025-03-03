@@ -15,7 +15,6 @@ namespace Savanna.Animals.Custom
 
         public void Execute(IAnimal animal, IEnumerable<IAnimal> animals)
         {
-            Console.WriteLine("Tiger special action");
         }
     }
 }

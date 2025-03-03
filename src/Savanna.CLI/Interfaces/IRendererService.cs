@@ -8,6 +8,11 @@ namespace Savanna.CLI.Interfaces
     public interface IRendererService
     {
         /// <summary>
+        /// Gets or sets the vertical offset for rendering the field
+        /// </summary>
+        int HeaderOffset { get; set; }
+
+        /// <summary>
         /// Renders the game field
         /// </summary>
         /// <param name="field">The field representation to render</param>

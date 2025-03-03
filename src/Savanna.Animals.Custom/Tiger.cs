@@ -9,6 +9,13 @@ namespace Savanna.Animals.Custom
         public override string Name => "Tiger";
         public double HuntingRange => ConfigurationService.GetAnimalConfig(Name).HuntingRange ?? 2.0;
 
+        public Tiger(Position position)
+            : this(ConfigurationService.GetAnimalConfig("Tiger").Speed,
+                  ConfigurationService.GetAnimalConfig("Tiger").VisionRange,
+                  position)
+        {
+        }
+
         public Tiger(double speed, double visionRange, Position position)
             : base(speed, visionRange, position, new TigerBehavior())
         {

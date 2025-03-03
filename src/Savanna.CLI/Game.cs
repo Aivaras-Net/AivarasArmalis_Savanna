@@ -152,7 +152,12 @@ namespace Savanna.CLI
             _menuService.ClearScreen();
             _renderer.RenderHeader(ConsoleConstants.Header);
             UpdateAnimalKeyMappings();
-            _menuService.DisplayCommandGuide();
+            int commandGuideHeight = _menuService.DisplayCommandGuide();
+
+            if (_renderer is RendererService rendererService)
+            {
+                rendererService.HeaderOffset = ConsoleConstants.HeaderHeight + commandGuideHeight;
+            }
 
             bool isRunning = true;
             bool isPaused = false;
