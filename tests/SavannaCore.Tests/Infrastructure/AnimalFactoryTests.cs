@@ -6,12 +6,14 @@ namespace SavannaCore.Tests.Infrastructure;
 
 public class AnimalFactoryTests
 {
+    private readonly AnimalFactory _animalFactory = new AnimalFactory();
+
     [Fact]
     public void CreateAnimal_Lion_ShouldCreateLionWithCorrectProperties()
     {
         var position = new Position(1, 1);
 
-        var animal = AnimalFactory.CreateAnimal(GameConstants.LionName, position);
+        var animal = _animalFactory.CreateAnimal(GameConstants.LionName, position);
 
         Assert.IsType<Lion>(animal);
         Assert.Equal(position, animal.Position);
@@ -25,7 +27,7 @@ public class AnimalFactoryTests
     {
         var position = new Position(1, 1);
 
-        var animal = AnimalFactory.CreateAnimal(GameConstants.AntelopeName, position);
+        var animal = _animalFactory.CreateAnimal(GameConstants.AntelopeName, position);
 
         Assert.IsType<Antelope>(animal);
         Assert.Equal(position, animal.Position);
@@ -41,13 +43,13 @@ public class AnimalFactoryTests
         var invalidAnimalType = "InvalidAnimal";
 
         var exception = Assert.Throws<ArgumentException>(() =>
-            AnimalFactory.CreateAnimal(invalidAnimalType, position));
+            _animalFactory.CreateAnimal(invalidAnimalType, position));
     }
 
     [Fact]
     public void CreateAnimal_WithoutPosition_ShouldCreateAnimalWithNullPosition()
     {
-        var animal = AnimalFactory.CreateAnimal(GameConstants.LionName);
+        var animal = _animalFactory.CreateAnimal(GameConstants.LionName, Position.Null);
 
         Assert.Equal(Position.Null, animal.Position);
     }
