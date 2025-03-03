@@ -18,6 +18,19 @@ namespace Savanna.Core.Constants
         public const string ConfigParseError = "Error parsing configuration file: {0}";
         public const string AnimalTypeNotFound = "Configuration not found for animal type: {0}. Available types: {1}";
 
+        public const string SaveGameDirectory = "Saves";
+        public const string DefaultSaveFileName = "savegame.json";
+        public const string SaveFilePattern = "savegame_{0}.json";
+        public const string SaveFileExtension = ".json";
+        public const string NoSavesFoundMessage = "No saved games found.";
+        public const string SelectSaveFileMessage = "Select a save file to load:";
+        public const string GameSavedMessage = "Game saved to {0}";
+        public const string GameSaveErrorMessage = "Error saving game: {0}";
+        public const string GameLoadedMessage = "Game loaded from {0}";
+        public const string GameLoadErrorMessage = "Error loading game: {0}";
+        public const string SaveFileNotFoundMessage = "Save file not found: {0}";
+        public const string InvalidSaveFormatMessage = "Invalid save file format";
+
         public const string LionName = "Lion";
         public const string AntelopeName = "Antelope";
 

@@ -225,13 +225,13 @@ namespace Savanna.CLI
         }
 
         /// <summary>
-        /// Gets the total height required for the console display.
+        /// Gets the total height needed to display the game field and logs.
         /// </summary>
-        /// <param name="fieldHeight">Height of the game field.</param>
-        /// <returns>Total height needed for the display.</returns>
+        /// <param name="fieldHeight">Height of the game field</param>
+        /// <returns>The total display height required</returns>
         public int GetTotalDisplayHeight(int fieldHeight)
         {
-            return HeaderOffset + fieldHeight + 2 + _logAreaHeight; // Header + field + borders + log area
+            return HeaderOffset + fieldHeight + 2 + _logAreaHeight;
         }
     }
 }

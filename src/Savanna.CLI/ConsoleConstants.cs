@@ -20,6 +20,9 @@
         public const char HorizontalBorder = '-';
         public const char VerticalBorder = '|';
 
+        public const string ArrowPointer = " >> ";
+        public const string NoArrowPrefix = "   ";
+
         public const ConsoleColor AntelopeColor = ConsoleColor.Green;
         public const ConsoleColor LionColor = ConsoleColor.Red;
         public const ConsoleColor DefaultFieldColor = ConsoleColor.White;

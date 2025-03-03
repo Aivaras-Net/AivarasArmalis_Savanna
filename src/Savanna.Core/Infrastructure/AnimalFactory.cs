@@ -2,52 +2,78 @@
 using Savanna.Core.Constants;
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
+using Savanna.Core.Infrastructure.Behaviors;
+using Savanna.Core.Interfaces;
 
 namespace Savanna.Core.Infrastructure
 {
     /// <summary>
-    /// Provides a factory for instantiating animal objects based on the specified type and attributes.
+    /// Factory for creating animal instances
     /// </summary>
-    public static class AnimalFactory
+    public class AnimalFactory : IAnimalFactory
     {
         private static readonly Dictionary<string, IAnimalBehavior> _behaviors = new();
 
+        /// <summary>
+        /// Registers an animal behavior
+        /// </summary>
+        /// <param name="behavior">The behavior to register</param>
         public static void RegisterBehavior(IAnimalBehavior behavior)
         {
             _behaviors[behavior.AnimalName] = behavior;
         }
 
         /// <summary>
-        /// Creates an animal instance with the provided type, speed, vision range, and initial position.
+        /// Static constructor to register default behaviors
         /// </summary>
-        /// <param name="type">The type of the animal</param>
-        /// <param name="position">The initial position of the animal in the simulation.</param>
-        /// <returns>An instance of IAnimal corresponding to the specified type.</returns>
-        /// <exception cref="ArgumentException">Thrown when an invalid animal type is provided.</exception>
-        public static IAnimal CreateAnimal(string type, Position position)
+        static AnimalFactory()
         {
-            var config = ConfigurationService.GetAnimalConfig(type);
+            RegisterBehavior(new LionBehavior());
+            RegisterBehavior(new AntelopeBehavior());
+        }
 
-            if (_behaviors.TryGetValue(type, out var behavior))
+        /// <summary>
+        /// Attempts to create an animal of the specified type
+        /// </summary>
+        /// <param name="animalType">Type name of the animal to create</param>
+        /// <param name="animal">The created animal instance if successful</param>
+        /// <returns>True if the animal was created successfully, false otherwise</returns>
+        public bool TryCreateAnimal(string animalType, out IAnimal animal)
+        {
+            animal = null;
+
+            if (!_behaviors.TryGetValue(animalType, out var behavior))
             {
-                return behavior.CreateAnimal(config.Speed, config.VisionRange, position);
+                return false;
             }
 
-            // Fallback to built-in animals
-            switch (type)
+            try
             {
-                case GameConstants.AntelopeName:
-                    return new Antelope(config.Speed, config.VisionRange, position);
-                case GameConstants.LionName:
-                    return new Lion(config.Speed, config.VisionRange, position);
-                default:
-                    throw new ArgumentException(GameConstants.InvalidAnimalName);
+                var config = ConfigurationService.GetAnimalConfig(animalType);
+                animal = behavior.CreateAnimal(config.Speed, config.VisionRange, Position.Null);
+                return true;
+            }
+            catch
+            {
+                return false;
             }
         }
 
-        public static IAnimal CreateAnimal(string type)
+        /// <summary>
+        /// Creates an animal of the specified type
+        /// </summary>
+        /// <param name="animalType">The type of animal to create</param>
+        /// <param name="position">The initial position of the animal</param>
+        /// <returns>The created animal instance</returns>
+        public IAnimal CreateAnimal(string animalType, Position position)
         {
-            return CreateAnimal(type, Position.Null);
+            if (!TryCreateAnimal(animalType, out var animal))
+            {
+                throw new ArgumentException($"Unknown animal type: {animalType}");
+            }
+
+            animal.Position = position;
+            return animal;
         }
     }
 }
