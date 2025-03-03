@@ -18,11 +18,13 @@ namespace Savanna.Core
         private readonly IConsoleRenderer _renderer;
         private readonly LifeCycleManager _lifeCycleManager = new();
         private readonly PredatorBehaviorManager _predatorManager = new();
+        private readonly FileManager _fileManager;
 
         public GameEngine(IConsoleRenderer renderer)
         {
             _renderer = renderer;
             _field = new Field(GameConstants.DefaultFieldWidth, GameConstants.DefaultFieldHeight);
+            _fileManager = new FileManager(renderer);
 
             _lifeCycleManager.OnAnimalDeath += (animal) =>
             {
@@ -50,6 +52,7 @@ namespace Savanna.Core
         {
             _renderer = renderer;
             _field = new Field(fieldWidth, fieldHeight);
+            _fileManager = new FileManager(renderer);
 
             _lifeCycleManager.OnAnimalDeath += (animal) =>
             {
@@ -106,41 +109,22 @@ namespace Savanna.Core
         }
 
         /// <summary>
-        /// Saves the current game state to a file
+        /// Saves the game state to a file
         /// </summary>
         /// <param name="filePath">Path where the save file will be stored</param>
         /// <returns>True if successful, false otherwise</returns>
         public bool SaveGame(string filePath)
         {
-            try
-            {
-                var gameState = new GameState
-                {
-                    FieldWidth = _field.Width,
-                    FieldHeight = _field.Height,
-                    Animals = _animals.Select(SerializableAnimal.FromAnimal).ToList()
-                };
+            return _fileManager.SaveGame(filePath, _field, _animals);
+        }
 
-                string jsonString = JsonSerializer.Serialize(gameState, new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
-
-                var directory = Path.GetDirectoryName(filePath);
-                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                {
-                    Directory.CreateDirectory(directory);
-                }
-
-                File.WriteAllText(filePath, jsonString);
-                _renderer.ShowLog(string.Format(GameConstants.GameSavedMessage, filePath), GameConstants.LogDurationMedium);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _renderer.ShowLog(string.Format(GameConstants.GameSaveErrorMessage, ex.Message), GameConstants.LogDurationLong);
-                return false;
-            }
+        /// <summary>
+        /// Saves the game to an automatically generated save location with timestamp
+        /// </summary>
+        /// <returns>Path to the saved file if successful, empty string otherwise</returns>
+        public string SaveGame()
+        {
+            return _fileManager.SaveGame(_field, _animals);
         }
 
         /// <summary>
@@ -151,104 +135,19 @@ namespace Savanna.Core
         /// <returns>True if successful, false otherwise</returns>
         public bool LoadGame(string filePath, IAnimalFactory animalFactory)
         {
-            try
+            var result = _fileManager.LoadGame(filePath, _field, animalFactory);
+
+            if (result.Success)
             {
-                if (!File.Exists(filePath))
-                {
-                    _renderer.ShowLog(string.Format(GameConstants.SaveFileNotFoundMessage, filePath), GameConstants.LogDurationLong);
-                    return false;
-                }
-
-                string jsonString = File.ReadAllText(filePath);
-                var gameState = JsonSerializer.Deserialize<GameState>(jsonString);
-
-                if (gameState == null)
-                {
-                    _renderer.ShowLog(GameConstants.InvalidSaveFormatMessage, GameConstants.LogDurationLong);
-                    return false;
-                }
-
-                if (_field.Width != gameState.FieldWidth || _field.Height != gameState.FieldHeight)
-                {
-                    _renderer.ShowLog($"Field size mismatch. Save: {gameState.FieldWidth}x{gameState.FieldHeight}, Current: {_field.Width}x{_field.Height}", GameConstants.LogDurationLong);
-                    return false;
-                }
-
                 _animals.Clear();
-
-                foreach (var savedAnimal in gameState.Animals)
+                foreach (var animal in result.Animals)
                 {
-                    if (animalFactory.TryCreateAnimal(savedAnimal.Type, out var animal))
-                    {
-                        animal.Health = savedAnimal.Health;
-                        animal.Position = new Position(savedAnimal.PositionX, savedAnimal.PositionY);
-                        AddAnimal(animal, false);
-                    }
-                    else
-                    {
-                        _renderer.ShowLog($"Could not create animal of type: {savedAnimal.Type}", GameConstants.LogDurationShort);
-                    }
+                    AddAnimal(animal, false);
                 }
-
-                _renderer.ShowLog(string.Format(GameConstants.GameLoadedMessage, Path.GetFileName(filePath)), GameConstants.LogDurationMedium);
                 return true;
             }
-            catch (Exception ex)
-            {
-                _renderer.ShowLog(string.Format(GameConstants.GameLoadErrorMessage, ex.Message), GameConstants.LogDurationLong);
-                return false;
-            }
-        }
 
-        /// <summary>
-        /// Saves the game to an automatically generated save location with timestamp
-        /// </summary>
-        /// <returns>Path to the saved file if successful, empty string otherwise</returns>
-        public string SaveGame()
-        {
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            string savesDir = Path.Combine(baseDir, GameConstants.SaveGameDirectory);
-
-            if (!Directory.Exists(savesDir))
-            {
-                Directory.CreateDirectory(savesDir);
-            }
-
-            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            string fileName = string.Format(GameConstants.SaveFilePattern, timestamp);
-            string savePath = Path.Combine(savesDir, fileName);
-
-            if (SaveGame(savePath))
-            {
-                return savePath;
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Gets a list of all available save files
-        /// </summary>
-        /// <returns>A dictionary with save filenames as keys and full paths as values</returns>
-        public static Dictionary<string, string> GetSaveFiles()
-        {
-            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-            string savesDir = Path.Combine(baseDir, GameConstants.SaveGameDirectory);
-
-            Dictionary<string, string> saveFiles = new Dictionary<string, string>();
-
-            if (!Directory.Exists(savesDir))
-            {
-                return saveFiles;
-            }
-
-            foreach (string filePath in Directory.GetFiles(savesDir, $"*{GameConstants.SaveFileExtension}"))
-            {
-                string fileName = Path.GetFileName(filePath);
-                saveFiles[fileName] = filePath;
-            }
-
-            return saveFiles;
+            return false;
         }
 
         /// <summary>
@@ -257,7 +156,28 @@ namespace Savanna.Core
         /// <returns>True if at least one save file exists</returns>
         public static bool SaveFilesExist()
         {
-            return GetSaveFiles().Count > 0;
+            return FileManager.SaveFilesExist();
+        }
+
+        /// <summary>
+        /// Gets a dictionary of display names mapped to their file paths
+        /// </summary>
+        /// <returns>Dictionary with display names as keys and file paths as values</returns>
+        public static Dictionary<string, string> GetSaveFilesDisplayNames()
+        {
+            return FileManager.GetSaveFilesDisplayNames();
+        }
+
+        /// <summary>
+        /// Extracts field dimensions from a save file
+        /// </summary>
+        /// <param name="filePath">Path to the save file</param>
+        /// <param name="width">Output parameter for field width</param>
+        /// <param name="height">Output parameter for field height</param>
+        /// <returns>True if dimensions were successfully extracted</returns>
+        public static bool TryGetSaveFileDimensions(string filePath, out int width, out int height)
+        {
+            return FileManager.TryGetSaveFileDimensions(filePath, out width, out height);
         }
 
         /// <summary>
@@ -309,61 +229,6 @@ namespace Savanna.Core
             catch
             {
                 return fileName;
-            }
-        }
-
-        /// <summary>
-        /// Gets a dictionary of display names mapped to their file paths
-        /// </summary>
-        /// <returns>Dictionary with display names as keys and file paths as values</returns>
-        public static Dictionary<string, string> GetSaveFilesDisplayNames()
-        {
-            var saveFiles = GetSaveFiles();
-            var displayNames = new Dictionary<string, string>();
-
-            foreach (var file in saveFiles)
-            {
-                string displayName = FormatSaveFileDisplayName(file.Key);
-                displayNames[displayName] = file.Value;
-            }
-
-            return displayNames;
-        }
-
-        /// <summary>
-        /// Extracts field dimensions from a save file
-        /// </summary>
-        /// <param name="filePath">Path to the save file</param>
-        /// <param name="width">Output parameter for field width</param>
-        /// <param name="height">Output parameter for field height</param>
-        /// <returns>True if dimensions were successfully extracted</returns>
-        public static bool TryGetSaveFileDimensions(string filePath, out int width, out int height)
-        {
-            width = GameConstants.DefaultFieldWidth;
-            height = GameConstants.DefaultFieldHeight;
-
-            try
-            {
-                if (!File.Exists(filePath))
-                {
-                    return false;
-                }
-
-                string jsonString = File.ReadAllText(filePath);
-                var gameState = JsonSerializer.Deserialize<GameState>(jsonString);
-
-                if (gameState == null)
-                {
-                    return false;
-                }
-
-                width = gameState.FieldWidth;
-                height = gameState.FieldHeight;
-                return true;
-            }
-            catch
-            {
-                return false;
             }
         }
     }
