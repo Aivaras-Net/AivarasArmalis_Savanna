@@ -16,11 +16,13 @@ public class ConfigurationServiceTests
     }
 
     [Fact]
-    public void GetAnimalConfig_ShouldThrowException_WhenAnimalTypeNotFound()
+    public void GetAnimalConfig_ShouldCreateNewConfig_WhenAnimalTypeNotFound()
     {
-        var exception = Assert.Throws<ArgumentException>(() =>
-            ConfigurationService.GetAnimalConfig("InvalidAnimal"));
-        Assert.Contains("Configuration not found", exception.Message);
+        var testAnimalName = "InvalidAnimal";
+        var config = ConfigurationService.GetAnimalConfig(testAnimalName);
+
+        Assert.NotNull(config);
+        Assert.True(ConfigurationService.Config.Animals.ContainsKey(testAnimalName));
     }
 
     [Fact]
@@ -56,15 +58,15 @@ public class ConfigurationServiceTests
         // Lion settings
         Assert.Equal(2.0, lionConfig.Speed);
         Assert.Equal(10.0, lionConfig.VisionRange);
-        Assert.Equal(1.0, lionConfig.HuntingRange);
-        Assert.Equal(3, lionConfig.RoarRange);
-        Assert.Equal(0.3, lionConfig.RoarChance);
-        Assert.Equal(5.0, lionConfig.HealthGainFromKill);
+        Assert.Equal(1.0, ConfigurationService.ConfigExtensions.GetHuntingRange(lionConfig));
+        Assert.Equal(3, ConfigurationService.ConfigExtensions.GetRoarRange(lionConfig));
+        Assert.Equal(0.3, lionConfig.SpecialActionChance);
+        Assert.Equal(5.0, ConfigurationService.ConfigExtensions.GetHealthGainFromKill(lionConfig));
 
         // Antelope settings
         Assert.Equal(1.0, antelopeConfig.Speed);
         Assert.Equal(5.0, antelopeConfig.VisionRange);
-        Assert.Equal(0.8, antelopeConfig.GrazeChance);
-        Assert.Equal(1.0, antelopeConfig.HealthFromGrazing);
+        Assert.Equal(0.8, antelopeConfig.SpecialActionChance);
+        Assert.Equal(1.0, ConfigurationService.ConfigExtensions.GetHealthFromGrazing(antelopeConfig));
     }
 }

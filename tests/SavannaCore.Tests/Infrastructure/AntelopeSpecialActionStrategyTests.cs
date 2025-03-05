@@ -1,13 +1,15 @@
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure;
+using Savanna.Core.Config;
 using SavannaCore.Tests.Helpers;
 
 namespace SavannaCore.Tests.Infrastructure;
 
 public class AntelopeSpecialActionStrategyTests
 {
-    private readonly double _healthFromGrazing = TestConfigHelper.TestConfig.Animals["Antelope"].HealthFromGrazing ?? 1.0;
+    private readonly double _healthFromGrazing = ConfigurationService.ConfigExtensions.GetHealthFromGrazing(
+        TestConfigHelper.TestConfig.Animals["Antelope"], 1.0);
     private readonly double _antelopeVisionRange = TestConfigHelper.TestConfig.Animals["Antelope"].VisionRange;
 
     private class TestAntelopeSpecialActionStrategy : AntelopeSpecialActionStrategy
