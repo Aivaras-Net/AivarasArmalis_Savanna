@@ -61,6 +61,7 @@
         public const int MaxFieldHeight = 20;
         public const string LoadedGameFormat = "Loaded: {0}";
         public const string LoadedAnimalFormat = "Loaded animal: {0}";
+        public const string RegisteredAnimalConfigFormat = "Registered configuration for animal: {0}";
         public const string SelectSaveFilePrompt = "Select a save file to load:";
         public const string NumericInputFormat = "{0} [{1}-{2}, default: {3}]: ";
         public const string NumericInputErrorFormat = "Please enter a number between {0} and {1}.";

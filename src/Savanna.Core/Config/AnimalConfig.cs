@@ -18,12 +18,34 @@ namespace Savanna.Core.Config
     {
         public double Speed { get; set; }
         public double VisionRange { get; set; }
-        public double? HuntingRange { get; set; }
+
+        public double SpecialActionChance { get; set; }
+
+        // Predator-specific properties
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public PredatorConfig? Predator { get; set; }
+
+        // Prey-specific properties
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public PreyConfig? Prey { get; set; }
+    }
+
+    /// <summary>
+    /// Configuration settings specific to predator animals
+    /// </summary>
+    public class PredatorConfig
+    {
+        public double HuntingRange { get; set; }
         public int? RoarRange { get; set; }
-        public double? RoarChance { get; set; }
         public double? HealthGainFromKill { get; set; }
-        public double? GrazeChance { get; set; }
-        public double? HealthFromGrazing { get; set; }
+    }
+
+    /// <summary>
+    /// Configuration settings specific to prey animals
+    /// </summary>
+    public class PreyConfig
+    {
+        public double HealthFromGrazing { get; set; }
     }
 
     /// <summary>

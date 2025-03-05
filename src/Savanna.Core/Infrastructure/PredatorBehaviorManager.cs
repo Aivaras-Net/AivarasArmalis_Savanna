@@ -1,5 +1,6 @@
 using Savanna.Core.Config;
 using Savanna.Core.Domain.Interfaces;
+using static Savanna.Core.Config.ConfigurationService.ConfigExtensions;
 
 namespace Savanna.Core.Infrastructure
 {
@@ -42,8 +43,14 @@ namespace Savanna.Core.Infrastructure
 
             if (target != null)
             {
-                double healthGain = Math.Min(ConfigurationService.Config.General.MaxHealth - predator.Health, target.Health);
-                predator.Health += healthGain;
+                var config = ConfigurationService.GetAnimalConfig(predator.Name);
+                var healthGain = GetHealthGainFromKill(config, target.Health);
+
+                double actualHealthGain = Math.Min(
+                    ConfigurationService.Config.General.MaxHealth - predator.Health,
+                    healthGain);
+
+                predator.Health += actualHealthGain;
                 target.Health = 0;
                 OnHunt?.Invoke(predator, target);
             }

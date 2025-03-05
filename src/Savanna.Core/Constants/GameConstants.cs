@@ -17,6 +17,10 @@ namespace Savanna.Core.Constants
         public const string ConfigParseError = "Error parsing configuration file: {0}";
         public const string AnimalTypeNotFound = "Configuration not found for animal type: {0}. Available types: {1}";
 
+        public const string ProjectRootPathTraversal = "..\\..\\..\\..\\..";
+        public const string SourceFolderName = "src";
+        public const string CoreProjectName = "Savanna.Core";
+
         public const string SaveGameDirectory = "Saves";
         public const string SaveFilePattern = "savegame_{0}.json";
         public const string SaveFileExtension = ".json";

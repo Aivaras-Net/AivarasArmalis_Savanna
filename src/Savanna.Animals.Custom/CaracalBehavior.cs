@@ -2,12 +2,13 @@
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Interfaces;
+using Savanna.Animals.Custom.Constants;
 
 namespace Savanna.Animals.Custom
 {
     public class CaracalBehavior : IAnimalBehavior
     {
-        public string AnimalName => "Caracal";
+        public string AnimalName => CaracalConstants.Name;
 
         public IAnimal CreateAnimal(double speed, double visionRange, Position position)
         {

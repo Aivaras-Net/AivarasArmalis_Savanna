@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Savanna.Core", "src\Savanna
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SavannaCore.Tests", "tests\SavannaCore.Tests\SavannaCore.Tests.csproj", "{7B87005D-15A6-452F-9B3F-DAF82B4CC5AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Savanna.Animals.Custom", "src\Savanna.Animals.Custom\Savanna.Animals.Custom.csproj", "{595E1A42-73B7-4A88-B321-CBFF6911ABE3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Savanna.ExamplePlugin", "src\Savanna.Animals.Custom\Savanna.ExamplePlugin.csproj", "{595E1A42-73B7-4A88-B321-CBFF6911ABE3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

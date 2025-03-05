@@ -6,6 +6,7 @@ using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure;
 using Savanna.Core.Interfaces;
 using System.Reflection;
+using Savanna.Core.Config;
 
 namespace Savanna.CLI.Services
 {
@@ -200,6 +201,12 @@ namespace Savanna.CLI.Services
                                 var animal = (IAnimal)Activator.CreateInstance(type, new Position(0, 0));
                                 string animalName = animal.Name;
 
+                                if (animal is IAnimalConfigProvider configProvider)
+                                {
+                                    ConfigurationService.AddOrUpdateAnimalConfig(animalName, configProvider.GetDefaultConfig());
+                                    _renderer.ShowLog(string.Format(ConsoleConstants.RegisteredAnimalConfigFormat, animalName), ConsoleConstants.LogDurationMedium);
+                                }
+
                                 _animalFactory.RegisterCustomAnimal(type);
 
                                 AssignKeyForAnimal(animalName);
@@ -222,7 +229,7 @@ namespace Savanna.CLI.Services
                 }
                 catch (Exception ex)
                 {
-                    _renderer.ShowLog(string.Format(ConsoleConstants.FailedToLoadPluginFormat, Path.GetFileName(pluginPath), ex.Message), ConsoleConstants.LogDurationLong);
+                    _renderer.ShowLog(string.Format(ConsoleConstants.ErrorLoadingPluginFormat, pluginPath, ex.Message), ConsoleConstants.LogDurationLong);
                 }
             }
         }
