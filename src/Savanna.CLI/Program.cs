@@ -15,7 +15,8 @@ namespace Savanna.CLI
                 serviceContainer.GetService<IRendererService>(),
                 serviceContainer.GetService<IMenuService>(),
                 serviceContainer.GetService<IConsoleRenderer>(),
-                serviceContainer.GetService<ILogService>()
+                serviceContainer.GetService<ILogService>(),
+                serviceContainer.GetService<IGameInitializationService>()
             );
 
             game.Run();

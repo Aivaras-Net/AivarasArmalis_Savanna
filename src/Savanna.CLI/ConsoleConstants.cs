@@ -65,7 +65,7 @@
         public const string NumericInputFormat = "{0} [{1}-{2}, default: {3}]: ";
         public const string NumericInputErrorFormat = "Please enter a number between {0} and {1}.";
         public const string FrameInfoFormat = "[Frame: {0}] {1}";
-        public const string ImportsFolder = "Imports";
+        public const string PluginsDirectory = "Plugins";
 
         public const string ProjectRootPath = @"..\..\..\..\..\";
         public const string DllSearchPattern = "*.dll";
@@ -74,5 +74,7 @@
         public const string AddAnimalCommandFormat = "[{0}] - Add ";
 
         public const string ServiceNotRegisteredFormat = "Service of type {0} has not been registered.";
+        public const string FailedToInitializeAnimalFormat = "Failed to initialize animal type: {0}";
+        public const string FailedToLoadPluginFormat = "Failed to load plugin {0}: {1}";
     }
 }

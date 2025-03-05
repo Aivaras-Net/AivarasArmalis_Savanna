@@ -3,10 +3,7 @@ using Savanna.CLI.Services;
 using Savanna.Core;
 using Savanna.Core.Constants;
 using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
-using Savanna.Core.Infrastructure;
 using Savanna.Core.Interfaces;
-using System.Reflection;
 
 namespace Savanna.CLI
 {
@@ -19,51 +16,29 @@ namespace Savanna.CLI
         private readonly IMenuService _menuService;
         private readonly IConsoleRenderer _consoleRenderer;
         private readonly ILogService _logService;
-
-        private readonly AnimalFactory _animalFactory = new AnimalFactory();
-        private readonly Dictionary<ConsoleKey, string> _animalKeyMappings = new();
-        private readonly ConsoleKey[] _availableKeys = new[]
-        {
-            ConsoleKey.A, ConsoleKey.B, ConsoleKey.C, ConsoleKey.D, ConsoleKey.E, ConsoleKey.F, ConsoleKey.G,
-            ConsoleKey.H, ConsoleKey.I, ConsoleKey.J, ConsoleKey.K, ConsoleKey.L, ConsoleKey.M, ConsoleKey.N,
-            ConsoleKey.O, ConsoleKey.P, ConsoleKey.R, ConsoleKey.T, ConsoleKey.U, ConsoleKey.V,
-            ConsoleKey.W, ConsoleKey.X, ConsoleKey.Y, ConsoleKey.Z
-        };
+        private readonly IGameInitializationService _gameInitService;
 
         private GameEngine _gameEngine;
         private string _pluginsFolder;
 
-        public Game(IRendererService renderer, IMenuService menuService, IConsoleRenderer consoleRenderer, ILogService logService)
+        public Game(IRendererService renderer, IMenuService menuService, IConsoleRenderer consoleRenderer, ILogService logService, IGameInitializationService gameInitService)
         {
             _renderer = renderer;
             _menuService = menuService;
             _consoleRenderer = consoleRenderer;
             _logService = logService;
+            _gameInitService = gameInitService;
 
-            _renderer.RegisterAnimalColor(GameConstants.AntelopeName);
-            _renderer.RegisterAnimalColor(GameConstants.LionName);
-
-            _animalKeyMappings[ConsoleConstants.AntelopeKey] = GameConstants.AntelopeName;
-            _animalKeyMappings[ConsoleConstants.LionKey] = GameConstants.LionName;
-
-            string currentDirectory = Directory.GetCurrentDirectory();
-            string projectRoot = Path.GetFullPath(Path.Combine(currentDirectory, ConsoleConstants.ProjectRootPath));
-            _pluginsFolder = Path.Combine(projectRoot, ConsoleConstants.ImportsFolder);
-
-            if (!Directory.Exists(_pluginsFolder))
-            {
-                Directory.CreateDirectory(_pluginsFolder);
-            }
+            _pluginsFolder = Path.Combine(ConsoleConstants.ProjectRootPath, ConsoleConstants.PluginsDirectory);
+            _gameInitService.LoadPlugins(_pluginsFolder);
         }
 
         /// <summary>
-        /// Initializes and starts the game
+        /// Main entry point to start the game
         /// </summary>
         public void Run()
         {
             Console.CursorVisible = false;
-
-            LoadPlugins(_pluginsFolder);
 
             bool exitApplication = false;
 
@@ -87,55 +62,27 @@ namespace Savanna.CLI
             };
 
             int selection = _menuService.GetSelectionFromOptions(ConsoleConstants.SavannaSimulationTitle, menuOptions);
+            MenuOption menuOption = (MenuOption)selection;
 
-            switch (selection)
+            switch (menuOption)
             {
-                case 0: // Start New Game
-                    int width = _menuService.GetNumericInput(ConsoleConstants.EnterFieldWidthPrompt, GameConstants.DefaultFieldWidth, ConsoleConstants.MinFieldDimension, ConsoleConstants.MaxFieldWidth);
-                    int height = _menuService.GetNumericInput(ConsoleConstants.EnterFieldHeightPrompt, GameConstants.DefaultFieldHeight, ConsoleConstants.MinFieldDimension, ConsoleConstants.MaxFieldHeight);
-
-                    _gameEngine = new GameEngine(_consoleRenderer, width, height);
-                    RunGame(_gameEngine);
-                    return false;
-
-                case 1: // Load Saved Game
-                    if (!GameEngine.SaveFilesExist())
+                case MenuOption.StartNewGame:
+                    _gameEngine = _gameInitService.StartNewGame();
+                    if (_gameEngine != null)
                     {
-                        _menuService.ClearScreen();
-                        Console.WriteLine(ConsoleConstants.NoSaveFilesFound);
-                        Console.WriteLine(ConsoleConstants.PressAnyKeyToContinue);
-                        Console.ReadKey(true);
-                        return false;
-                    }
-
-                    var saveFiles = GameEngine.GetSaveFilesDisplayNames();
-                    if (saveFiles.Count == 0)
-                    {
-                        _menuService.ClearScreen();
-                        Console.WriteLine(ConsoleConstants.NoSaveFilesAvailable);
-                        Console.WriteLine(ConsoleConstants.PressAnyKeyToContinue);
-                        Console.ReadKey(true);
-                        return false;
-                    }
-
-                    string[] displayNames = saveFiles.Keys.ToArray();
-                    string[] filePaths = saveFiles.Values.ToArray();
-
-                    int saveSelection = _menuService.GetSelectionFromOptions(ConsoleConstants.SelectSaveFilePrompt, displayNames);
-                    string selectedFilePath = filePaths[saveSelection];
-
-                    if (GameEngine.TryGetSaveFileDimensions(selectedFilePath, out int saveWidth, out int saveHeight))
-                    {
-                        _gameEngine = new GameEngine(_consoleRenderer, saveWidth, saveHeight);
-                        if (_gameEngine.LoadGame(selectedFilePath, _animalFactory))
-                        {
-                            _renderer.ShowLog(string.Format(ConsoleConstants.LoadedGameFormat, Path.GetFileName(selectedFilePath)), ConsoleConstants.LogDurationMedium);
-                            RunGame(_gameEngine);
-                        }
+                        RunGame(_gameEngine);
                     }
                     return false;
 
-                case 2: // Exit
+                case MenuOption.LoadSavedGame:
+                    _gameEngine = _gameInitService.LoadSavedGame();
+                    if (_gameEngine != null)
+                    {
+                        RunGame(_gameEngine);
+                    }
+                    return false;
+
+                case MenuOption.Exit:
                     return true;
 
                 default:
@@ -149,19 +96,18 @@ namespace Savanna.CLI
         /// <param name="engine">The game engine to use</param>
         private void RunGame(GameEngine engine)
         {
+            bool isRunning = true;
+            bool isPaused = false;
+            DateTime lastUpdate = DateTime.Now;
+
             _menuService.ClearScreen();
             _renderer.RenderHeader(ConsoleConstants.Header);
-            UpdateAnimalKeyMappings();
             int commandGuideHeight = _menuService.DisplayCommandGuide();
 
             if (_renderer is RendererService rendererService)
             {
                 rendererService.HeaderOffset = ConsoleConstants.HeaderHeight + commandGuideHeight;
             }
-
-            bool isRunning = true;
-            bool isPaused = false;
-            DateTime lastUpdate = DateTime.Now;
 
             while (isRunning)
             {
@@ -197,13 +143,14 @@ namespace Savanna.CLI
                             }
                             break;
                         default:
-                            if (_animalKeyMappings.TryGetValue(key, out string keyAnimalType))
+                            var animalKeyMappings = _gameInitService.AnimalKeyMappings;
+                            if (animalKeyMappings.TryGetValue(key, out string keyAnimalType))
                             {
                                 Random rnd = new Random();
                                 var keyField = GetFieldFromEngine(engine);
                                 if (keyField != null)
                                 {
-                                    engine.AddAnimal(_animalFactory.CreateAnimal(keyAnimalType,
+                                    engine.AddAnimal(_gameInitService.GetAnimalFactory().CreateAnimal(keyAnimalType,
                                         new Position(rnd.Next(keyField.Width), rnd.Next(keyField.Height))));
                                 }
                             }
@@ -212,18 +159,6 @@ namespace Savanna.CLI
                 }
 
                 Thread.Sleep(ConsoleConstants.ThreadSleepDuration);
-            }
-        }
-
-        /// <summary>
-        /// Updates the menu service with current animal key mappings
-        /// </summary>
-        private void UpdateAnimalKeyMappings()
-        {
-            // Share the animal key mappings with the menu service
-            if (_menuService is MenuService menuService)
-            {
-                menuService.UpdateAnimalKeyMappings(_animalKeyMappings);
             }
         }
 
@@ -237,80 +172,6 @@ namespace Savanna.CLI
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
             return fieldProperty?.GetValue(engine) as Field;
-        }
-
-        /// <summary>
-        /// Loads animal plugins from the plugins folder
-        /// </summary>
-        /// <param name="importsFolder">The plugins folder path</param>
-        private void LoadPlugins(string importsFolder)
-        {
-            try
-            {
-                string[] dllFiles = Directory.GetFiles(importsFolder, ConsoleConstants.DllSearchPattern);
-
-                foreach (string dllFile in dllFiles)
-                {
-                    try
-                    {
-                        Assembly assembly = Assembly.LoadFrom(dllFile);
-
-                        foreach (Type type in assembly.GetTypes())
-                        {
-                            if (!type.IsAbstract && typeof(IAnimal).IsAssignableFrom(type))
-                            {
-                                var animal = (IAnimal)Activator.CreateInstance(type, new Position(0, 0));
-                                string animalName = animal.Name;
-
-                                _animalFactory.RegisterCustomAnimal(type);
-
-                                AssignKeyForAnimal(animalName);
-
-                                _renderer.RegisterAnimalColor(animalName);
-
-                                _renderer.ShowLog(string.Format(ConsoleConstants.LoadedAnimalFormat, animalName), ConsoleConstants.LogDurationMedium);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _renderer.ShowLog(string.Format(ConsoleConstants.ErrorLoadingPluginFormat, Path.GetFileName(dllFile), ex.Message), ConsoleConstants.LogDurationLong);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _renderer.ShowLog(string.Format(ConsoleConstants.ErrorLoadingPluginsFormat, ex.Message), ConsoleConstants.LogDurationLong);
-            }
-        }
-
-        /// <summary>
-        /// Assigns a keyboard key for a newly loaded animal
-        /// </summary>
-        /// <param name="animalName">The name of the animal</param>
-        private void AssignKeyForAnimal(string animalName)
-        {
-            if (animalName == GameConstants.AntelopeName || animalName == GameConstants.LionName)
-            {
-                return;
-            }
-
-            ConsoleKey preferredKey = (ConsoleKey)animalName[0];
-
-            if (!_animalKeyMappings.ContainsKey(preferredKey) && _availableKeys.Contains(preferredKey))
-            {
-                _animalKeyMappings[preferredKey] = animalName;
-                return;
-            }
-
-            foreach (var key in _availableKeys)
-            {
-                if (!_animalKeyMappings.ContainsKey(key))
-                {
-                    _animalKeyMappings[key] = animalName;
-                    return;
-                }
-            }
         }
     }
 }

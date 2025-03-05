@@ -25,7 +25,11 @@ namespace Savanna.CLI
             RegisterSingleton<IRendererService>(renderer);
             RegisterSingleton<IConsoleRenderer>(renderer);
 
-            RegisterSingleton<IMenuService>(new MenuService(renderer));
+            var menuService = new MenuService(renderer);
+            RegisterSingleton<IMenuService>(menuService);
+
+            var gameInitService = new GameInitializationService(menuService, renderer, renderer);
+            RegisterSingleton<IGameInitializationService>(gameInitService);
         }
 
         /// <summary>
