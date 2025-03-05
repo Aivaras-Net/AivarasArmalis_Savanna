@@ -5,9 +5,9 @@ using Savanna.Core.Infrastructure;
 
 namespace Savanna.Animals.Custom
 {
-    public class TigerMovementStrategy : BaseMovementStrategy
+    public class CaracalMovementStrategy : BaseMovementStrategy
     {
-        public TigerMovementStrategy(AnimalConfig config) : base(config)
+        public CaracalMovementStrategy(AnimalConfig config) : base(config)
         {
         }
 

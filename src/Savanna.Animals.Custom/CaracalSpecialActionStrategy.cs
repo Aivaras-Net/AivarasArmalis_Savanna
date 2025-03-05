@@ -4,11 +4,11 @@ using Savanna.Core.Interfaces;
 
 namespace Savanna.Animals.Custom
 {
-    public class TigerSpecialActionStrategy : ISpecialActionStrategy
+    public class CaracalSpecialActionStrategy : ISpecialActionStrategy
     {
         private readonly AnimalConfig _config;
 
-        public TigerSpecialActionStrategy(AnimalConfig config)
+        public CaracalSpecialActionStrategy(AnimalConfig config)
         {
             _config = config;
         }
