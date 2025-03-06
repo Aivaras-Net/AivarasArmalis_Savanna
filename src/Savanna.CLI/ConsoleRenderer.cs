@@ -101,59 +101,71 @@ namespace Savanna.CLI
             int rows = field.GetLength(0);
             int cols = field.GetLength(1);
 
+            ClearConsoleArea();
+            DrawFieldBorders(rows, cols);
+            RenderFieldContent(field, rows, cols);
+            UpdateLogQueue();
+            DrawLogArea(cols, HeaderOffset + 2 + rows);
+
+            Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
+        }
+
+        private void ClearConsoleArea()
+        {
             for (int i = HeaderOffset; i < Console.WindowHeight; i++)
             {
                 Console.SetCursorPosition(0, i);
                 Console.Write(new string(' ', Console.WindowWidth));
             }
+        }
 
+        private void DrawFieldBorders(int rows, int cols)
+        {
             Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
-            string topBorder = ConsoleConstants.BorderCorner + new string(ConsoleConstants.HorizontalBorder, cols) + ConsoleConstants.BorderCorner;
+            string horizontalBorder = ConsoleConstants.BorderCorner + new string(ConsoleConstants.HorizontalBorder, cols) + ConsoleConstants.BorderCorner;
+
             Console.SetCursorPosition(0, HeaderOffset);
-            Console.Write(topBorder);
+            Console.Write(horizontalBorder);
 
             for (int i = 0; i < rows; i++)
             {
                 Console.SetCursorPosition(0, HeaderOffset + 1 + i);
-                Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
                 Console.Write(ConsoleConstants.VerticalBorder);
-
-                for (int j = 0; j < cols; j++)
-                {
-                    char cellChar = field[i, j];
-
-                    if (cellChar != GameConstants.FieldFill)
-                    {
-                        string animalName = GetAnimalNameFromChar(cellChar);
-                        if (_animalColors.TryGetValue(animalName, out ConsoleColor color))
-                        {
-                            Console.ForegroundColor = color;
-                        }
-                        else
-                        {
-                            Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
-                        }
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
-                    }
-
-                    Console.Write(cellChar);
-                }
-
-                Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
+                Console.SetCursorPosition(cols + 1, HeaderOffset + 1 + i);
                 Console.Write(ConsoleConstants.VerticalBorder);
             }
 
             Console.SetCursorPosition(0, HeaderOffset + 1 + rows);
-            Console.WriteLine(topBorder);
+            Console.WriteLine(horizontalBorder);
+        }
 
-            UpdateLogQueue();
+        private void RenderFieldContent(char[,] field, int rows, int cols)
+        {
+            for (int i = 0; i < rows; i++)
+            {
+                Console.SetCursorPosition(1, HeaderOffset + 1 + i);
 
-            DrawLogArea(cols, HeaderOffset + 2 + rows);
+                for (int j = 0; j < cols; j++)
+                {
+                    char cellChar = field[i, j];
+                    SetAppropriateColor(cellChar);
+                    Console.Write(cellChar);
+                }
+            }
+        }
 
-            Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
+        private void SetAppropriateColor(char cellChar)
+        {
+            if (cellChar == GameConstants.FieldFill)
+            {
+                Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
+                return;
+            }
+
+            string animalName = GetAnimalNameFromChar(cellChar);
+            Console.ForegroundColor = _animalColors.TryGetValue(animalName, out ConsoleColor color)
+                ? color
+                : ConsoleConstants.DefaultFieldColor;
         }
 
         /// <summary>
