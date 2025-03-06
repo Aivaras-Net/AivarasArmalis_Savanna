@@ -1,0 +1,12 @@
+{
+  "Animals": {
+    "Caracal": {
+      "Speed": 3.0,
+      "VisionRange": 5.0,
+      "SpecialActionChance": 0.0,
+      "Predator": {
+        "HuntingRange": 2.0
+      }
+    }
+  }
+} 

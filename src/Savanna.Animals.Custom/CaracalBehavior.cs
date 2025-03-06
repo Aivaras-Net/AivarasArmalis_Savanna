@@ -8,7 +8,7 @@ namespace Savanna.Animals.Custom
 {
     public class CaracalBehavior : IAnimalBehavior
     {
-        public string AnimalName => CaracalConstants.Name;
+        public string AnimalName => PluginConstants.CaracalName;
 
         public IAnimal CreateAnimal(double speed, double visionRange, Position position)
         {

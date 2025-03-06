@@ -22,7 +22,7 @@ namespace Savanna.Animals.Custom
             if (!(animal is IPredator caracal) || !caracal.isAlive)
                 return;
 
-            var caracalConfig = _config.Animals[CaracalConstants.Name];
+            var caracalConfig = _config.Animals[PluginConstants.CaracalName];
             var specialActionChance = GetSpecialActionChance(caracalConfig);
 
             if (GetRandomValue() < specialActionChance)

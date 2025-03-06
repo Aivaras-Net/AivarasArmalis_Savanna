@@ -2,20 +2,23 @@
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Interfaces;
+using Savanna.Animals.Custom.Config;
 using Savanna.Animals.Custom.Constants;
 
 namespace Savanna.Animals.Custom
 {
     public class Caracal : Animal, IPredator, IAnimalConfigProvider
     {
-        public override string Name => CaracalConstants.Name;
-        public double HuntingRange => ConfigurationService.ConfigExtensions.GetHuntingRange(
-            ConfigurationService.GetAnimalConfig(Name),
-            CaracalConstants.DefaultValues.HuntingRange);
+        public override string Name => PluginConstants.CaracalName;
+
+        public double HuntingRange =>
+            CaracalConfig.CaracalTypeConfig.Predator?.HuntingRange ??
+            ConfigurationService.ConfigExtensions.GetHuntingRange(
+                ConfigurationService.GetAnimalConfig(Name));
 
         public Caracal(Position position)
-            : this(ConfigurationService.GetAnimalConfig(CaracalConstants.Name).Speed,
-                  ConfigurationService.GetAnimalConfig(CaracalConstants.Name).VisionRange,
+            : this(ConfigurationService.GetAnimalConfig(PluginConstants.CaracalName).Speed,
+                  ConfigurationService.GetAnimalConfig(PluginConstants.CaracalName).VisionRange,
                   position)
         {
         }
@@ -34,16 +37,7 @@ namespace Savanna.Animals.Custom
 
         public AnimalTypeConfig GetDefaultConfig()
         {
-            return new AnimalTypeConfig
-            {
-                Speed = CaracalConstants.DefaultValues.Speed,
-                VisionRange = CaracalConstants.DefaultValues.VisionRange,
-                SpecialActionChance = CaracalConstants.DefaultValues.SpecialActionChance,
-                Predator = new PredatorConfig
-                {
-                    HuntingRange = CaracalConstants.DefaultValues.HuntingRange
-                }
-            };
+            return CaracalConfig.CaracalTypeConfig;
         }
     }
 }
