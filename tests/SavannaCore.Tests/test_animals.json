@@ -1,0 +1,28 @@
+{
+  "Animals": {
+    "Lion": {
+      "Speed": 2.0,
+      "VisionRange": 10.0,
+      "SpecialActionChance": 0.3,
+      "Predator": {
+        "HuntingRange": 1.0,
+        "RoarRange": 3,
+        "HealthGainFromKill": 5.0
+      }
+    },
+    "Antelope": {
+      "Speed": 1.0,
+      "VisionRange": 5.0,
+      "SpecialActionChance": 0.8,
+      "Prey": {
+        "HealthFromGrazing": 1.0
+      }
+    }
+  },
+  "General": {
+    "InitialHealth": 20.0,
+    "MaxHealth": 25.0,
+    "HealthDecreasePerTurn": 0.5,
+    "RequiredMatingTurns": 3
+  }
+} 

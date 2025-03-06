@@ -9,17 +9,28 @@ namespace Savanna.Core.Config
     public partial class ConfigurationService
     {
         private static AnimalConfig? _config;
-        private static readonly string ConfigPath = GetConfigPath();
+        private static string _configPath = GetDefaultConfigPath();
 
         /// <summary>
-        /// Gets the path to the configuration file
+        /// Gets the default path to the configuration file
         /// </summary>
-        private static string GetConfigPath()
+        private static string GetDefaultConfigPath()
         {
             return Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory,
                 GameConstants.ConfigFileDirectory,
                 GameConstants.ConfigFileName);
+        }
+
+        /// <summary>
+        /// Sets a custom configuration path. Useful for testing scenarios.
+        /// If null is provided, resets to the default path.
+        /// </summary>
+        /// <param name="configPath">The custom configuration file path, or null to reset to default</param>
+        public static void SetConfigPath(string? configPath)
+        {
+            _configPath = configPath ?? GetDefaultConfigPath();
+            _config = null; // Reset config to force reload with new path
         }
 
         /// <summary>
@@ -44,12 +55,12 @@ namespace Savanna.Core.Config
         /// <exception cref="InvalidOperationException">Thrown when the configuration file is empty or invalid</exception>
         public static void LoadConfig()
         {
-            if (!File.Exists(ConfigPath))
+            if (!File.Exists(_configPath))
             {
-                throw new FileNotFoundException(string.Format(GameConstants.ConfigFileNotFound, ConfigPath));
+                throw new FileNotFoundException(string.Format(GameConstants.ConfigFileNotFound, _configPath));
             }
 
-            LoadConfigFromPath(ConfigPath);
+            LoadConfigFromPath(_configPath);
         }
 
         /// <summary>
@@ -133,13 +144,13 @@ namespace Savanna.Core.Config
                 WriteIndented = true
             });
 
-            var directory = Path.GetDirectoryName(ConfigPath);
+            var directory = Path.GetDirectoryName(_configPath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            File.WriteAllText(ConfigPath, jsonString);
+            File.WriteAllText(_configPath, jsonString);
         }
     }
 }

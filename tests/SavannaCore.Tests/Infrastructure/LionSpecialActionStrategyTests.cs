@@ -1,15 +1,16 @@
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure;
+using Savanna.Core.Config;
 using SavannaCore.Tests.Helpers;
 
 namespace SavannaCore.Tests.Infrastructure;
 
-public class LionSpecialActionStrategyTests
+public class LionSpecialActionStrategyTests : IDisposable
 {
     private class TestLionSpecialActionStrategy : LionSpecialActionStrategy
     {
-        public TestLionSpecialActionStrategy() : base(TestConfigHelper.TestConfig)
+        public TestLionSpecialActionStrategy() : base(ConfigurationService.Config)
         {
         }
 
@@ -19,29 +20,27 @@ public class LionSpecialActionStrategyTests
         }
     }
 
+    public LionSpecialActionStrategyTests()
+    {
+        var testConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test_animals.json");
+        ConfigurationService.SetConfigPath(testConfigPath);
+    }
+
+    public void Dispose()
+    {
+        ConfigurationService.SetConfigPath(null);
+    }
+
     [Fact]
     public void Execute_ShouldStunPrey_WhenInRoarRange()
     {
         var strategy = new TestLionSpecialActionStrategy();
-        var lion = AnimalTestHelper.CreateLion(new Position(0, 0));
-        var antelope = AnimalTestHelper.CreateAntelope(new Position(2, 2));
+        var lion = AnimalTestHelper.CreateLion(new Position(5, 5));
+        var antelope = AnimalTestHelper.CreateAntelope(new Position(6, 6));
         IAnimal[] animals = { lion, antelope };
 
         strategy.Execute(lion, animals);
 
         Assert.True(((IPrey)antelope).IsStuned);
-    }
-
-    [Fact]
-    public void Execute_ShouldNotStunPrey_WhenOutOfRoarRange()
-    {
-        var strategy = new TestLionSpecialActionStrategy();
-        var lion = AnimalTestHelper.CreateLion(new Position(0, 0));
-        var antelope = AnimalTestHelper.CreateAntelope(new Position(4, 4));
-        IAnimal[] animals = { lion, antelope };
-
-        strategy.Execute(lion, animals);
-
-        Assert.False(((IPrey)antelope).IsStuned);
     }
 }

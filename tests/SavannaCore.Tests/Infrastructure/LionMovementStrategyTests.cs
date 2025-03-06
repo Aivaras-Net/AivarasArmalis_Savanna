@@ -1,16 +1,28 @@
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure;
+using Savanna.Core.Config;
 using SavannaCore.Tests.Helpers;
 
 namespace SavannaCore.Tests.Infrastructure;
 
-public class LionMovementStrategyTests
+public class LionMovementStrategyTests : IDisposable
 {
+    public LionMovementStrategyTests()
+    {
+        var testConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test_animals.json");
+        ConfigurationService.SetConfigPath(testConfigPath);
+    }
+
+    public void Dispose()
+    {
+        ConfigurationService.SetConfigPath(null);
+    }
+
     [Fact]
     public void Move_ShouldMoveTowardsPrey_WhenPreyInVisionRange()
     {
-        var strategy = new LionMovementStrategy(TestConfigHelper.TestConfig);
+        var strategy = new LionMovementStrategy(ConfigurationService.Config);
         var lion = AnimalTestHelper.CreateLion(new Position(0, 0));
         var antelope = AnimalTestHelper.CreateAntelope(new Position(5, 5));
         IAnimal[] animals = { lion, antelope };
@@ -24,7 +36,7 @@ public class LionMovementStrategyTests
     [Fact]
     public void Move_ShouldStayWithinBounds()
     {
-        var strategy = new LionMovementStrategy(TestConfigHelper.TestConfig);
+        var strategy = new LionMovementStrategy(ConfigurationService.Config);
         var lion = AnimalTestHelper.CreateLion(new Position(9, 9));
         var antelope = AnimalTestHelper.CreateAntelope(new Position(11, 11));
         IAnimal[] animals = { lion, antelope };
