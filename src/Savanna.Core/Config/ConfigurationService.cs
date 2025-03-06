@@ -9,20 +9,15 @@ namespace Savanna.Core.Config
     public partial class ConfigurationService
     {
         private static AnimalConfig? _config;
-        private static readonly string SourceConfigPath = GetSourceConfigPath();
+        private static readonly string ConfigPath = GetConfigPath();
 
         /// <summary>
-        /// Gets the path to the source configuration file
+        /// Gets the path to the configuration file
         /// </summary>
-        private static string GetSourceConfigPath()
+        private static string GetConfigPath()
         {
-            var currentDir = AppDomain.CurrentDomain.BaseDirectory;
-            var projectRoot = Path.GetFullPath(Path.Combine(currentDir, GameConstants.ProjectRootPathTraversal));
-
             return Path.Combine(
-                projectRoot,
-                GameConstants.SourceFolderName,
-                GameConstants.CoreProjectName,
+                AppDomain.CurrentDomain.BaseDirectory,
                 GameConstants.ConfigFileDirectory,
                 GameConstants.ConfigFileName);
         }
@@ -49,23 +44,12 @@ namespace Savanna.Core.Config
         /// <exception cref="InvalidOperationException">Thrown when the configuration file is empty or invalid</exception>
         public static void LoadConfig()
         {
-            if (File.Exists(SourceConfigPath))
+            if (!File.Exists(ConfigPath))
             {
-                LoadConfigFromPath(SourceConfigPath);
-                return;
+                throw new FileNotFoundException(string.Format(GameConstants.ConfigFileNotFound, ConfigPath));
             }
 
-            var runtimePath = Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
-                GameConstants.ConfigFileDirectory,
-                GameConstants.ConfigFileName);
-
-            if (!File.Exists(runtimePath))
-            {
-                throw new FileNotFoundException(string.Format(GameConstants.ConfigFileNotFound, runtimePath));
-            }
-
-            LoadConfigFromPath(runtimePath);
+            LoadConfigFromPath(ConfigPath);
         }
 
         /// <summary>
@@ -144,33 +128,18 @@ namespace Savanna.Core.Config
         /// </summary>
         public static void SaveConfig()
         {
-            // Save to the source config path
-            var directory = Path.GetDirectoryName(SourceConfigPath);
-            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
             var jsonString = JsonSerializer.Serialize(_config, new JsonSerializerOptions
             {
                 WriteIndented = true
             });
 
-            File.WriteAllText(SourceConfigPath, jsonString);
-
-            // Also save to the runtime path for the current session
-            var runtimePath = Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory,
-                GameConstants.ConfigFileDirectory,
-                GameConstants.ConfigFileName);
-
-            directory = Path.GetDirectoryName(runtimePath);
+            var directory = Path.GetDirectoryName(ConfigPath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
-            File.WriteAllText(runtimePath, jsonString);
+            File.WriteAllText(ConfigPath, jsonString);
         }
     }
 }
