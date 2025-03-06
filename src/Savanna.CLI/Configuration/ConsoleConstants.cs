@@ -37,7 +37,6 @@
         public const string GameSavedSuccessfully = "Game saved successfully";
         public const string GameSaveFailed = "Failed to save game";
         public const string ErrorLoadingPluginFormat = "Error loading plugin {0}: {1}";
-        public const string ErrorLoadingPluginsFormat = "Error loading plugins: {0}";
 
         public const string StartNewGameOption = "Start New Game";
         public const string LoadSavedGameOption = "Load Saved Game";
@@ -76,6 +75,5 @@
 
         public const string ServiceNotRegisteredFormat = "Service of type {0} has not been registered.";
         public const string FailedToInitializeAnimalFormat = "Failed to initialize animal type: {0}";
-        public const string FailedToLoadPluginFormat = "Failed to load plugin {0}: {1}";
     }
 }

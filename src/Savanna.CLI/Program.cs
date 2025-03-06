@@ -13,10 +13,10 @@ namespace Savanna.CLI
 
             var game = new Game(
                 serviceContainer.GetService<IRendererService>(),
-                serviceContainer.GetService<IMenuService>(),
-                serviceContainer.GetService<IConsoleRenderer>(),
-                serviceContainer.GetService<ILogService>(),
-                serviceContainer.GetService<IGameInitializationService>()
+                serviceContainer.GetService<IMenuRenderer>(),
+                serviceContainer.GetService<IMenuInteraction>(),
+                serviceContainer.GetService<IGameInitializationService>(),
+                serviceContainer.GetService<IConsoleWrapper>()
             );
 
             game.Run();

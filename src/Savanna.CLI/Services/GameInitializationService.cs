@@ -1,4 +1,5 @@
 using Savanna.CLI.Interfaces;
+using Savanna.CLI.UI;
 using Savanna.Core;
 using Savanna.Core.Constants;
 using Savanna.Core.Domain;
@@ -15,7 +16,8 @@ namespace Savanna.CLI.Services
     /// </summary>
     public class GameInitializationService : IGameInitializationService
     {
-        private readonly IMenuService _menuService;
+        private readonly IMenuInteraction _menuInteraction;
+        private readonly IMenuRenderer _menuRenderer;
         private readonly IRendererService _renderer;
         private readonly IConsoleRenderer _consoleRenderer;
         private readonly AnimalFactory _animalFactory;
@@ -36,11 +38,13 @@ namespace Savanna.CLI.Services
         public Dictionary<ConsoleKey, string> AnimalKeyMappings => _animalKeyMappings;
 
         public GameInitializationService(
-            IMenuService menuService,
+            IMenuInteraction menuInteraction,
+            IMenuRenderer menuRenderer,
             IRendererService renderer,
             IConsoleRenderer consoleRenderer)
         {
-            _menuService = menuService;
+            _menuInteraction = menuInteraction;
+            _menuRenderer = menuRenderer;
             _renderer = renderer;
             _consoleRenderer = consoleRenderer;
             _animalFactory = new AnimalFactory();
@@ -51,10 +55,7 @@ namespace Savanna.CLI.Services
             _renderer.RegisterAnimalColor(GameConstants.AntelopeName);
             _renderer.RegisterAnimalColor(GameConstants.LionName);
 
-            if (_menuService is MenuService menuSvc)
-            {
-                menuSvc.UpdateAnimalKeyMappings(_animalKeyMappings);
-            }
+            _menuInteraction.UpdateAnimalKeyMappings(_animalKeyMappings);
         }
 
         /// <summary>
@@ -72,8 +73,8 @@ namespace Savanna.CLI.Services
         /// <returns>A configured GameEngine instance</returns>
         public GameEngine StartNewGame()
         {
-            int width = _menuService.GetNumericInput(ConsoleConstants.EnterFieldWidthPrompt, GameConstants.DefaultFieldWidth, ConsoleConstants.MinFieldDimension, ConsoleConstants.MaxFieldWidth);
-            int height = _menuService.GetNumericInput(ConsoleConstants.EnterFieldHeightPrompt, GameConstants.DefaultFieldHeight, ConsoleConstants.MinFieldDimension, ConsoleConstants.MaxFieldHeight);
+            int width = _menuInteraction.GetNumericInput(ConsoleConstants.EnterFieldWidthPrompt, GameConstants.DefaultFieldWidth, ConsoleConstants.MinFieldDimension, ConsoleConstants.MaxFieldWidth);
+            int height = _menuInteraction.GetNumericInput(ConsoleConstants.EnterFieldHeightPrompt, GameConstants.DefaultFieldHeight, ConsoleConstants.MinFieldDimension, ConsoleConstants.MaxFieldHeight);
 
             return new GameEngine(_consoleRenderer, width, height);
         }
@@ -100,7 +101,7 @@ namespace Savanna.CLI.Services
             string[] displayNames = saveFiles.Keys.ToArray();
             string[] filePaths = saveFiles.Values.ToArray();
 
-            int saveSelection = _menuService.GetSelectionFromOptions(ConsoleConstants.SelectSaveFilePrompt, displayNames);
+            int saveSelection = _menuInteraction.GetSelectionFromOptions(ConsoleConstants.SelectSaveFilePrompt, displayNames);
             string selectedFilePath = filePaths[saveSelection];
 
             GameEngine gameEngine = null;
@@ -143,10 +144,7 @@ namespace Savanna.CLI.Services
             {
                 _animalKeyMappings[preferredKey] = animalName;
 
-                if (_menuService is MenuService menuSvc)
-                {
-                    menuSvc.UpdateAnimalKeyMappings(_animalKeyMappings);
-                }
+                _menuInteraction.UpdateAnimalKeyMappings(_animalKeyMappings);
 
                 return;
             }
@@ -157,10 +155,7 @@ namespace Savanna.CLI.Services
                 {
                     _animalKeyMappings[key] = animalName;
 
-                    if (_menuService is MenuService menuSvc)
-                    {
-                        menuSvc.UpdateAnimalKeyMappings(_animalKeyMappings);
-                    }
+                    _menuInteraction.UpdateAnimalKeyMappings(_animalKeyMappings);
 
                     return;
                 }
@@ -222,10 +217,7 @@ namespace Savanna.CLI.Services
                         }
                     }
 
-                    if (_menuService is MenuService menuSvc)
-                    {
-                        menuSvc.UpdateAnimalKeyMappings(_animalKeyMappings);
-                    }
+                    _menuInteraction.UpdateAnimalKeyMappings(_animalKeyMappings);
                 }
                 catch (Exception ex)
                 {
@@ -240,7 +232,7 @@ namespace Savanna.CLI.Services
         /// <param name="message">The message to display</param>
         public void ShowNoSaveFilesMessage(string message)
         {
-            _menuService.ClearScreen();
+            _menuRenderer.ClearScreen();
             Console.WriteLine(message);
             Console.WriteLine(ConsoleConstants.PressAnyKeyToContinue);
             Console.ReadKey(true);

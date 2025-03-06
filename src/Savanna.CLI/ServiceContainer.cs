@@ -1,5 +1,6 @@
 using Savanna.CLI.Interfaces;
 using Savanna.CLI.Services;
+using Savanna.CLI.UI;
 using Savanna.Core.Constants;
 using Savanna.Core.Interfaces;
 
@@ -25,10 +26,14 @@ namespace Savanna.CLI
             RegisterSingleton<IRendererService>(renderer);
             RegisterSingleton<IConsoleRenderer>(renderer);
 
-            var menuService = new MenuService(renderer);
-            RegisterSingleton<IMenuService>(menuService);
+            var consoleWrapper = new ConsoleWrapper();
+            RegisterSingleton<IConsoleWrapper>(consoleWrapper);
 
-            var gameInitService = new GameInitializationService(menuService, renderer, renderer);
+            var menuService = new MenuService(renderer, consoleWrapper);
+            RegisterSingleton<IMenuRenderer>(menuService);
+            RegisterSingleton<IMenuInteraction>(menuService);
+
+            var gameInitService = new GameInitializationService(menuService, menuService, renderer, renderer);
             RegisterSingleton<IGameInitializationService>(gameInitService);
         }
 

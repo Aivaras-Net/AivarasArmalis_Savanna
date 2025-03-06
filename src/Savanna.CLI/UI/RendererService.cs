@@ -2,7 +2,7 @@ using Savanna.CLI.Interfaces;
 using Savanna.Core.Constants;
 using Savanna.Core.Interfaces;
 
-namespace Savanna.CLI.Services
+namespace Savanna.CLI.UI
 {
     /// <summary>
     /// Implementation of the renderer service for console output

@@ -1,5 +1,7 @@
 using Savanna.CLI.Interfaces;
 using Savanna.CLI.Services;
+using Savanna.CLI.State;
+using Savanna.CLI.UI;
 using Savanna.Core;
 using Savanna.Core.Constants;
 using Savanna.Core.Domain;
@@ -13,22 +15,26 @@ namespace Savanna.CLI
     public class Game
     {
         private readonly IRendererService _renderer;
-        private readonly IMenuService _menuService;
-        private readonly IConsoleRenderer _consoleRenderer;
-        private readonly ILogService _logService;
+        private readonly IMenuRenderer _menuRenderer;
+        private readonly IMenuInteraction _menuInteraction;
         private readonly IGameInitializationService _gameInitService;
+        private readonly IConsoleWrapper _console;
+        private readonly GameStateManager _gameStateManager;
+        private readonly string _pluginsFolder;
 
-        private GameEngine _gameEngine;
-        private string _pluginsFolder;
-
-        public Game(IRendererService renderer, IMenuService menuService, IConsoleRenderer consoleRenderer, ILogService logService, IGameInitializationService gameInitService)
+        public Game(
+            IRendererService renderer,
+            IMenuRenderer menuRenderer,
+            IMenuInteraction menuInteraction,
+            IGameInitializationService gameInitService,
+            IConsoleWrapper console)
         {
             _renderer = renderer;
-            _menuService = menuService;
-            _consoleRenderer = consoleRenderer;
-            _logService = logService;
+            _menuRenderer = menuRenderer;
+            _menuInteraction = menuInteraction;
             _gameInitService = gameInitService;
-
+            _console = console;
+            _gameStateManager = new GameStateManager(renderer, gameInitService);
             _pluginsFolder = Path.Combine(ConsoleConstants.ProjectRootPath, ConsoleConstants.PluginsDirectory);
             _gameInitService.LoadPlugins(_pluginsFolder);
         }
@@ -38,10 +44,9 @@ namespace Savanna.CLI
         /// </summary>
         public void Run()
         {
-            Console.CursorVisible = false;
+            _console.CursorVisible = false;
 
             bool exitApplication = false;
-
             while (!exitApplication)
             {
                 exitApplication = StartGameFromMenu();
@@ -61,24 +66,24 @@ namespace Savanna.CLI
                 ConsoleConstants.ExitOption
             };
 
-            int selection = _menuService.GetSelectionFromOptions(ConsoleConstants.SavannaSimulationTitle, menuOptions);
+            int selection = _menuInteraction.GetSelectionFromOptions(ConsoleConstants.SavannaSimulationTitle, menuOptions);
             MenuOption menuOption = (MenuOption)selection;
 
             switch (menuOption)
             {
                 case MenuOption.StartNewGame:
-                    _gameEngine = _gameInitService.StartNewGame();
-                    if (_gameEngine != null)
+                    var newEngine = _gameInitService.StartNewGame();
+                    if (newEngine != null)
                     {
-                        RunGame(_gameEngine);
+                        RunGame(newEngine);
                     }
                     return false;
 
                 case MenuOption.LoadSavedGame:
-                    _gameEngine = _gameInitService.LoadSavedGame();
-                    if (_gameEngine != null)
+                    var loadedEngine = _gameInitService.LoadSavedGame();
+                    if (loadedEngine != null)
                     {
-                        RunGame(_gameEngine);
+                        RunGame(loadedEngine);
                     }
                     return false;
 
@@ -96,23 +101,17 @@ namespace Savanna.CLI
         /// <param name="engine">The game engine to use</param>
         private void RunGame(GameEngine engine)
         {
-            bool isRunning = true;
-            bool isPaused = false;
-            DateTime lastUpdate = DateTime.Now;
-
             InitializeGameDisplay();
+            _gameStateManager.SetGameEngine(engine);
 
-            while (isRunning)
+            while (_gameStateManager.IsRunning)
             {
-                if (!isPaused)
-                {
-                    UpdateGameState(engine, ref lastUpdate);
-                }
+                _gameStateManager.Update();
 
-                if (Console.KeyAvailable)
+                if (_console.KeyAvailable)
                 {
-                    var key = Console.ReadKey(true).Key;
-                    HandleUserInput(key, engine, ref isRunning, ref isPaused);
+                    var key = _console.ReadKey(true);
+                    _gameStateManager.HandleInput(key);
                 }
 
                 Thread.Sleep(ConsoleConstants.ThreadSleepDuration);
@@ -124,109 +123,14 @@ namespace Savanna.CLI
         /// </summary>
         private void InitializeGameDisplay()
         {
-            _menuService.ClearScreen();
+            _menuRenderer.ClearScreen();
             _renderer.RenderHeader(ConsoleConstants.Header);
-            int commandGuideHeight = _menuService.DisplayCommandGuide();
+            int commandGuideHeight = _menuRenderer.DisplayCommandGuide();
 
             if (_renderer is RendererService rendererService)
             {
                 rendererService.HeaderOffset = ConsoleConstants.HeaderHeight + commandGuideHeight;
             }
-        }
-
-        /// <summary>
-        /// Updates the game state if enough time has passed since the last update
-        /// </summary>
-        private void UpdateGameState(GameEngine engine, ref DateTime lastUpdate)
-        {
-            if ((DateTime.Now - lastUpdate).TotalMilliseconds >= ConsoleConstants.IterationDuration)
-            {
-                engine.Update();
-                engine.DrawField();
-                lastUpdate = DateTime.Now;
-            }
-        }
-
-        /// <summary>
-        /// Handles user input and performs corresponding actions
-        /// </summary>
-        private void HandleUserInput(ConsoleKey key, GameEngine engine, ref bool isRunning, ref bool isPaused)
-        {
-            switch (key)
-            {
-                case ConsoleKey.Escape:
-                    isRunning = false;
-                    break;
-                case ConsoleKey.Spacebar:
-                    HandleGamePause(ref isPaused);
-                    break;
-                case ConsoleKey.S:
-                    HandleGameSave(engine);
-                    break;
-                default:
-                    HandleAnimalSpawn(key, engine);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Handles game pause/resume functionality
-        /// </summary>
-        private void HandleGamePause(ref bool isPaused)
-        {
-            isPaused = !isPaused;
-            _renderer.ShowLog(isPaused ? ConsoleConstants.GamePaused : ConsoleConstants.GameResumed, ConsoleConstants.LogDurationShort);
-        }
-
-        /// <summary>
-        /// Handles game save functionality
-        /// </summary>
-        private void HandleGameSave(GameEngine engine)
-        {
-            string saveResult = engine.SaveGame();
-            string message = !string.IsNullOrEmpty(saveResult)
-                ? ConsoleConstants.GameSavedSuccessfully
-                : ConsoleConstants.GameSaveFailed;
-            _renderer.ShowLog(message, ConsoleConstants.LogDurationMedium);
-        }
-
-        /// <summary>
-        /// Handles animal spawning based on key press
-        /// </summary>
-        private void HandleAnimalSpawn(ConsoleKey key, GameEngine engine)
-        {
-            var animalKeyMappings = _gameInitService.AnimalKeyMappings;
-            if (animalKeyMappings.TryGetValue(key, out string keyAnimalType))
-            {
-                SpawnAnimal(engine, keyAnimalType);
-            }
-        }
-
-        /// <summary>
-        /// Spawns an animal at a random position on the field
-        /// </summary>
-        private void SpawnAnimal(GameEngine engine, string animalType)
-        {
-            var field = GetFieldFromEngine(engine);
-            if (field != null)
-            {
-                Random rnd = new Random();
-                var position = new Position(rnd.Next(field.Width), rnd.Next(field.Height));
-                var animal = _gameInitService.GetAnimalFactory().CreateAnimal(animalType, position);
-                engine.AddAnimal(animal);
-            }
-        }
-
-        /// <summary>
-        /// Helper method to get the field from the engine using reflection
-        /// to avoid direct access to private fields
-        /// </summary>
-        private Field GetFieldFromEngine(GameEngine engine)
-        {
-            var fieldProperty = typeof(GameEngine).GetField("_field",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-            return fieldProperty?.GetValue(engine) as Field;
         }
     }
 }

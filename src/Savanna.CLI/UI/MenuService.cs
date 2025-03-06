@@ -2,19 +2,21 @@ using Savanna.CLI.Interfaces;
 using Savanna.Core.Constants;
 using Savanna.Core.Interfaces;
 
-namespace Savanna.CLI.Services
+namespace Savanna.CLI.UI
 {
     /// <summary>
-    /// Implementation of the menu service for console-based user interactions
+    /// Implementation of menu-related services for console-based user interactions
     /// </summary>
-    public class MenuService : IMenuService
+    public class MenuService : IMenuRenderer, IMenuInteraction
     {
         private readonly IRendererService _renderer;
+        private readonly IConsoleWrapper _console;
         private Dictionary<ConsoleKey, string> _animalKeyMappings;
 
-        public MenuService(IRendererService renderer)
+        public MenuService(IRendererService renderer, IConsoleWrapper console)
         {
             _renderer = renderer;
+            _console = console;
             _animalKeyMappings = new Dictionary<ConsoleKey, string>();
         }
 
@@ -35,7 +37,7 @@ namespace Savanna.CLI.Services
         /// <returns>The selected index</returns>
         public int GetSelectionFromOptions(string title, string[] options)
         {
-            Console.CursorVisible = false;
+            _console.CursorVisible = false;
             int currentSelection = 0;
 
             ConsoleKey key;
@@ -43,7 +45,7 @@ namespace Savanna.CLI.Services
             {
                 _renderer.RenderMenu(title, options, currentSelection);
 
-                key = Console.ReadKey(true).Key;
+                key = _console.ReadKey(true);
 
                 switch (key)
                 {
@@ -69,12 +71,12 @@ namespace Savanna.CLI.Services
         /// <returns>The user's input as an integer</returns>
         public int GetNumericInput(string prompt, int defaultValue, int minValue, int maxValue)
         {
-            Console.CursorVisible = true;
+            _console.CursorVisible = true;
 
             while (true)
             {
-                Console.WriteLine($"{prompt} [{minValue}-{maxValue}, default: {defaultValue}]: ");
-                string input = Console.ReadLine();
+                _console.WriteLine($"{prompt} [{minValue}-{maxValue}, default: {defaultValue}]: ");
+                string input = _console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(input))
                 {
@@ -86,7 +88,7 @@ namespace Savanna.CLI.Services
                     return result;
                 }
 
-                Console.WriteLine(string.Format(ConsoleConstants.NumericInputErrorFormat, minValue, maxValue));
+                _console.WriteLine(string.Format(ConsoleConstants.NumericInputErrorFormat, minValue, maxValue));
             }
         }
 
@@ -98,9 +100,9 @@ namespace Savanna.CLI.Services
         {
             int currentLine = ConsoleConstants.HeaderHeight;
 
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.SetCursorPosition(0, currentLine);
-            Console.WriteLine(ConsoleConstants.AvailableAnimals);
+            _console.ForegroundColor = ConsoleColor.Yellow;
+            _console.SetCursorPosition(0, currentLine);
+            _console.WriteLine(ConsoleConstants.AvailableAnimals);
             currentLine++;
 
             foreach (var mapping in _animalKeyMappings)
@@ -108,21 +110,21 @@ namespace Savanna.CLI.Services
                 DisplayAnimalCommand(mapping.Key, mapping.Value, ref currentLine);
             }
 
-            Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
-            Console.SetCursorPosition(0, currentLine + 1);
-            Console.WriteLine(ConsoleConstants.CommandsHeader);
+            _console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
+            _console.SetCursorPosition(0, currentLine + 1);
+            _console.WriteLine(ConsoleConstants.CommandsHeader);
             currentLine += 2;
 
-            Console.SetCursorPosition(0, currentLine);
-            Console.WriteLine(ConsoleConstants.SaveGameCommand);
+            _console.SetCursorPosition(0, currentLine);
+            _console.WriteLine(ConsoleConstants.SaveGameCommand);
             currentLine++;
 
-            Console.SetCursorPosition(0, currentLine);
-            Console.WriteLine(ConsoleConstants.PauseResumeCommand);
+            _console.SetCursorPosition(0, currentLine);
+            _console.WriteLine(ConsoleConstants.PauseResumeCommand);
             currentLine++;
 
-            Console.SetCursorPosition(0, currentLine);
-            Console.WriteLine(ConsoleConstants.ExitCommand);
+            _console.SetCursorPosition(0, currentLine);
+            _console.WriteLine(ConsoleConstants.ExitCommand);
             currentLine++;
 
             return currentLine - ConsoleConstants.HeaderHeight;
@@ -148,12 +150,12 @@ namespace Savanna.CLI.Services
         /// </summary>
         private void DisplayAnimalCommand(ConsoleKey key, string animalName, ref int line)
         {
-            Console.SetCursorPosition(0, line);
-            Console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
-            Console.Write(string.Format(ConsoleConstants.AddAnimalCommandFormat, key, animalName));
+            _console.SetCursorPosition(0, line);
+            _console.ForegroundColor = ConsoleConstants.DefaultFieldColor;
+            _console.Write(string.Format(ConsoleConstants.AddAnimalCommandFormat, key, animalName));
 
-            Console.ForegroundColor = _renderer.GetAnimalColor(animalName);
-            Console.WriteLine(animalName);
+            _console.ForegroundColor = _renderer.GetAnimalColor(animalName);
+            _console.WriteLine(animalName);
 
             line++;
         }
@@ -163,15 +165,17 @@ namespace Savanna.CLI.Services
         /// </summary>
         public void ClearScreen()
         {
-            Console.Clear();
+            _console.Clear();
         }
 
-        /// <summary>
-        /// Gets custom animal key mappings
-        /// </summary>
-        private Dictionary<ConsoleKey, string> GetCustomAnimalMappings()
+        public void RenderMenu(string title, string[] options, int selectedIndex)
         {
-            return new Dictionary<ConsoleKey, string>();
+            _renderer.RenderMenu(title, options, selectedIndex);
+        }
+
+        public void RenderHeader(string text)
+        {
+            _renderer.RenderHeader(text);
         }
     }
 }

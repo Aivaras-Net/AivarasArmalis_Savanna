@@ -1,27 +1,23 @@
 namespace Savanna.CLI.Interfaces
 {
     /// <summary>
-    /// Defines the menu service for handling user interactions
+    /// Defines the rendering operations for menu-related UI elements
     /// </summary>
-    public interface IMenuService
+    public interface IMenuRenderer
     {
         /// <summary>
-        /// Displays a menu and gets the user's selection
+        /// Renders a menu with the given options
         /// </summary>
         /// <param name="title">The menu title</param>
         /// <param name="options">The menu options</param>
-        /// <returns>The index of the selected option</returns>
-        int GetSelectionFromOptions(string title, string[] options);
+        /// <param name="selectedIndex">The currently selected index</param>
+        void RenderMenu(string title, string[] options, int selectedIndex);
 
         /// <summary>
-        /// Gets a numeric input from the user
+        /// Renders a header with the specified text
         /// </summary>
-        /// <param name="prompt">The prompt to display</param>
-        /// <param name="defaultValue">The default value</param>
-        /// <param name="minValue">The minimum allowed value</param>
-        /// <param name="maxValue">The maximum allowed value</param>
-        /// <returns>The user's input as an integer</returns>
-        int GetNumericInput(string prompt, int defaultValue, int minValue, int maxValue);
+        /// <param name="text">The header text</param>
+        void RenderHeader(string text);
 
         /// <summary>
         /// Displays the game command guide
