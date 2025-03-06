@@ -17,16 +17,6 @@
       "Prey": {
         "HealthFromGrazing": 1
       }
-    },
-    "Caracal": {
-      "Speed": 3,
-      "VisionRange": 5,
-      "SpecialActionChance": 0,
-      "Predator": {
-        "HuntingRange": 2,
-        "RoarRange": null,
-        "HealthGainFromKill": null
-      }
     }
   },
   "General": {

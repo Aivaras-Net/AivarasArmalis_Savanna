@@ -202,44 +202,5 @@ namespace Savanna.Core
             }
             _renderer.RenderField(_field.GetGrid());
         }
-
-        /// <summary>
-        /// Formats a save filename into a more readable display name
-        /// </summary>
-        /// <param name="fileName">Raw save filename</param>
-        /// <returns>Formatted display name</returns>
-        public static string FormatSaveFileDisplayName(string fileName)
-        {
-            try
-            {
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-                string[] parts = fileNameWithoutExtension.Split('_');
-
-                if (parts.Length >= 3)
-                {
-                    string dateStr = parts[1];
-                    string timeStr = parts[2];
-
-                    if (dateStr.Length == 8 && timeStr.Length == 6)
-                    {
-                        string year = dateStr.Substring(0, 4);
-                        string month = dateStr.Substring(4, 2);
-                        string day = dateStr.Substring(6, 2);
-
-                        string hour = timeStr.Substring(0, 2);
-                        string minute = timeStr.Substring(2, 2);
-                        string second = timeStr.Substring(4, 2);
-
-                        return $"Save from {year}-{month}-{day} {hour}:{minute}:{second}";
-                    }
-                }
-
-                return fileName;
-            }
-            catch
-            {
-                return fileName;
-            }
-        }
     }
 }

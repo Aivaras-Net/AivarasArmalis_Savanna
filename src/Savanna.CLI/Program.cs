@@ -1,5 +1,4 @@
 ﻿using Savanna.CLI.Interfaces;
-using Savanna.Core.Interfaces;
 
 namespace Savanna.CLI
 {

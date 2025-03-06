@@ -1,5 +1,4 @@
 using Savanna.CLI.Interfaces;
-using Savanna.CLI.UI;
 using Savanna.Core;
 using Savanna.Core.Constants;
 using Savanna.Core.Domain;
@@ -49,13 +48,21 @@ namespace Savanna.CLI.Services
             _consoleRenderer = consoleRenderer;
             _animalFactory = new AnimalFactory();
 
+            InitializeDefaultAnimalMappings();
+            InitializeDefaultAnimalColors();
+        }
+
+        private void InitializeDefaultAnimalMappings()
+        {
             _animalKeyMappings[ConsoleConstants.AntelopeKey] = GameConstants.AntelopeName;
             _animalKeyMappings[ConsoleConstants.LionKey] = GameConstants.LionName;
+            _menuInteraction.UpdateAnimalKeyMappings(_animalKeyMappings);
+        }
 
+        private void InitializeDefaultAnimalColors()
+        {
             _renderer.RegisterAnimalColor(GameConstants.AntelopeName);
             _renderer.RegisterAnimalColor(GameConstants.LionName);
-
-            _menuInteraction.UpdateAnimalKeyMappings(_animalKeyMappings);
         }
 
         /// <summary>
@@ -168,62 +175,90 @@ namespace Savanna.CLI.Services
         /// <param name="importsFolder">The folder containing plugins</param>
         public void LoadPlugins(string importsFolder)
         {
-            if (!Directory.Exists(importsFolder))
-            {
-                Directory.CreateDirectory(importsFolder);
+            if (!EnsurePluginFolderExists(importsFolder))
                 return;
-            }
 
             string[] pluginFiles = Directory.GetFiles(importsFolder, ConsoleConstants.DllSearchPattern);
             if (pluginFiles.Length == 0)
-            {
                 return;
-            }
 
             foreach (string pluginPath in pluginFiles)
             {
-                try
+                ProcessPluginFile(pluginPath);
+            }
+        }
+
+        private bool EnsurePluginFolderExists(string importsFolder)
+        {
+            if (!Directory.Exists(importsFolder))
+            {
+                Directory.CreateDirectory(importsFolder);
+                return false;
+            }
+            return true;
+        }
+
+        private void ProcessPluginFile(string pluginPath)
+        {
+            try
+            {
+                Assembly assembly = Assembly.LoadFrom(pluginPath);
+                ProcessAnimalTypes(assembly.GetTypes());
+                _menuInteraction.UpdateAnimalKeyMappings(_animalKeyMappings);
+            }
+            catch (Exception ex)
+            {
+                _renderer.ShowLog(string.Format(ConsoleConstants.ErrorLoadingPluginFormat, pluginPath, ex.Message), ConsoleConstants.LogDurationLong);
+            }
+        }
+
+        private void ProcessAnimalTypes(Type[] types)
+        {
+            foreach (var type in types)
+            {
+                if (IsValidAnimalType(type))
                 {
-                    Assembly assembly = Assembly.LoadFrom(pluginPath);
-                    var types = assembly.GetTypes();
-
-                    foreach (var type in types)
-                    {
-                        if (typeof(IAnimal).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract)
-                        {
-                            try
-                            {
-                                var animal = (IAnimal)Activator.CreateInstance(type, new Position(0, 0));
-                                string animalName = animal.Name;
-
-                                if (animal is IAnimalConfigProvider configProvider)
-                                {
-                                    ConfigurationService.AddOrUpdateAnimalConfig(animalName, configProvider.GetDefaultConfig());
-                                    _renderer.ShowLog(string.Format(ConsoleConstants.RegisteredAnimalConfigFormat, animalName), ConsoleConstants.LogDurationMedium);
-                                }
-
-                                _animalFactory.RegisterCustomAnimal(type);
-
-                                AssignKeyForAnimal(animalName);
-
-                                _renderer.RegisterAnimalColor(animalName);
-
-                                _renderer.ShowLog(string.Format(ConsoleConstants.LoadedAnimalFormat, animalName), ConsoleConstants.LogDurationMedium);
-                            }
-                            catch (Exception ex)
-                            {
-                                _renderer.ShowLog(string.Format(ConsoleConstants.FailedToInitializeAnimalFormat, ex.Message), ConsoleConstants.LogDurationLong);
-                            }
-                        }
-                    }
-
-                    _menuInteraction.UpdateAnimalKeyMappings(_animalKeyMappings);
-                }
-                catch (Exception ex)
-                {
-                    _renderer.ShowLog(string.Format(ConsoleConstants.ErrorLoadingPluginFormat, pluginPath, ex.Message), ConsoleConstants.LogDurationLong);
+                    RegisterAnimalType(type);
                 }
             }
+        }
+
+        private bool IsValidAnimalType(Type type)
+        {
+            return typeof(IAnimal).IsAssignableFrom(type) && !type.IsInterface && !type.IsAbstract;
+        }
+
+        private void RegisterAnimalType(Type type)
+        {
+            try
+            {
+                var animal = (IAnimal)Activator.CreateInstance(type, new Position(0, 0));
+                string animalName = animal.Name;
+
+                RegisterAnimalConfiguration(animal, animalName);
+                RegisterAnimalInFactory(type, animalName);
+            }
+            catch (Exception ex)
+            {
+                _renderer.ShowLog(string.Format(ConsoleConstants.FailedToInitializeAnimalFormat, ex.Message), ConsoleConstants.LogDurationLong);
+            }
+        }
+
+        private void RegisterAnimalConfiguration(IAnimal animal, string animalName)
+        {
+            if (animal is IAnimalConfigProvider configProvider)
+            {
+                ConfigurationService.AddOrUpdateAnimalConfig(animalName, configProvider.GetDefaultConfig());
+                _renderer.ShowLog(string.Format(ConsoleConstants.RegisteredAnimalConfigFormat, animalName), ConsoleConstants.LogDurationMedium);
+            }
+        }
+
+        private void RegisterAnimalInFactory(Type type, string animalName)
+        {
+            _animalFactory.RegisterCustomAnimal(type);
+            AssignKeyForAnimal(animalName);
+            _renderer.RegisterAnimalColor(animalName);
+            _renderer.ShowLog(string.Format(ConsoleConstants.LoadedAnimalFormat, animalName), ConsoleConstants.LogDurationMedium);
         }
 
         /// <summary>

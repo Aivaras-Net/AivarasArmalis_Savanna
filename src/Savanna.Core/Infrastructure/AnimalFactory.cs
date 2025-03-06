@@ -1,9 +1,9 @@
 ﻿using Savanna.Core.Config;
-using Savanna.Core.Constants;
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure.Behaviors;
 using Savanna.Core.Interfaces;
+using Savanna.Core.Constants;
 
 namespace Savanna.Core.Infrastructure
 {
@@ -95,7 +95,7 @@ namespace Savanna.Core.Infrastructure
         {
             if (!TryCreateAnimal(animalType, out var animal))
             {
-                throw new ArgumentException($"Unknown animal type: {animalType}");
+                throw new ArgumentException(string.Format(GameConstants.UnknownAnimalTypeMessage, animalType));
             }
 
             animal.Position = position;

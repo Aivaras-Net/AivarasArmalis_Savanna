@@ -37,5 +37,6 @@ namespace Savanna.Core.Constants
         public const string AnimalHuntedMessage = "{0} hunted {1} at position ({2},{3})";
         public const string AnimalSpawnedMessage = "{0} spawned at position ({1},{2})";
         public const string DateTimeFormat = "yyyyMMdd_HHmmss";
+        public const string UnknownAnimalTypeMessage = "Unknown animal type: {0}";
     }
 }
