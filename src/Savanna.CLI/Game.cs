@@ -100,6 +100,30 @@ namespace Savanna.CLI
             bool isPaused = false;
             DateTime lastUpdate = DateTime.Now;
 
+            InitializeGameDisplay();
+
+            while (isRunning)
+            {
+                if (!isPaused)
+                {
+                    UpdateGameState(engine, ref lastUpdate);
+                }
+
+                if (Console.KeyAvailable)
+                {
+                    var key = Console.ReadKey(true).Key;
+                    HandleUserInput(key, engine, ref isRunning, ref isPaused);
+                }
+
+                Thread.Sleep(ConsoleConstants.ThreadSleepDuration);
+            }
+        }
+
+        /// <summary>
+        /// Initializes the game display by setting up the header and command guide
+        /// </summary>
+        private void InitializeGameDisplay()
+        {
             _menuService.ClearScreen();
             _renderer.RenderHeader(ConsoleConstants.Header);
             int commandGuideHeight = _menuService.DisplayCommandGuide();
@@ -108,57 +132,88 @@ namespace Savanna.CLI
             {
                 rendererService.HeaderOffset = ConsoleConstants.HeaderHeight + commandGuideHeight;
             }
+        }
 
-            while (isRunning)
+        /// <summary>
+        /// Updates the game state if enough time has passed since the last update
+        /// </summary>
+        private void UpdateGameState(GameEngine engine, ref DateTime lastUpdate)
+        {
+            if ((DateTime.Now - lastUpdate).TotalMilliseconds >= ConsoleConstants.IterationDuration)
             {
-                if (!isPaused && (DateTime.Now - lastUpdate).TotalMilliseconds >= ConsoleConstants.IterationDuration)
-                {
-                    engine.Update();
-                    engine.DrawField();
-                    lastUpdate = DateTime.Now;
-                }
+                engine.Update();
+                engine.DrawField();
+                lastUpdate = DateTime.Now;
+            }
+        }
 
-                if (Console.KeyAvailable)
-                {
-                    var key = Console.ReadKey(true).Key;
+        /// <summary>
+        /// Handles user input and performs corresponding actions
+        /// </summary>
+        private void HandleUserInput(ConsoleKey key, GameEngine engine, ref bool isRunning, ref bool isPaused)
+        {
+            switch (key)
+            {
+                case ConsoleKey.Escape:
+                    isRunning = false;
+                    break;
+                case ConsoleKey.Spacebar:
+                    HandleGamePause(ref isPaused);
+                    break;
+                case ConsoleKey.S:
+                    HandleGameSave(engine);
+                    break;
+                default:
+                    HandleAnimalSpawn(key, engine);
+                    break;
+            }
+        }
 
-                    switch (key)
-                    {
-                        case ConsoleKey.Escape:
-                            isRunning = false;
-                            break;
-                        case ConsoleKey.Spacebar:
-                            isPaused = !isPaused;
-                            _renderer.ShowLog(isPaused ? ConsoleConstants.GamePaused : ConsoleConstants.GameResumed, ConsoleConstants.LogDurationShort);
-                            break;
-                        case ConsoleKey.S:
-                            string saveResult = engine.SaveGame();
-                            if (!string.IsNullOrEmpty(saveResult))
-                            {
-                                _renderer.ShowLog(ConsoleConstants.GameSavedSuccessfully, ConsoleConstants.LogDurationMedium);
-                            }
-                            else
-                            {
-                                _renderer.ShowLog(ConsoleConstants.GameSaveFailed, ConsoleConstants.LogDurationMedium);
-                            }
-                            break;
-                        default:
-                            var animalKeyMappings = _gameInitService.AnimalKeyMappings;
-                            if (animalKeyMappings.TryGetValue(key, out string keyAnimalType))
-                            {
-                                Random rnd = new Random();
-                                var keyField = GetFieldFromEngine(engine);
-                                if (keyField != null)
-                                {
-                                    engine.AddAnimal(_gameInitService.GetAnimalFactory().CreateAnimal(keyAnimalType,
-                                        new Position(rnd.Next(keyField.Width), rnd.Next(keyField.Height))));
-                                }
-                            }
-                            break;
-                    }
-                }
+        /// <summary>
+        /// Handles game pause/resume functionality
+        /// </summary>
+        private void HandleGamePause(ref bool isPaused)
+        {
+            isPaused = !isPaused;
+            _renderer.ShowLog(isPaused ? ConsoleConstants.GamePaused : ConsoleConstants.GameResumed, ConsoleConstants.LogDurationShort);
+        }
 
-                Thread.Sleep(ConsoleConstants.ThreadSleepDuration);
+        /// <summary>
+        /// Handles game save functionality
+        /// </summary>
+        private void HandleGameSave(GameEngine engine)
+        {
+            string saveResult = engine.SaveGame();
+            string message = !string.IsNullOrEmpty(saveResult)
+                ? ConsoleConstants.GameSavedSuccessfully
+                : ConsoleConstants.GameSaveFailed;
+            _renderer.ShowLog(message, ConsoleConstants.LogDurationMedium);
+        }
+
+        /// <summary>
+        /// Handles animal spawning based on key press
+        /// </summary>
+        private void HandleAnimalSpawn(ConsoleKey key, GameEngine engine)
+        {
+            var animalKeyMappings = _gameInitService.AnimalKeyMappings;
+            if (animalKeyMappings.TryGetValue(key, out string keyAnimalType))
+            {
+                SpawnAnimal(engine, keyAnimalType);
+            }
+        }
+
+        /// <summary>
+        /// Spawns an animal at a random position on the field
+        /// </summary>
+        private void SpawnAnimal(GameEngine engine, string animalType)
+        {
+            var field = GetFieldFromEngine(engine);
+            if (field != null)
+            {
+                Random rnd = new Random();
+                var position = new Position(rnd.Next(field.Width), rnd.Next(field.Height));
+                var animal = _gameInitService.GetAnimalFactory().CreateAnimal(animalType, position);
+                engine.AddAnimal(animal);
             }
         }
 
