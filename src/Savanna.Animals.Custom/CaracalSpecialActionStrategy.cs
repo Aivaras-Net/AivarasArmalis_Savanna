@@ -1,8 +1,6 @@
 ﻿using Savanna.Core.Config;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Interfaces;
-using Savanna.Animals.Custom.Constants;
-using static Savanna.Core.Config.ConfigurationService.ConfigExtensions;
 
 namespace Savanna.Animals.Custom
 {
@@ -16,13 +14,11 @@ namespace Savanna.Animals.Custom
             _config = config;
         }
 
-        protected virtual double GetRandomValue()
-        {
-            return _random.NextDouble();
-        }
-
         public void Execute(IAnimal animal, IEnumerable<IAnimal> animals)
         {
+            //Example of how to set up a special action for animals for importing
+
+            /*
             if (!(animal is IPredator caracal) || !caracal.isAlive)
                 return;
 
@@ -32,6 +28,7 @@ namespace Savanna.Animals.Custom
             if (GetRandomValue() < specialActionChance)
             {
             }
+            */
         }
     }
 }
