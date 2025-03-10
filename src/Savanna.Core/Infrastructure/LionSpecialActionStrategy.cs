@@ -2,6 +2,7 @@
 using Savanna.Core.Constants;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Interfaces;
+using static Savanna.Core.Config.ConfigurationService.ConfigExtensions;
 
 namespace Savanna.Core.Infrastructure
 {
@@ -29,12 +30,14 @@ namespace Savanna.Core.Infrastructure
                 return;
 
             var lionConfig = _config.Animals[GameConstants.LionName];
+            var specialActionChance = GetSpecialActionChance(lionConfig);
 
-            if (GetRandomValue() < lionConfig.RoarChance)
+            if (GetRandomValue() < specialActionChance)
             {
+                var roarRange = GetRoarRange(lionConfig);
                 var preyInRoarRange = animals
                     .OfType<IPrey>()
-                    .Where(a => a.isAlive && animal.Position.DistanceTo(a.Position) < lionConfig.RoarRange);
+                    .Where(a => a.isAlive && animal.Position.DistanceTo(a.Position) < roarRange);
 
                 foreach (var prey in preyInRoarRange)
                 {

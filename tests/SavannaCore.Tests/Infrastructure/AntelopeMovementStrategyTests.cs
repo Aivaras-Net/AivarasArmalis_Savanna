@@ -1,15 +1,27 @@
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure;
+using Savanna.Core.Config;
 using SavannaCore.Tests.Helpers;
 
 namespace SavannaCore.Tests.Infrastructure;
 
-public class AntelopeMovementStrategyTests
+public class AntelopeMovementStrategyTests : IDisposable
 {
+    public AntelopeMovementStrategyTests()
+    {
+        var testConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test_animals.json");
+        ConfigurationService.SetConfigPath(testConfigPath);
+    }
+
+    public void Dispose()
+    {
+        ConfigurationService.SetConfigPath(null);
+    }
+
     private class TestAntelopeMovementStrategy : AntelopeMovementStrategy
     {
-        public TestAntelopeMovementStrategy() : base(TestConfigHelper.TestConfig)
+        public TestAntelopeMovementStrategy() : base(ConfigurationService.Config)
         {
         }
     }
@@ -17,7 +29,7 @@ public class AntelopeMovementStrategyTests
     [Fact]
     public void Move_ShouldFleeFromPredator_WhenPredatorInVisionRange()
     {
-        var strategy = new AntelopeMovementStrategy(TestConfigHelper.TestConfig);
+        var strategy = new AntelopeMovementStrategy(ConfigurationService.Config);
         var antelope = AnimalTestHelper.CreateAntelope(new Position(5, 5));
         var lion = AnimalTestHelper.CreateLion(new Position(3, 3));
         IAnimal[] animals = { antelope, lion };

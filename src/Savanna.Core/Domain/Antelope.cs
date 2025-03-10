@@ -2,6 +2,7 @@
 using Savanna.Core.Constants;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure;
+using Savanna.Core.Infrastructure.Behaviors;
 
 namespace Savanna.Core.Domain
 {
@@ -10,9 +11,7 @@ namespace Savanna.Core.Domain
         public override string Name => GameConstants.AntelopeName;
 
         public Antelope(double speed, double visionRange, Position position)
-            : base(speed, visionRange, position,
-                   new AntelopeMovementStrategy(ConfigurationService.Config),
-                   new AntelopeSpecialActionStrategy(ConfigurationService.Config))
+            : base(speed, visionRange, position, new AntelopeBehavior())
         {
         }
 

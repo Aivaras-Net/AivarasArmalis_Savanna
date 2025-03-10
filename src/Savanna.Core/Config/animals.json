@@ -1,24 +1,36 @@
 {
-  "animals": {
+  "Animals": {
     "Lion": {
-      "speed": 2.0,
-      "visionRange": 10.0,
-      "huntingRange": 1.0,
-      "roarRange": 3,
-      "roarChance": 0.3,
-      "healthGainFromKill": 5.0
+      "Speed": 2,
+      "VisionRange": 10,
+      "SpecialActionChance": 0.3,
+      "Predator": {
+        "HuntingRange": 1,
+        "RoarRange": 3,
+        "HealthGainFromKill": 5
+      }
     },
     "Antelope": {
-      "speed": 1.0,
-      "visionRange": 5.0,
-      "grazeChance": 0.8,
-      "healthFromGrazing": 1.0
+      "Speed": 1,
+      "VisionRange": 5,
+      "SpecialActionChance": 0.8,
+      "Prey": {
+        "HealthFromGrazing": 1
+      }
+    },
+    "Caracal": {
+      "Speed": 3.0,
+      "VisionRange": 5.0,
+      "SpecialActionChance": 0.0,
+      "Predator": {
+        "HuntingRange": 2.0
+      }
     }
   },
-  "general": {
-    "initialHealth": 20.0,
-    "maxHealth": 25.0,
-    "healthDecreasePerTurn": 0.5,
-    "requiredMatingTurns": 3
+  "General": {
+    "InitialHealth": 20,
+    "MaxHealth": 25,
+    "HealthDecreasePerTurn": 0.5,
+    "RequiredMatingTurns": 3
   }
-} 
+}

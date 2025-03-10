@@ -3,6 +3,7 @@ using Savanna.Core.Constants;
 using Savanna.Core.Domain;
 using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Interfaces;
+using static Savanna.Core.Config.ConfigurationService.ConfigExtensions;
 
 namespace Savanna.Core.Infrastructure
 {
@@ -36,10 +37,12 @@ namespace Savanna.Core.Infrastructure
                 a.isAlive &&
                 animal.Position.DistanceTo(a.Position) <= animal.VisionRange);
 
-            if (!nearbyLions && GetRandomValue() <= antelopeConfig.GrazeChance)
+            var specialActionChance = GetSpecialActionChance(antelopeConfig);
+            if (!nearbyLions && GetRandomValue() <= specialActionChance)
             {
+                var healthFromGrazing = GetHealthFromGrazing(antelopeConfig);
                 antelope.Health = Math.Min(_config.General.MaxHealth,
-                    antelope.Health + (antelopeConfig.HealthFromGrazing ?? 0));
+                    antelope.Health + healthFromGrazing);
             }
         }
     }
