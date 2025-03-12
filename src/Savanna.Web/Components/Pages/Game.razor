@@ -52,7 +52,7 @@
                 @foreach (var animal in _gameEngine.Animals)
                 {
                     string animalClass = animal.Name == GameConstants.LionName ? "lion" : "antelope";
-                    <div class="animal @animalClass"
+                    <div class="animal @animalClass" @key="animal.GetHashCode()"
                         style="position: absolute; left: @(animal.Position.X * 20)px; top: @(animal.Position.Y * 20)px; width: 20px; height: 20px;">
                         @(animal.Name == GameConstants.LionName ? "🦁" : "🦌")
                     </div>
@@ -78,7 +78,7 @@
         justify-content: center;
         align-items: center;
         font-size: 16px;
-        transition: all 0.3s ease;
+        transition: all 0.3s ease-out;
     }
 
     .lion {
@@ -218,7 +218,7 @@
 
         public void RegisterAnimalColor(string animalName)
         {
-            
+            // Not needed for web implementation
         }
 
         public void ShowLog(string message, int frames)
