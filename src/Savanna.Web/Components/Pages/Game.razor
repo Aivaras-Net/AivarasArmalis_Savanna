@@ -1,0 +1,229 @@
+@page "/game"
+@using Savanna.Core
+@using Savanna.Core.Domain
+@using Savanna.Core.Domain.Interfaces
+@using Savanna.Core.Constants
+@using System.Timers
+@using Microsoft.JSInterop
+@using Savanna.Core.Interfaces
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+@rendermode InteractiveServer
+
+<PageTitle>Savanna Game</PageTitle>
+
+<div class="game-container mb-4">
+    <h1>Savanna Game</h1>
+
+    @if (!_isGameRunning)
+    {
+        <div class="game-menu">
+            <button class="btn btn-primary" @onclick="StartNewGame">Start New Game</button>
+        </div>
+    }
+    else
+    {
+        <div class="game-controls mb-3">
+            <button class="btn btn-warning me-2" @onclick="TogglePause">
+                @(_isPaused ? "Resume" : "Pause")
+            </button>
+            <button class="btn btn-danger me-2" @onclick="StopGame">
+                Stop Game
+            </button>
+            <div class="btn-group me-2">
+                <button class="btn btn-success" @onclick="SpawnAntelope">Spawn Antelope</button>
+                <button class="btn btn-danger" @onclick="SpawnLion">Spawn Lion</button>
+            </div>
+        </div>
+
+        <div class="game-status mb-3">
+            <div class="alert alert-info">
+                <strong>Game Status:</strong> @(_isPaused ? "Paused" : "Running") |
+                <strong>Animals:</strong> @(_gameEngine?.Animals.Count ?? 0) |
+                <strong>Lions:</strong> @(_gameEngine?.Animals.Count(a => a.Name == GameConstants.LionName) ?? 0) |
+                <strong>Antelopes:</strong> @(_gameEngine?.Animals.Count(a => a.Name == GameConstants.AntelopeName) ?? 0)
+            </div>
+        </div>
+
+        <div class="game-field mb-3" id="gameField"
+            style="position: relative; width: @(_fieldWidth * 20)px; height: @(_fieldHeight * 20)px; border: 1px solid #ccc; background-color: #8fbf9f;">
+            @if (_gameEngine != null)
+            {
+                @foreach (var animal in _gameEngine.Animals)
+                {
+                    string animalClass = animal.Name == GameConstants.LionName ? "lion" : "antelope";
+                    <div class="animal @animalClass"
+                        style="position: absolute; left: @(animal.Position.X * 20)px; top: @(animal.Position.Y * 20)px; width: 20px; height: 20px;">
+                        @(animal.Name == GameConstants.LionName ? "🦁" : "🦌")
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="game-log mb-3">
+            <h5>Game Log</h5>
+            <div class="log-container p-2 border" style="height: 150px; overflow-y: auto; background-color: #f8f9fa;">
+                @foreach (var log in _gameLogs.AsEnumerable().Reverse())
+                {
+                    <div class="log-entry">@log</div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .animal {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .lion {
+        color: #cc3300;
+    }
+
+    .antelope {
+        color: #33cc33;
+    }
+</style>
+
+@code {
+    private GameEngine _gameEngine;
+    private Timer _gameTimer;
+    private bool _isGameRunning = false;
+    private bool _isPaused = false;
+    private int _fieldWidth = GameConstants.DefaultFieldWidth;
+    private int _fieldHeight = GameConstants.DefaultFieldHeight;
+    private readonly List<string> _gameLogs = new List<string>();
+    private Random _random = new Random();
+
+    private const int TimerInterval = 500;
+
+    protected override void OnInitialized()
+    {
+        _gameTimer = new Timer(TimerInterval);
+        _gameTimer.Elapsed += GameTimerElapsed;
+    }
+
+    private void StartNewGame()
+    {
+        _gameEngine = new GameEngine(new WebRenderer(this));
+        _isGameRunning = true;
+        _isPaused = false;
+        _gameLogs.Clear();
+        LogMessage("Game started");
+
+        SpawnAntelope();
+        SpawnAntelope();
+        SpawnLion();
+
+        _gameTimer.Start();
+    }
+
+    private void StopGame()
+    {
+        _gameTimer.Stop();
+        _isGameRunning = false;
+        _isPaused = false;
+        _gameEngine = null;
+        LogMessage("Game stopped");
+    }
+
+    private void TogglePause()
+    {
+        _isPaused = !_isPaused;
+        LogMessage(_isPaused ? "Game paused" : "Game resumed");
+    }
+
+    private void SpawnAntelope()
+    {
+        if (_gameEngine == null) return;
+
+        var position = GetRandomPosition();
+        _gameEngine.AddAnimal(new Antelope(1.5, 5.0, position), true);
+        LogMessage($"Antelope spawned at ({position.X}, {position.Y})");
+        StateHasChanged();
+    }
+
+    private void SpawnLion()
+    {
+        if (_gameEngine == null) return;
+
+        var position = GetRandomPosition();
+        _gameEngine.AddAnimal(new Lion(2.0, 7.0, position), true);
+        LogMessage($"Lion spawned at ({position.X}, {position.Y})");
+        StateHasChanged();
+    }
+
+    private Position GetRandomPosition()
+    {
+        return new Position(
+        _random.Next(_fieldWidth),
+        _random.Next(_fieldHeight)
+        );
+    }
+
+    private async void GameTimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        if (!_isGameRunning || _isPaused || _gameEngine == null)
+            return;
+
+        await InvokeAsync(() =>
+        {
+            _gameEngine.Update();
+            StateHasChanged();
+        });
+    }
+
+    public void LogMessage(string message)
+    {
+        _gameLogs.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
+        if (_gameLogs.Count > 100)
+            _gameLogs.RemoveAt(0);
+    }
+
+    public void Dispose()
+    {
+        _gameTimer?.Stop();
+        _gameTimer?.Dispose();
+    }
+
+    private class WebRenderer : IConsoleRenderer
+    {
+        private readonly Game _parent;
+
+        public WebRenderer(Game parent)
+        {
+            _parent = parent;
+        }
+
+        public void DrawField()
+        {
+            // This is called by the game engine after each update
+            // The rendering is handled by Blazor in the UI
+        }
+
+        public void RenderField(char[,] grid)
+        {
+            // Not needed for web implementation as rendering is handled by Blazor
+        }
+
+        public ConsoleColor GetAnimalColor(string animalName)
+        {
+            return animalName == GameConstants.LionName ? ConsoleColor.Red : ConsoleColor.Green;
+        }
+
+        public void RegisterAnimalColor(string animalName)
+        {
+            
+        }
+
+        public void ShowLog(string message, int frames)
+        {
+            _parent.LogMessage(message);
+        }
+    }
+}

@@ -1,0 +1,71 @@
+@page "/buttons"
+@using Savanna.Core.Domain
+@using Savanna.Core
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Buttons Example</PageTitle>
+
+<h1>Buttons Example</h1>
+
+<div class="mb-4">
+    <h3>JavaScript Button</h3>
+    <button class="btn btn-primary" @onclick="ShowJavaScriptMessage">Show JavaScript Message</button>
+    <div class="mt-2">
+        @if (!string.IsNullOrEmpty(_jsMessage))
+        {
+                        <div class="alert alert-info">@_jsMessage</div>
+        }
+    </div>
+</div>
+
+<div class="mb-4">
+    <h3>Razor Button</h3>
+    <button class="btn btn-success" @onclick="ShowRazorMessage">Show Razor Message</button>
+    <div class="mt-2">
+        @if (!string.IsNullOrEmpty(_razorMessage))
+        {
+                        <div class="alert alert-success">@_razorMessage</div>
+        }
+    </div>
+</div>
+
+<div class="mb-4">
+    <h3>Savanna.Core Button</h3>
+    <button class="btn btn-danger" @onclick="ShowSavannaInfo">Show Savanna.Core Info</button>
+    <div class="mt-2">
+        @if (!string.IsNullOrEmpty(_savannaMessage))
+        {
+                        <div class="alert alert-danger">@_savannaMessage</div>
+        }
+    </div>
+</div>
+
+@code {
+    private string _jsMessage = "";
+    private string _razorMessage = "";
+    private string _savannaMessage = "";
+
+    private async Task ShowJavaScriptMessage()
+    {
+        await JSRuntime.InvokeVoidAsync("alert", "Hello from JavaScript!");
+        _jsMessage = "JavaScript alert was displayed at: " + DateTime.Now.ToString("HH:mm:ss");
+    }
+
+    private void ShowRazorMessage()
+    {
+        _razorMessage = $"Hello from Razor! Current time is {DateTime.Now.ToString("HH:mm:ss")}";
+    }
+
+    private void ShowSavannaInfo()
+    {
+        // Create a position from Savanna.Core
+        var position = new Position(10, 20);
+        
+        // Calculate distance between two positions using Savanna.Core
+        var distance = position.DistanceTo(new Position(13, 24));
+        
+        _savannaMessage = $"Savanna.Core Position: ({position.X}, {position.Y}). " +
+                          $"Distance to point (13, 24): {distance:F2}";
+    }
+}
