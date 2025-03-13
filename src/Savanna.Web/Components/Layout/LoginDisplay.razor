@@ -1,0 +1,40 @@
+@using Microsoft.AspNetCore.Identity
+@using Savanna.Web.Models
+@using Microsoft.AspNetCore.Components.Authorization
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<div class="nav-item">
+    <AuthorizeView>
+        <Authorized>
+            <div class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    Hello, @context.User.Identity?.Name!
+                </a>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="/Account/Manage">Account</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="/Account/Logout">Logout</a></li>
+                </ul>
+            </div>
+            <div class="nav-item px-3">
+                <a class="nav-link btn btn-outline-danger btn-sm" href="/Account/Logout">
+                    <span class="bi bi-box-arrow-right" aria-hidden="true"></span> Logout
+                </a>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <a class="nav-link" href="/Account/Register">Register</a>
+            <a class="nav-link" href="/Account/Login">Login</a>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthState { get; set; }
+}

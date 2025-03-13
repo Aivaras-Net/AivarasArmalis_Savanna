@@ -6,6 +6,8 @@
 @using System.Timers
 @using Microsoft.JSInterop
 @using Savanna.Core.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 @inject IJSRuntime JSRuntime
 @implements IDisposable
 @rendermode InteractiveServer
@@ -202,13 +204,10 @@
 
         public void DrawField()
         {
-            // This is called by the game engine after each update
-            // The rendering is handled by Blazor in the UI
         }
 
         public void RenderField(char[,] grid)
         {
-            // Not needed for web implementation as rendering is handled by Blazor
         }
 
         public ConsoleColor GetAnimalColor(string animalName)
@@ -218,7 +217,6 @@
 
         public void RegisterAnimalColor(string animalName)
         {
-            // Not needed for web implementation
         }
 
         public void ShowLog(string message, int frames)
