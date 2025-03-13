@@ -1,0 +1,305 @@
+@page "/Admin/UserDetails/{userId}"
+@using Microsoft.AspNetCore.Identity
+@using Savanna.Web.Models
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject NavigationManager NavigationManager
+
+<PageTitle>User Details</PageTitle>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>User Details</h1>
+        <button class="btn btn-secondary" @onclick="NavigateBack">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </button>
+    </div>
+
+    @if (_user == null)
+    {
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> User not found.
+                </div>
+    }
+    else
+    {
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h3 class="card-title mb-0">User Information</h3>
+                            </div>
+                            <div class="card-body">
+                                <table class="table">
+                                    <tbody>
+                                        <tr>
+                                            <th>User ID</th>
+                                            <td>@_user.Id</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Username</th>
+                                            <td>@_user.UserName</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Email</th>
+                                            <td>@_user.Email</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Email Confirmed</th>
+                                            <td>
+                                                @if (_user.EmailConfirmed)
+                                                {
+                                                            <span class="badge bg-success">Yes</span>
+                                                }
+                                                else
+                                                {
+                                                            <span class="badge bg-warning">No</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Phone Number</th>
+                                            <td>@(_user.PhoneNumber ?? "Not provided")</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Account Created</th>
+                                            <td>Unknown</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Account Locked</th>
+                                            <td>
+                                                @if (_user.LockoutEnd != null && _user.LockoutEnd > DateTimeOffset.Now)
+                                                {
+                                                            <span class="badge bg-danger">Locked until @_user.LockoutEnd</span>
+                                                }
+                                                else
+                                                {
+                                                            <span class="badge bg-success">Not locked</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h3 class="card-title mb-0">Role Management</h3>
+                            </div>
+                            <div class="card-body">
+                                <h4>Current Roles</h4>
+                                @if (!_userRoles.Any())
+                                {
+                                            <p>User has no assigned roles.</p>
+                                }
+                                else
+                                {
+                                            <div class="mb-3">
+                                                @foreach (var role in _userRoles)
+                                                {
+                                                            <span class="badge bg-primary me-2 mb-2 p-2">
+                                                                @role
+                                                                @if (role != "Admin" || (_userRoles.Contains("Admin") && _userRoles.Count > 1))
+                                                                {
+                                                                            <button class="btn btn-sm btn-close ms-2" @onclick="() => RemoveRole(role)"></button>
+                                                                }
+                                                            </span>
+                                                }
+                                            </div>
+                                }
+
+                                <h4 class="mt-4">Add Role</h4>
+                                <div class="input-group">
+                                    <select class="form-select" @bind="_selectedRole">
+                                        <option value="">-- Select a role --</option>
+                                        @foreach (var role in _availableRoles.Where(r => !_userRoles.Contains(r)))
+                                        {
+                                                    <option value="@role">@role</option>
+                                        }
+                                    </select>
+                                    <button class="btn btn-primary" @onclick="AddRole" disabled="@string.IsNullOrEmpty(_selectedRole)">
+                                        <i class="bi bi-plus-circle"></i> Add
+                                    </button>
+                                </div>
+                        
+                                @if (!string.IsNullOrEmpty(_message))
+                                {
+                                            <div class="alert @_alertClass mt-3">
+                                                @_message
+                                            </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-danger text-white">
+                                <h3 class="card-title mb-0">Danger Zone</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-grid gap-2">
+                                    @if (_user.LockoutEnd != null && _user.LockoutEnd > DateTimeOffset.Now)
+                                    {
+                                                <button class="btn btn-warning" @onclick="UnlockAccount">
+                                                    <i class="bi bi-unlock"></i> Unlock Account
+                                                </button>
+                                    }
+                                    else
+                                    {
+                                                <button class="btn btn-warning" @onclick="LockAccount">
+                                                    <i class="bi bi-lock"></i> Lock Account
+                                                </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string userId { get; set; } = string.Empty;
+
+    private ApplicationUser? _user;
+    private List<string> _userRoles = new();
+    private List<string> _availableRoles = new();
+    private string _selectedRole = string.Empty;
+    private string _message = string.Empty;
+    private string _alertClass = "alert-info";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserDataAsync();
+    }
+
+    private async Task LoadUserDataAsync()
+    {
+        _user = await UserManager.FindByIdAsync(userId);
+        
+        if (_user != null)
+        {
+            _userRoles = (await UserManager.GetRolesAsync(_user)).ToList();
+            _availableRoles = RoleManager.Roles.Select(r => r.Name).Where(n => n != null).Select(n => n!).ToList();
+        }
+    }
+
+    private async Task AddRole()
+    {
+        if (_user != null && !string.IsNullOrEmpty(_selectedRole))
+        {
+            var result = await UserManager.AddToRoleAsync(_user, _selectedRole);
+            
+            if (result.Succeeded)
+            {
+                _message = $"Role '{_selectedRole}' added successfully.";
+                _alertClass = "alert-success";
+                _selectedRole = string.Empty;
+                await LoadUserDataAsync();
+            }
+            else
+            {
+                _message = $"Failed to add role: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+                _alertClass = "alert-danger";
+            }
+        }
+    }
+
+    private async Task RemoveRole(string role)
+    {
+        if (_user != null)
+        {
+            // Prevent removing the Admin role if it would leave no admin users
+            if (role == "Admin")
+            {
+                var adminUsers = await UserManager.GetUsersInRoleAsync("Admin");
+                if (adminUsers.Count <= 1)
+                {
+                    _message = "Cannot remove the last Admin user from the system.";
+                    _alertClass = "alert-danger";
+                    return;
+                }
+            }
+
+            var result = await UserManager.RemoveFromRoleAsync(_user, role);
+            
+            if (result.Succeeded)
+            {
+                _message = $"Role '{role}' removed successfully.";
+                _alertClass = "alert-success";
+                await LoadUserDataAsync();
+            }
+            else
+            {
+                _message = $"Failed to remove role: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+                _alertClass = "alert-danger";
+            }
+        }
+    }
+
+    private async Task LockAccount()
+    {
+        if (_user != null)
+        {
+            // Prevent locking the last admin account
+            if (_userRoles.Contains("Admin"))
+            {
+                var adminUsers = await UserManager.GetUsersInRoleAsync("Admin");
+                if (adminUsers.Count <= 1)
+                {
+                    _message = "Cannot lock the last Admin user account.";
+                    _alertClass = "alert-danger";
+                    return;
+                }
+            }
+
+            // Lock for 30 days
+            var lockoutEnd = DateTimeOffset.Now.AddDays(30);
+            var result = await UserManager.SetLockoutEndDateAsync(_user, lockoutEnd);
+            
+            if (result.Succeeded)
+            {
+                _message = "Account locked successfully.";
+                _alertClass = "alert-success";
+                await LoadUserDataAsync();
+            }
+            else
+            {
+                _message = $"Failed to lock account: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+                _alertClass = "alert-danger";
+            }
+        }
+    }
+
+    private async Task UnlockAccount()
+    {
+        if (_user != null)
+        {
+            var result = await UserManager.SetLockoutEndDateAsync(_user, null);
+            
+            if (result.Succeeded)
+            {
+                _message = "Account unlocked successfully.";
+                _alertClass = "alert-success";
+                await LoadUserDataAsync();
+            }
+            else
+            {
+                _message = $"Failed to unlock account: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+                _alertClass = "alert-danger";
+            }
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/Admin/Dashboard");
+    }
+}

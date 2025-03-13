@@ -1,31 +1,30 @@
 @using Microsoft.AspNetCore.Identity
 @using Savanna.Web.Models
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
+@inject IJSRuntime JSRuntime
 
 <div class="nav-item">
     <AuthorizeView>
         <Authorized>
-            <div class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                    Hello, @context.User.Identity?.Name!
-                </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="/Account/Manage">Account</a></li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
-                    <li><a class="dropdown-item" href="/Account/Logout">Logout</a></li>
-                </ul>
-            </div>
-            <div class="nav-item px-3">
-                <a class="nav-link btn btn-outline-danger btn-sm" href="/Account/Logout">
-                    <span class="bi bi-box-arrow-right" aria-hidden="true"></span> Logout
-                </a>
-            </div>
+            <span class="nav-link me-1">
+                Hello, @context.User.Identity?.Name!
+                @if (_userRoles != null && _userRoles.Any())
+                {
+                    <span class="badge bg-primary ms-1">@string.Join(", ", _userRoles)</span>
+                }
+            </span>
+            <a class="nav-link" href="/Account/Manage">Account</a>
+            @if (_userRoles != null && _userRoles.Contains("Admin"))
+            {
+                <a class="nav-link" href="/Admin/Dashboard">Admin Dashboard</a>
+            }
+            <a class="nav-link btn btn-outline-danger btn-sm" href="/Account/Logout">
+                <span class="bi bi-box-arrow-right" aria-hidden="true"></span> Logout
+            </a>
         </Authorized>
         <NotAuthorized>
             <a class="nav-link" href="/Account/Register">Register</a>
@@ -37,4 +36,26 @@
 @code {
     [CascadingParameter]
     private Task<AuthenticationState>? AuthState { get; set; }
+
+    private IList<string>? _userRoles;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthState != null)
+        {
+            var authState = await AuthState;
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                var appUser = await UserManager.GetUserAsync(user);
+                if (appUser != null)
+                {
+                    _userRoles = await UserManager.GetRolesAsync(appUser);
+                }
+            }
+        }
+
+        await base.OnInitializedAsync();
+    }
 }

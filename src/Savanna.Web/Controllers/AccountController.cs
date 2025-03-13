@@ -12,50 +12,70 @@ namespace Savanna.Web.Controllers
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public AccountController(
             SignInManager<ApplicationUser> signInManager,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         [HttpPost("ProcessLogin")]
         public async Task<IActionResult> ProcessLogin(string email, string password, bool rememberMe, string returnUrl = null)
         {
-            // This doesn't count login failures towards account lockout
-            var result = await _signInManager.PasswordSignInAsync(email, password, rememberMe, lockoutOnFailure: false);
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
 
-            if (result.Succeeded)
-            {
-                return LocalRedirect(returnUrl ?? "/");
+                if (user == null)
+                {
+                    user = await _userManager.FindByNameAsync(email);
+
+                    if (user == null)
+                    {
+                        return Redirect("/Account/Login?error=Invalid+login+attempt");
+                    }
+                }
+
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, password, rememberMe, lockoutOnFailure: false);
+
+                if (result.Succeeded)
+                {
+                    return LocalRedirect(returnUrl ?? "/");
+                }
+                else if (result.RequiresTwoFactor)
+                {
+                    return RedirectToPage("/Account/LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = rememberMe });
+                }
+                else if (result.IsLockedOut)
+                {
+                    return RedirectToPage("/Account/Lockout");
+                }
+                else
+                {
+                    return Redirect("/Account/Login?error=Invalid+password");
+                }
             }
-            else if (result.RequiresTwoFactor)
+            catch (Exception ex)
             {
-                return RedirectToPage("/Account/LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = rememberMe });
-            }
-            else if (result.IsLockedOut)
-            {
-                return RedirectToPage("/Account/Lockout");
-            }
-            else
-            {
-                return Redirect("/Account/Login?error=Invalid+login+attempt");
+                return Redirect($"/Account/Login?error={Uri.EscapeDataString("An error occurred: " + ex.Message)}");
             }
         }
 
         [HttpPost("ProcessRegister")]
         public async Task<IActionResult> ProcessRegister(
-            string firstName,
-            string lastName,
+            string username,
             string email,
             string password,
             string confirmPassword)
         {
             // Simple validation
-            if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName) ||
-                string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(email) ||
+                string.IsNullOrEmpty(password))
             {
                 return Redirect("/Account/Register?error=All+fields+are+required");
             }
@@ -69,16 +89,21 @@ namespace Savanna.Web.Controllers
             {
                 var user = new ApplicationUser
                 {
-                    UserName = email,
-                    Email = email,
-                    FirstName = firstName,
-                    LastName = lastName
+                    UserName = username,
+                    Email = email
                 };
 
                 var result = await _userManager.CreateAsync(user, password);
 
                 if (result.Succeeded)
                 {
+                    if (!await _roleManager.RoleExistsAsync("User"))
+                    {
+                        await _roleManager.CreateAsync(new IdentityRole("User"));
+                    }
+
+                    await _userManager.AddToRoleAsync(user, "User");
+
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return LocalRedirect("/");
                 }
