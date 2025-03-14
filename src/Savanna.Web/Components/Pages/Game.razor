@@ -9,6 +9,7 @@
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 @implements IDisposable
 @rendermode InteractiveServer
 
@@ -74,6 +75,9 @@
     }
 </div>
 
+<NavigationWarningModal @ref="_navigationWarningModal" OnCancelNavigation="CancelNavigation"
+    OnConfirmNavigation="ConfirmNavigation" />
+
 <style>
     .animal {
         display: flex;
@@ -101,6 +105,8 @@
     private int _fieldHeight = GameConstants.DefaultFieldHeight;
     private readonly List<string> _gameLogs = new List<string>();
     private Random _random = new Random();
+    private string _pendingNavigation = null;
+    private NavigationWarningModal _navigationWarningModal;
 
     private const int TimerInterval = 500;
 
@@ -108,9 +114,115 @@
     {
         _gameTimer = new Timer(TimerInterval);
         _gameTimer.Elapsed += GameTimerElapsed;
+
+        NavigationManager.LocationChanged += OnLocationChanged;
     }
 
-    private void StartNewGame()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("window.setupGame");
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"JavaScript initialization error: {ex.Message}");
+            }
+        }
+    }
+
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        if (_isGameRunning && !e.Location.EndsWith("/game"))
+        {
+            _pendingNavigation = e.Location;
+
+            _ = ShowNavigationWarningModal();
+
+            // should intercept and prevent the navigation here
+        }
+    }
+
+    private async Task ShowNavigationWarningModal()
+    {
+        if (_navigationWarningModal != null)
+        {
+            await _navigationWarningModal.ShowModal();
+        }
+    }
+
+    private async void CancelNavigation()
+    {
+        _pendingNavigation = null;
+        if (_navigationWarningModal != null)
+        {
+            await _navigationWarningModal.HideModal();
+        }
+    }
+
+    private async void ConfirmNavigation()
+    {
+        if (_navigationWarningModal != null)
+        {
+            await _navigationWarningModal.HideModal();
+        }
+
+        await SetBeforeUnloadWarning(false);
+
+        try
+        {
+            string destination = await JSRuntime.InvokeAsync<string>("window.getAndClearPendingNavigation");
+
+            LogMessage($"Navigating to: {destination}");
+
+            _gameTimer?.Stop();
+            _isGameRunning = false;
+            _gameEngine = null;
+
+            if (NavigationManager.Uri == destination)
+            {
+                await JSRuntime.InvokeVoidAsync("window.location.reload");
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(_pendingNavigation) &&
+                string.IsNullOrEmpty(destination))
+                {
+                    destination = _pendingNavigation;
+                }
+
+                if (string.IsNullOrEmpty(destination))
+                {
+                    destination = "/";
+                }
+
+                NavigationManager.NavigateTo(destination, forceLoad: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            LogMessage($"Navigation error: {ex.Message}");
+
+            NavigationManager.NavigateTo("/", forceLoad: true);
+        }
+
+        _pendingNavigation = null;
+    }
+
+    private async Task SetBeforeUnloadWarning(bool enable)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("window.setBeforeUnloadWarning", enable);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop"))
+        {
+        }
+    }
+
+    private async void StartNewGame()
     {
         _gameEngine = new GameEngine(new WebRenderer(this));
         _isGameRunning = true;
@@ -123,15 +235,31 @@
         SpawnLion();
 
         _gameTimer.Start();
+
+        try
+        {
+            await SetBeforeUnloadWarning(true);
+        }
+        catch (Exception ex)
+        {
+            LogMessage($"Warning: Could not set beforeunload warning: {ex.Message}");
+        }
     }
 
-    private void StopGame()
+    private async void StopGame()
     {
         _gameTimer.Stop();
         _isGameRunning = false;
         _isPaused = false;
         _gameEngine = null;
         LogMessage("Game stopped");
+        try
+        {
+            await SetBeforeUnloadWarning(false);
+        }
+        catch (Exception ex)
+        {
+        }
     }
 
     private void TogglePause()
@@ -187,10 +315,24 @@
             _gameLogs.RemoveAt(0);
     }
 
-    public void Dispose()
+    public async void Dispose()
     {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+
         _gameTimer?.Stop();
         _gameTimer?.Dispose();
+
+        try
+        {
+            if (_isGameRunning)
+            {
+                await SetBeforeUnloadWarning(false);
+            }
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop"))
+        {
+
+        }
     }
 
     private class WebRenderer : IConsoleRenderer

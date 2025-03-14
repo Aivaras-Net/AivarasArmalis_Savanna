@@ -1,0 +1,59 @@
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<!-- Navigation Warning Modal -->
+<div class="modal fade" id="navigationWarningModal" tabindex="-1" aria-labelledby="navigationWarningModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title" id="navigationWarningModalLabel">Warning: Game in Progress</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    @onclick="OnCancelNavigation"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    You will lose your game progress if you leave this page. Are you sure you want to leave?
+                </div>
+                <p>Your animals and game state will not be saved.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    @onclick="OnCancelNavigation">Stay
+                    on this Page</button>
+                <button type="button" class="btn btn-danger" @onclick="OnConfirmNavigation">Leave Game</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnCancelNavigation { get; set; }
+
+    [Parameter]
+    public EventCallback OnConfirmNavigation { get; set; }
+
+    public async Task ShowModal()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("window.showNavigationWarningModal");
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop"))
+        {
+        }
+    }
+
+    public async Task HideModal()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("window.hideNavigationWarningModal");
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop"))
+        {
+        }
+    }
+}
