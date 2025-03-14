@@ -7,9 +7,12 @@
 @using Microsoft.JSInterop
 @using Savanna.Core.Interfaces
 @using Microsoft.AspNetCore.Authorization
+@using Savanna.Web.Services.Interfaces
 @attribute [Authorize]
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
+@inject IGameService GameService
+@inject IGameRenderer GameRenderer
 @implements IDisposable
 @rendermode InteractiveServer
 
@@ -18,7 +21,7 @@
 <div class="game-container mb-4">
     <h1>Savanna Game</h1>
 
-    @if (!_isGameRunning)
+    @if (!GameService.IsGameRunning)
     {
         <div class="game-menu">
             <button class="btn btn-primary" @onclick="StartNewGame">Start New Game</button>
@@ -28,7 +31,7 @@
     {
         <div class="game-controls mb-3">
             <button class="btn btn-warning me-2" @onclick="TogglePause">
-                @(_isPaused ? "Resume" : "Pause")
+                @(GameService.IsPaused ? "Resume" : "Pause")
             </button>
             <button class="btn btn-danger me-2" @onclick="StopGame">
                 Stop Game
@@ -41,18 +44,20 @@
 
         <div class="game-status mb-3">
             <div class="alert alert-info">
-                <strong>Game Status:</strong> @(_isPaused ? "Paused" : "Running") |
-                <strong>Animals:</strong> @(_gameEngine?.Animals.Count ?? 0) |
-                <strong>Lions:</strong> @(_gameEngine?.Animals.Count(a => a.Name == GameConstants.LionName) ?? 0) |
-                <strong>Antelopes:</strong> @(_gameEngine?.Animals.Count(a => a.Name == GameConstants.AntelopeName) ?? 0)
-            </div>
+                <strong>Game Status:</strong> @(GameService.IsPaused ? "Paused" : "Running") |
+                <strong>Animals:</strong> @(GameService.GameEngine?.Animals.Count ?? 0) |
+                <strong>Lions:</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.LionName) ?? 0)
+                |
+                <strong>Antelopes:</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name ==
+                GameConstants.AntelopeName) ?? 0)
         </div>
+    </div>
 
-        <div class="game-field mb-3" id="gameField"
-            style="position: relative; width: @(_fieldWidth * 20)px; height: @(_fieldHeight * 20)px; border: 1px solid #ccc; background-color: #8fbf9f;">
-            @if (_gameEngine != null)
+    <div class="game-field mb-3" id="gameField"
+        style="position: relative; width: @(GameService.FieldWidth * 20)px; height: @(GameService.FieldHeight * 20)px; border: 1px solid #ccc; background-color: #8fbf9f;">
+        @if (GameService.GameEngine != null)
             {
-                @foreach (var animal in _gameEngine.Animals)
+                @foreach (var animal in GameService.GameEngine.Animals)
                 {
                     string animalClass = animal.Name == GameConstants.LionName ? "lion" : "antelope";
                     <div class="animal @animalClass" @key="animal.GetHashCode()"
@@ -66,7 +71,7 @@
         <div class="game-log mb-3">
             <h5>Game Log</h5>
             <div class="log-container p-2 border" style="height: 150px; overflow-y: auto; background-color: #f8f9fa;">
-                @foreach (var log in _gameLogs.AsEnumerable().Reverse())
+                @foreach (var log in GameService.GameLogs.AsEnumerable().Reverse())
                 {
                     <div class="log-entry">@log</div>
                 }
@@ -97,24 +102,12 @@
 </style>
 
 @code {
-    private GameEngine _gameEngine;
-    private Timer _gameTimer;
-    private bool _isGameRunning = false;
-    private bool _isPaused = false;
-    private int _fieldWidth = GameConstants.DefaultFieldWidth;
-    private int _fieldHeight = GameConstants.DefaultFieldHeight;
-    private readonly List<string> _gameLogs = new List<string>();
-    private Random _random = new Random();
     private string _pendingNavigation = null;
     private NavigationWarningModal _navigationWarningModal;
 
-    private const int TimerInterval = 500;
-
     protected override void OnInitialized()
     {
-        _gameTimer = new Timer(TimerInterval);
-        _gameTimer.Elapsed += GameTimerElapsed;
-
+        GameService.GameStateChanged += OnGameStateChanged;
         NavigationManager.LocationChanged += OnLocationChanged;
     }
 
@@ -128,20 +121,22 @@
             }
             catch (Exception ex)
             {
-                LogMessage($"JavaScript initialization error: {ex.Message}");
+                GameService.LogMessage($"JavaScript initialization error: {ex.Message}");
             }
         }
     }
 
+    private void OnGameStateChanged(object sender, EventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
     private void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
-        if (_isGameRunning && !e.Location.EndsWith("/game"))
+        if (GameService.IsGameRunning && !e.Location.EndsWith("/game"))
         {
             _pendingNavigation = e.Location;
-
             _ = ShowNavigationWarningModal();
-
-            // should intercept and prevent the navigation here
         }
     }
 
@@ -175,11 +170,9 @@
         {
             string destination = await JSRuntime.InvokeAsync<string>("window.getAndClearPendingNavigation");
 
-            LogMessage($"Navigating to: {destination}");
+            GameService.LogMessage($"Navigating to: {destination}");
 
-            _gameTimer?.Stop();
-            _isGameRunning = false;
-            _gameEngine = null;
+            GameService.StopTimer();
 
             if (NavigationManager.Uri == destination)
             {
@@ -203,8 +196,7 @@
         }
         catch (Exception ex)
         {
-            LogMessage($"Navigation error: {ex.Message}");
-
+            GameService.LogMessage($"Navigation error: {ex.Message}");
             NavigationManager.NavigateTo("/", forceLoad: true);
         }
 
@@ -224,17 +216,9 @@
 
     private async void StartNewGame()
     {
-        _gameEngine = new GameEngine(new WebRenderer(this));
-        _isGameRunning = true;
-        _isPaused = false;
-        _gameLogs.Clear();
-        LogMessage("Game started");
-
-        SpawnAntelope();
-        SpawnAntelope();
-        SpawnLion();
-
-        _gameTimer.Start();
+        var renderer = GameRenderer.CreateRenderer(GameService.LogMessage);
+        GameService.StartNewGame(renderer);
+        GameService.StartTimer();
 
         try
         {
@@ -242,17 +226,14 @@
         }
         catch (Exception ex)
         {
-            LogMessage($"Warning: Could not set beforeunload warning: {ex.Message}");
+            GameService.LogMessage($"Warning: Could not set beforeunload warning: {ex.Message}");
         }
     }
 
     private async void StopGame()
     {
-        _gameTimer.Stop();
-        _isGameRunning = false;
-        _isPaused = false;
-        _gameEngine = null;
-        LogMessage("Game stopped");
+        GameService.StopGame();
+
         try
         {
             await SetBeforeUnloadWarning(false);
@@ -264,106 +245,33 @@
 
     private void TogglePause()
     {
-        _isPaused = !_isPaused;
-        LogMessage(_isPaused ? "Game paused" : "Game resumed");
+        GameService.TogglePause();
     }
 
     private void SpawnAntelope()
     {
-        if (_gameEngine == null) return;
-
-        var position = GetRandomPosition();
-        _gameEngine.AddAnimal(new Antelope(1.5, 5.0, position), true);
-        LogMessage($"Antelope spawned at ({position.X}, {position.Y})");
-        StateHasChanged();
+        GameService.SpawnAntelope();
     }
 
     private void SpawnLion()
     {
-        if (_gameEngine == null) return;
-
-        var position = GetRandomPosition();
-        _gameEngine.AddAnimal(new Lion(2.0, 7.0, position), true);
-        LogMessage($"Lion spawned at ({position.X}, {position.Y})");
-        StateHasChanged();
+        GameService.SpawnLion();
     }
 
-    private Position GetRandomPosition()
-    {
-        return new Position(
-        _random.Next(_fieldWidth),
-        _random.Next(_fieldHeight)
-        );
-    }
-
-    private async void GameTimerElapsed(object sender, ElapsedEventArgs e)
-    {
-        if (!_isGameRunning || _isPaused || _gameEngine == null)
-            return;
-
-        await InvokeAsync(() =>
-        {
-            _gameEngine.Update();
-            StateHasChanged();
-        });
-    }
-
-    public void LogMessage(string message)
-    {
-        _gameLogs.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
-        if (_gameLogs.Count > 100)
-            _gameLogs.RemoveAt(0);
-    }
-
-    public async void Dispose()
+    public void Dispose()
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
-
-        _gameTimer?.Stop();
-        _gameTimer?.Dispose();
+        GameService.GameStateChanged -= OnGameStateChanged;
 
         try
         {
-            if (_isGameRunning)
+            if (GameService.IsGameRunning)
             {
-                await SetBeforeUnloadWarning(false);
+                SetBeforeUnloadWarning(false).Wait();
             }
         }
         catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop"))
         {
-
-        }
-    }
-
-    private class WebRenderer : IConsoleRenderer
-    {
-        private readonly Game _parent;
-
-        public WebRenderer(Game parent)
-        {
-            _parent = parent;
-        }
-
-        public void DrawField()
-        {
-        }
-
-        public void RenderField(char[,] grid)
-        {
-        }
-
-        public ConsoleColor GetAnimalColor(string animalName)
-        {
-            return animalName == GameConstants.LionName ? ConsoleColor.Red : ConsoleColor.Green;
-        }
-
-        public void RegisterAnimalColor(string animalName)
-        {
-        }
-
-        public void ShowLog(string message, int frames)
-        {
-            _parent.LogMessage(message);
         }
     }
 }

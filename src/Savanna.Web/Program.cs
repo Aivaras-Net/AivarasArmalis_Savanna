@@ -51,6 +51,9 @@ namespace Savanna.Web
             builder.Services.AddScoped<IIdentityInitializer, IdentityInitializer>();
             builder.Services.AddScoped<IApplicationInitializer, ApplicationInitializer>();
 
+            builder.Services.AddSingleton<IGameRenderer, WebGameRenderer>();
+            builder.Services.AddScoped<IGameService, GameService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
