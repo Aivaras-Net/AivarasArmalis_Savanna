@@ -2,6 +2,7 @@ using Savanna.Core;
 using Savanna.Core.Constants;
 using Savanna.Core.Domain;
 using Savanna.Core.Interfaces;
+using Savanna.Core.Infrastructure;
 using Savanna.Web.Services.Interfaces;
 using System.Timers;
 
@@ -17,6 +18,7 @@ namespace Savanna.Web.Services
         private readonly Random _random = new Random();
         private readonly List<string> _gameLogs = new List<string>();
         private readonly System.Timers.Timer _gameTimer;
+        private readonly IAnimalFactory _animalFactory;
 
         private GameEngine _gameEngine;
         private bool _isGameRunning;
@@ -58,6 +60,7 @@ namespace Savanna.Web.Services
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _gameRenderer = gameRenderer ?? throw new ArgumentNullException(nameof(gameRenderer));
+            _animalFactory = new AnimalFactory();
 
             _gameTimer = new System.Timers.Timer(TimerInterval);
             _gameTimer.Elapsed += GameTimerElapsed;
@@ -103,10 +106,17 @@ namespace Savanna.Web.Services
                 return;
 
             var position = GetRandomPosition();
-            var animal = new Antelope(1.5, 5.0, position);
-            _gameEngine.AddAnimal(animal);
-            LogMessage($"Antelope spawned at ({position.X}, {position.Y})");
-            OnGameStateChanged();
+            if (_animalFactory.TryCreateAnimal(GameConstants.AntelopeName, out var animal))
+            {
+                animal.Position = position;
+                _gameEngine.AddAnimal(animal);
+                LogMessage($"Antelope spawned at ({position.X}, {position.Y})");
+                OnGameStateChanged();
+            }
+            else
+            {
+                LogMessage($"Failed to spawn Antelope");
+            }
         }
 
         public void SpawnLion()
@@ -115,10 +125,17 @@ namespace Savanna.Web.Services
                 return;
 
             var position = GetRandomPosition();
-            var animal = new Lion(2.0, 7.0, position);
-            _gameEngine.AddAnimal(animal);
-            LogMessage($"Lion spawned at ({position.X}, {position.Y})");
-            OnGameStateChanged();
+            if (_animalFactory.TryCreateAnimal(GameConstants.LionName, out var animal))
+            {
+                animal.Position = position;
+                _gameEngine.AddAnimal(animal);
+                LogMessage($"Lion spawned at ({position.X}, {position.Y})");
+                OnGameStateChanged();
+            }
+            else
+            {
+                LogMessage($"Failed to spawn Lion");
+            }
         }
 
         /// <summary>

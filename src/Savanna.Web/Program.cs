@@ -3,6 +3,8 @@ using Savanna.Web.Data;
 using Savanna.Web.Models;
 using Savanna.Web.Services;
 using Savanna.Web.Services.Interfaces;
+using Savanna.Core.Interfaces;
+using Savanna.Core.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -53,6 +55,18 @@ namespace Savanna.Web
 
             builder.Services.AddSingleton<IGameRenderer, WebGameRenderer>();
             builder.Services.AddScoped<IGameService, GameService>();
+            builder.Services.AddSingleton<IAnimalFactory, AnimalFactory>();
+
+            try
+            {
+                Savanna.Core.Config.ConfigurationService.LoadConfig();
+            }
+            catch (Exception ex)
+            {
+                var loggerFactory = builder.Services.BuildServiceProvider().GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger<Program>();
+                logger.LogError(ex, "Error loading animal configuration");
+            }
 
             var app = builder.Build();
 

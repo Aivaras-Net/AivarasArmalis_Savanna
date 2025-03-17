@@ -62,16 +62,18 @@
             {
                 @foreach (var animal in GameService.GameEngine.Animals)
                 {
-                    string animalClass = animal.Name == GameConstants.LionName ? "lion" : "antelope";
+                    string animalClass = GetAnimalClass(animal.Name);
+                    string animalDisplay = GetAnimalDisplay(animal.Name);
+
                     <div class="animal @animalClass" @key="animal.GetHashCode()"
                         style="position: absolute; left: @(animal.Position.X * 20)px; top: @(animal.Position.Y * 20)px; width: 20px; height: 20px;">
                         @if (GameService.UseLetterDisplay)
                         {
-                            @(animal.Name == GameConstants.LionName ? "L" : "A")
+                            @(animal.Name.Substring(0, 1))
                         }
                         else
                         {
-                            @(animal.Name == GameConstants.LionName ? "🦁" : "🦌")
+                            @animalDisplay
                         }
                     </div>
                 }
@@ -271,6 +273,22 @@
     private void ToggleDisplayMode()
     {
         GameService.ToggleDisplayMode();
+    }
+
+    private string GetAnimalClass(string animalName)
+    {
+        return animalName.ToLower();
+    }
+
+    private string GetAnimalDisplay(string animalName)
+    {
+        return animalName switch
+        {
+            GameConstants.LionName => "🦁",
+            GameConstants.AntelopeName => "🦌",
+            "Caracal" => "🐆",
+            _ => "🐾" // Default animal
+        };
     }
 
     public void Dispose()
