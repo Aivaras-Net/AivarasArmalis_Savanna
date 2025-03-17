@@ -40,6 +40,9 @@
                 <button class="btn btn-success" @onclick="SpawnAntelope">Spawn Antelope</button>
                 <button class="btn btn-danger" @onclick="SpawnLion">Spawn Lion</button>
             </div>
+            <button class="btn btn-info" @onclick="ToggleDisplayMode">
+                @(GameService.UseLetterDisplay ? "Show Icons" : "Show Letters")
+            </button>
         </div>
 
         <div class="game-status mb-3">
@@ -54,7 +57,7 @@
     </div>
 
     <div class="game-field mb-3" id="gameField"
-        style="position: relative; width: @(GameService.FieldWidth * 20)px; height: @(GameService.FieldHeight * 20)px; border: 1px solid #ccc; background-color: #8fbf9f;">
+        style="position: relative; width: @(GameService.FieldWidth * 20)px; height: @(GameService.FieldHeight * 20)px; border: 1px solid #ccc; background-color: #e8d2a0;">
         @if (GameService.GameEngine != null)
             {
                 @foreach (var animal in GameService.GameEngine.Animals)
@@ -62,7 +65,14 @@
                     string animalClass = animal.Name == GameConstants.LionName ? "lion" : "antelope";
                     <div class="animal @animalClass" @key="animal.GetHashCode()"
                         style="position: absolute; left: @(animal.Position.X * 20)px; top: @(animal.Position.Y * 20)px; width: 20px; height: 20px;">
-                        @(animal.Name == GameConstants.LionName ? "🦁" : "🦌")
+                        @if (GameService.UseLetterDisplay)
+                        {
+                            @(animal.Name == GameConstants.LionName ? "L" : "A")
+                        }
+                        else
+                        {
+                            @(animal.Name == GameConstants.LionName ? "🦁" : "🦌")
+                        }
                     </div>
                 }
             }
@@ -256,6 +266,11 @@
     private void SpawnLion()
     {
         GameService.SpawnLion();
+    }
+
+    private void ToggleDisplayMode()
+    {
+        GameService.ToggleDisplayMode();
     }
 
     public void Dispose()

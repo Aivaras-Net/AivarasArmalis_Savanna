@@ -24,6 +24,11 @@ namespace Savanna.Web.Services.Interfaces
         GameEngine GameEngine { get; }
 
         /// <summary>
+        /// Gets or sets whether to use letters instead of icons to display animals
+        /// </summary>
+        bool UseLetterDisplay { get; set; }
+
+        /// <summary>
         /// Gets the game logs
         /// </summary>
         IReadOnlyList<string> GameLogs { get; }
@@ -63,6 +68,11 @@ namespace Savanna.Web.Services.Interfaces
         /// Spawns a new lion at a random position
         /// </summary>
         void SpawnLion();
+
+        /// <summary>
+        /// Toggles between letter and icon display modes
+        /// </summary>
+        void ToggleDisplayMode();
 
         /// <summary>
         /// Updates the game state

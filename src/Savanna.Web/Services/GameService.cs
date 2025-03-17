@@ -21,6 +21,7 @@ namespace Savanna.Web.Services
         private GameEngine _gameEngine;
         private bool _isGameRunning;
         private bool _isPaused;
+        private bool _useLetterDisplay;
 
         private const int TimerInterval = 500;
 
@@ -29,6 +30,19 @@ namespace Savanna.Web.Services
         public bool IsPaused => _isPaused;
 
         public GameEngine GameEngine => _gameEngine;
+
+        public bool UseLetterDisplay
+        {
+            get => _useLetterDisplay;
+            set
+            {
+                if (_useLetterDisplay != value)
+                {
+                    _useLetterDisplay = value;
+                    OnGameStateChanged();
+                }
+            }
+        }
 
         public IReadOnlyList<string> GameLogs => _gameLogs.AsReadOnly();
 
@@ -85,24 +99,35 @@ namespace Savanna.Web.Services
 
         public void SpawnAntelope()
         {
-            if (_gameEngine == null) return;
+            if (!_isGameRunning || _gameEngine == null)
+                return;
 
             var position = GetRandomPosition();
-            _gameEngine.AddAnimal(new Antelope(1.5, 5.0, position), true);
+            var animal = new Antelope(1.5, 5.0, position);
+            _gameEngine.AddAnimal(animal);
             LogMessage($"Antelope spawned at ({position.X}, {position.Y})");
-
             OnGameStateChanged();
         }
 
         public void SpawnLion()
         {
-            if (_gameEngine == null) return;
+            if (!_isGameRunning || _gameEngine == null)
+                return;
 
             var position = GetRandomPosition();
-            _gameEngine.AddAnimal(new Lion(2.0, 7.0, position), true);
+            var animal = new Lion(2.0, 7.0, position);
+            _gameEngine.AddAnimal(animal);
             LogMessage($"Lion spawned at ({position.X}, {position.Y})");
-
             OnGameStateChanged();
+        }
+
+        /// <summary>
+        /// Toggles between letter and icon display modes
+        /// </summary>
+        public void ToggleDisplayMode()
+        {
+            UseLetterDisplay = !UseLetterDisplay;
+            LogMessage(UseLetterDisplay ? "Switched to letter display" : "Switched to icon display");
         }
 
         public void Update()
