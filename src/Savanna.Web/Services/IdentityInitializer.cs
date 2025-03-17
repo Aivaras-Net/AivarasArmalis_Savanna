@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+using Savanna.Web.Configuration;
 using Savanna.Web.Constants;
 using Savanna.Web.Models;
 using Savanna.Web.Services.Interfaces;
@@ -13,15 +15,18 @@ namespace Savanna.Web.Services
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<IdentityInitializer> _logger;
+        private readonly AdminSettings _adminSettings;
 
         public IdentityInitializer(
             RoleManager<IdentityRole> roleManager,
             UserManager<ApplicationUser> userManager,
+            IOptions<AdminSettings> adminSettings,
             ILogger<IdentityInitializer> logger)
         {
             _roleManager = roleManager ?? throw new ArgumentNullException(nameof(roleManager));
             _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _adminSettings = adminSettings.Value ?? throw new ArgumentNullException(nameof(adminSettings));
         }
 
         public async Task InitializeRolesAsync()
@@ -52,19 +57,21 @@ namespace Savanna.Web.Services
 
         private async Task CreateAdminUserIfNotExistsAsync()
         {
-            var adminEmail = WebConstants.DefaultAdminEmail;
+            var adminEmail = _adminSettings.Email;
+            _logger.LogInformation(string.Format(WebConstants.CreatingAdminUserMessage, adminEmail));
+
             var adminUser = await _userManager.FindByEmailAsync(adminEmail);
 
             if (adminUser == null)
             {
                 adminUser = new ApplicationUser
                 {
-                    UserName = WebConstants.DefaultAdminUsername,
+                    UserName = _adminSettings.Username,
                     Email = adminEmail,
                     EmailConfirmed = true
                 };
 
-                var password = WebConstants.DefaultAdminPassword;
+                var password = _adminSettings.Password;
                 var createResult = await _userManager.CreateAsync(adminUser, password);
 
                 if (createResult.Succeeded)

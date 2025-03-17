@@ -7,6 +7,8 @@ using Savanna.Core.Interfaces;
 using Savanna.Core.Infrastructure;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Savanna.Web.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Savanna.Web
 {
@@ -21,6 +23,24 @@ namespace Savanna.Web
                 .AddInteractiveServerComponents();
 
             builder.Services.AddControllersWithViews();
+
+            DotNetEnv.Env.Load();
+
+            builder.Services.Configure<AdminSettings>(options =>
+            {
+                var adminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL");
+                var adminUsername = Environment.GetEnvironmentVariable("ADMIN_USERNAME");
+                var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
+
+                if (string.IsNullOrEmpty(adminEmail) || string.IsNullOrEmpty(adminUsername) || string.IsNullOrEmpty(adminPassword))
+                {
+                    throw new InvalidOperationException("Admin settings not found in .env file. Please create a .env file with ADMIN_EMAIL, ADMIN_USERNAME, and ADMIN_PASSWORD.");
+                }
+
+                options.Email = adminEmail;
+                options.Username = adminUsername;
+                options.Password = adminPassword;
+            });
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
                 throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -96,6 +116,14 @@ namespace Savanna.Web
                 var services = scope.ServiceProvider;
                 try
                 {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    var adminSettings = services.GetRequiredService<IOptions<AdminSettings>>().Value;
+
+                    logger.LogInformation("Admin settings loaded from .env file:");
+                    logger.LogInformation($"  Email: {adminSettings.Email}");
+                    logger.LogInformation($"  Username: {adminSettings.Username}");
+                    logger.LogInformation($"  Password: {adminSettings.Password.Substring(0, 3)}*** (masked)");
+
                     var initializer = services.GetRequiredService<IApplicationInitializer>();
                     initializer.InitializeAsync().Wait();
                 }

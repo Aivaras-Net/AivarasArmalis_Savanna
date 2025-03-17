@@ -60,10 +60,6 @@ namespace Savanna.Web.Constants
 
         public const string HelloUserText = "Hello, {0}!";
 
-        public const string DefaultAdminEmail = "admin@test.com";
-        public const string DefaultAdminUsername = "admin";
-        public const string DefaultAdminPassword = "Admin123!";
-
         public const string CreatedRoleLogMessage = "Created role: {0}";
         public const string FailedCreateRoleLogMessage = "Failed to create role {0}: {1}";
         public const string CreatedAdminUserLogMessage = "Created admin user with email: {0}";
@@ -74,6 +70,7 @@ namespace Savanna.Web.Constants
         public const string FailedCreateUserLogMessage = "Failed to create admin user: {0}";
         public const string AssignedAdminRoleExistingUserLogMessage = "Assigned Admin role to existing admin user";
         public const string ExistingAdminUserLogMessage = "Existing admin user found - Email: {0}, Has Admin role: {1}";
+        public const string CreatingAdminUserMessage = "Creating admin user with email: {0} from configuration";
 
         public const string StartingAppInitLogMessage = "Starting application initialization";
         public const string AppInitCompletedLogMessage = "Application initialization completed successfully";
