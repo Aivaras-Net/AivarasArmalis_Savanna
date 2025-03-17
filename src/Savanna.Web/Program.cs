@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Savanna.Web.Configuration;
 using Microsoft.Extensions.Options;
+using Savanna.Web.Constants;
 
 namespace Savanna.Web
 {
@@ -34,7 +35,7 @@ namespace Savanna.Web
 
                 if (string.IsNullOrEmpty(adminEmail) || string.IsNullOrEmpty(adminUsername) || string.IsNullOrEmpty(adminPassword))
                 {
-                    throw new InvalidOperationException("Admin settings not found in .env file. Please create a .env file with ADMIN_EMAIL, ADMIN_USERNAME, and ADMIN_PASSWORD.");
+                    throw new InvalidOperationException(WebConstants.AdminSettingsNotFoundMessage);
                 }
 
                 options.Email = adminEmail;
@@ -43,7 +44,7 @@ namespace Savanna.Web
             });
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
-                throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+                throw new InvalidOperationException(WebConstants.ConnectionStringNotFoundMessage);
             builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
                 options.UseSqlite(connectionString));
 
@@ -52,12 +53,8 @@ namespace Savanna.Web
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = false;
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequiredLength = 8;
+                builder.Configuration.GetSection("Identity:SignIn").Bind(options.SignIn);
+                builder.Configuration.GetSection("Identity:Password").Bind(options.Password);
             })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
@@ -85,7 +82,7 @@ namespace Savanna.Web
             {
                 var loggerFactory = builder.Services.BuildServiceProvider().GetRequiredService<ILoggerFactory>();
                 var logger = loggerFactory.CreateLogger<Program>();
-                logger.LogError(ex, "Error loading animal configuration");
+                logger.LogError(ex, WebConstants.ErrorLoadingAnimalConfigMessage);
             }
 
             var app = builder.Build();
@@ -119,10 +116,10 @@ namespace Savanna.Web
                     var logger = services.GetRequiredService<ILogger<Program>>();
                     var adminSettings = services.GetRequiredService<IOptions<AdminSettings>>().Value;
 
-                    logger.LogInformation("Admin settings loaded from .env file:");
-                    logger.LogInformation($"  Email: {adminSettings.Email}");
-                    logger.LogInformation($"  Username: {adminSettings.Username}");
-                    logger.LogInformation($"  Password: {adminSettings.Password.Substring(0, 3)}*** (masked)");
+                    logger.LogInformation(WebConstants.AdminSettingsLoadedMessage);
+                    logger.LogInformation(string.Format(WebConstants.AdminEmailLogFormat, adminSettings.Email));
+                    logger.LogInformation(string.Format(WebConstants.AdminUsernameLogFormat, adminSettings.Username));
+                    logger.LogInformation(string.Format(WebConstants.AdminPasswordMaskedLogFormat, adminSettings.Password.Substring(0, 3)));
 
                     var initializer = services.GetRequiredService<IApplicationInitializer>();
                     initializer.InitializeAsync().Wait();
@@ -130,7 +127,7 @@ namespace Savanna.Web
                 catch (Exception ex)
                 {
                     var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occurred during application initialization.");
+                    logger.LogError(ex, WebConstants.ApplicationInitErrorMessage);
                 }
             }
 

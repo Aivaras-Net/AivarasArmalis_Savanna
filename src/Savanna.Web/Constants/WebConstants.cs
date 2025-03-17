@@ -96,5 +96,14 @@ namespace Savanna.Web.Constants
         public const string LionsCountText = "Lions:";
         public const string AntelopesCountText = "Antelopes:";
         public const string GameLogText = "Game Log";
+
+        public const string AdminSettingsNotFoundMessage = "Admin settings not found in .env file. Please create a .env file with ADMIN_EMAIL, ADMIN_USERNAME, and ADMIN_PASSWORD.";
+        public const string ConnectionStringNotFoundMessage = "Connection string 'DefaultConnection' not found.";
+        public const string ErrorLoadingAnimalConfigMessage = "Error loading animal configuration";
+        public const string AdminSettingsLoadedMessage = "Admin settings loaded from .env file:";
+        public const string AdminEmailLogFormat = "  Email: {0}";
+        public const string AdminUsernameLogFormat = "  Username: {0}";
+        public const string AdminPasswordMaskedLogFormat = "  Password: {0}*** (masked)";
+        public const string ApplicationInitErrorMessage = "An error occurred during application initialization.";
     }
 }
