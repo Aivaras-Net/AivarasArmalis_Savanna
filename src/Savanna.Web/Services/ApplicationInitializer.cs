@@ -1,3 +1,4 @@
+using Savanna.Web.Constants;
 using Savanna.Web.Services.Interfaces;
 
 namespace Savanna.Web.Services
@@ -26,7 +27,7 @@ namespace Savanna.Web.Services
         {
             try
             {
-                _logger.LogInformation("Starting application initialization");
+                _logger.LogInformation(WebConstants.StartingAppInitLogMessage);
 
                 await _databaseInitializer.EnsureDatabaseCreatedAsync();
 
@@ -34,11 +35,11 @@ namespace Savanna.Web.Services
 
                 await _identityInitializer.InitializeDefaultUsersAsync();
 
-                _logger.LogInformation("Application initialization completed successfully");
+                _logger.LogInformation(WebConstants.AppInitCompletedLogMessage);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred during application initialization");
+                _logger.LogError(ex, WebConstants.AppInitErrorLogMessage);
                 throw;
             }
         }

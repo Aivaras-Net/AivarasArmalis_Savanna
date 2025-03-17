@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Savanna.Web.Constants;
 using Savanna.Web.Models;
 using Savanna.Web.Services.Interfaces;
 
@@ -25,7 +26,7 @@ namespace Savanna.Web.Services
 
         public async Task InitializeRolesAsync()
         {
-            string[] roleNames = { "Admin", "User" };
+            string[] roleNames = { WebConstants.AdminRoleName, WebConstants.UserRoleName };
 
             foreach (var roleName in roleNames)
             {
@@ -34,11 +35,11 @@ namespace Savanna.Web.Services
                     var result = await _roleManager.CreateAsync(new IdentityRole(roleName));
                     if (result.Succeeded)
                     {
-                        _logger.LogInformation($"Created role: {roleName}");
+                        _logger.LogInformation(string.Format(WebConstants.CreatedRoleLogMessage, roleName));
                     }
                     else
                     {
-                        _logger.LogError($"Failed to create role {roleName}: {string.Join(", ", result.Errors)}");
+                        _logger.LogError(string.Format(WebConstants.FailedCreateRoleLogMessage, roleName, string.Join(", ", result.Errors)));
                     }
                 }
             }
@@ -51,68 +52,68 @@ namespace Savanna.Web.Services
 
         private async Task CreateAdminUserIfNotExistsAsync()
         {
-            var adminEmail = "admin@test.com";
+            var adminEmail = WebConstants.DefaultAdminEmail;
             var adminUser = await _userManager.FindByEmailAsync(adminEmail);
 
             if (adminUser == null)
             {
                 adminUser = new ApplicationUser
                 {
-                    UserName = "admin",
+                    UserName = WebConstants.DefaultAdminUsername,
                     Email = adminEmail,
                     EmailConfirmed = true
                 };
 
-                var password = "Admin123!";
+                var password = WebConstants.DefaultAdminPassword;
                 var createResult = await _userManager.CreateAsync(adminUser, password);
 
                 if (createResult.Succeeded)
                 {
-                    _logger.LogInformation($"Created admin user with email: {adminEmail}");
+                    _logger.LogInformation(string.Format(WebConstants.CreatedAdminUserLogMessage, adminEmail));
 
-                    var roleResult = await _userManager.AddToRoleAsync(adminUser, "Admin");
+                    var roleResult = await _userManager.AddToRoleAsync(adminUser, WebConstants.AdminRoleName);
                     if (roleResult.Succeeded)
                     {
-                        _logger.LogInformation("Assigned Admin role to admin user");
+                        _logger.LogInformation(WebConstants.AssignedAdminRoleLogMessage);
 
                         var verifyUser = await _userManager.FindByEmailAsync(adminEmail);
                         if (verifyUser != null)
                         {
-                            var isInRole = await _userManager.IsInRoleAsync(verifyUser, "Admin");
-                            _logger.LogInformation($"Admin user verification - Found: true, Has Admin role: {isInRole}");
+                            var isInRole = await _userManager.IsInRoleAsync(verifyUser, WebConstants.AdminRoleName);
+                            _logger.LogInformation(string.Format(WebConstants.AdminUserVerificationLogMessage, isInRole));
                         }
                         else
                         {
-                            _logger.LogError("Admin user verification failed - user not found");
+                            _logger.LogError(WebConstants.AdminUserVerificationFailedLogMessage);
                         }
                     }
                     else
                     {
-                        _logger.LogError($"Failed to assign Admin role: {string.Join(", ", roleResult.Errors)}");
+                        _logger.LogError(string.Format(WebConstants.FailedAssignRoleLogMessage, string.Join(", ", roleResult.Errors)));
                     }
                 }
                 else
                 {
-                    _logger.LogError($"Failed to create admin user: {string.Join(", ", createResult.Errors)}");
+                    _logger.LogError(string.Format(WebConstants.FailedCreateUserLogMessage, string.Join(", ", createResult.Errors)));
                 }
             }
             else
             {
-                var isInAdminRole = await _userManager.IsInRoleAsync(adminUser, "Admin");
+                var isInAdminRole = await _userManager.IsInRoleAsync(adminUser, WebConstants.AdminRoleName);
                 if (!isInAdminRole)
                 {
-                    var roleResult = await _userManager.AddToRoleAsync(adminUser, "Admin");
+                    var roleResult = await _userManager.AddToRoleAsync(adminUser, WebConstants.AdminRoleName);
                     if (roleResult.Succeeded)
                     {
-                        _logger.LogInformation("Assigned Admin role to existing admin user");
+                        _logger.LogInformation(WebConstants.AssignedAdminRoleExistingUserLogMessage);
                     }
                     else
                     {
-                        _logger.LogError($"Failed to assign Admin role: {string.Join(", ", roleResult.Errors)}");
+                        _logger.LogError(string.Format(WebConstants.FailedAssignRoleLogMessage, string.Join(", ", roleResult.Errors)));
                     }
                 }
 
-                _logger.LogInformation($"Existing admin user found - Email: {adminUser.Email}, Has Admin role: {isInAdminRole}");
+                _logger.LogInformation(string.Format(WebConstants.ExistingAdminUserLogMessage, adminUser.Email, isInAdminRole));
             }
         }
     }

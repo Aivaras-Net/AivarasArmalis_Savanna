@@ -1,3 +1,4 @@
+using Savanna.Web.Constants;
 using Savanna.Web.Data;
 using Savanna.Web.Services.Interfaces;
 
@@ -24,13 +25,13 @@ namespace Savanna.Web.Services
         {
             try
             {
-                _logger.LogInformation("Ensuring database is created");
+                _logger.LogInformation(WebConstants.EnsuringDbCreatedLogMessage);
                 await _dbContext.Database.EnsureCreatedAsync();
-                _logger.LogInformation("Database creation check completed successfully");
+                _logger.LogInformation(WebConstants.DbCreationCompleteLogMessage);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while ensuring database is created");
+                _logger.LogError(ex, WebConstants.DbCreationErrorLogMessage);
                 throw;
             }
         }

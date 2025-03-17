@@ -3,6 +3,7 @@
 @using Savanna.Core.Domain
 @using Savanna.Core.Domain.Interfaces
 @using Savanna.Core.Constants
+@using Savanna.Web.Constants
 @using System.Timers
 @using Microsoft.JSInterop
 @using Savanna.Core.Interfaces
@@ -24,34 +25,34 @@
     @if (!GameService.IsGameRunning)
     {
         <div class="game-menu">
-            <button class="btn btn-primary" @onclick="StartNewGame">Start New Game</button>
+            <button class="btn btn-primary" @onclick="StartNewGame">@WebConstants.StartNewGameButtonText</button>
         </div>
     }
     else
     {
         <div class="game-controls mb-3">
             <button class="btn btn-warning me-2" @onclick="TogglePause">
-                @(GameService.IsPaused ? "Resume" : "Pause")
+                @(GameService.IsPaused ? WebConstants.ResumeButtonText : WebConstants.PauseButtonText)
             </button>
             <button class="btn btn-danger me-2" @onclick="StopGame">
-                Stop Game
+                @WebConstants.StopGameButtonText
             </button>
             <div class="btn-group me-2">
-                <button class="btn btn-success" @onclick="SpawnAntelope">Spawn Antelope</button>
-                <button class="btn btn-danger" @onclick="SpawnLion">Spawn Lion</button>
+                <button class="btn btn-success" @onclick="SpawnAntelope">@WebConstants.SpawnAntelopeButtonText</button>
+                <button class="btn btn-danger" @onclick="SpawnLion">@WebConstants.SpawnLionButtonText</button>
             </div>
             <button class="btn btn-info" @onclick="ToggleDisplayMode">
-                @(GameService.UseLetterDisplay ? "Show Icons" : "Show Letters")
+                @(GameService.UseLetterDisplay ? WebConstants.ShowIconsButtonText : WebConstants.ShowLettersButtonText)
             </button>
         </div>
 
         <div class="game-status mb-3">
             <div class="alert alert-info">
-                <strong>Game Status:</strong> @(GameService.IsPaused ? "Paused" : "Running") |
-                <strong>Animals:</strong> @(GameService.GameEngine?.Animals.Count ?? 0) |
-                <strong>Lions:</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.LionName) ?? 0)
+                <strong>@WebConstants.GameStatusText</strong> @(GameService.IsPaused ? WebConstants.PausedStatusText : WebConstants.RunningStatusText) |
+                <strong>@WebConstants.AnimalsCountText</strong> @(GameService.GameEngine?.Animals.Count ?? 0) |
+                <strong>@WebConstants.LionsCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.LionName) ?? 0)
                 |
-                <strong>Antelopes:</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name ==
+                <strong>@WebConstants.AntelopesCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name ==
                 GameConstants.AntelopeName) ?? 0)
         </div>
     </div>
@@ -81,7 +82,7 @@
         </div>
 
         <div class="game-log mb-3">
-            <h5>Game Log</h5>
+            <h5>@WebConstants.GameLogText</h5>
             <div class="log-container p-2 border" style="height: 150px; overflow-y: auto; background-color: #f8f9fa;">
                 @foreach (var log in GameService.GameLogs.AsEnumerable().Reverse())
                 {
@@ -133,7 +134,7 @@
             }
             catch (Exception ex)
             {
-                GameService.LogMessage($"JavaScript initialization error: {ex.Message}");
+                GameService.LogMessage(string.Format(WebConstants.JavaScriptInitializationErrorMessage, ex.Message));
             }
         }
     }
@@ -182,7 +183,7 @@
         {
             string destination = await JSRuntime.InvokeAsync<string>("window.getAndClearPendingNavigation");
 
-            GameService.LogMessage($"Navigating to: {destination}");
+            GameService.LogMessage(string.Format(WebConstants.NavigatingToMessage, destination));
 
             GameService.StopTimer();
 
@@ -198,21 +199,13 @@
                     destination = _pendingNavigation;
                 }
 
-                if (string.IsNullOrEmpty(destination))
-                {
-                    destination = "/";
-                }
-
-                NavigationManager.NavigateTo(destination, forceLoad: true);
+                NavigationManager.NavigateTo(destination);
             }
         }
         catch (Exception ex)
         {
-            GameService.LogMessage($"Navigation error: {ex.Message}");
-            NavigationManager.NavigateTo("/", forceLoad: true);
+            GameService.LogMessage(string.Format(WebConstants.NavigationErrorMessage, ex.Message));
         }
-
-        _pendingNavigation = null;
     }
 
     private async Task SetBeforeUnloadWarning(bool enable)
@@ -238,7 +231,7 @@
         }
         catch (Exception ex)
         {
-            GameService.LogMessage($"Warning: Could not set beforeunload warning: {ex.Message}");
+            GameService.LogMessage(string.Format(WebConstants.ErrorOccurredMessage, $"Could not set beforeunload warning: {ex.Message}"));
         }
     }
 
@@ -252,6 +245,7 @@
         }
         catch (Exception ex)
         {
+            // Silent fail
         }
     }
 

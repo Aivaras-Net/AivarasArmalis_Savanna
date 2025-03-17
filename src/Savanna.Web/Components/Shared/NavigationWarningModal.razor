@@ -1,4 +1,5 @@
 @using Microsoft.JSInterop
+@using Savanna.Web.Constants
 @inject IJSRuntime JSRuntime
 
 <!-- Navigation Warning Modal -->
@@ -7,22 +8,22 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-warning">
-                <h5 class="modal-title" id="navigationWarningModalLabel">Warning: Game in Progress</h5>
+                <h5 class="modal-title" id="navigationWarningModalLabel">@WebConstants.GameInProgressWarningTitle</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
                     @onclick="OnCancelNavigation"></button>
             </div>
             <div class="modal-body">
                 <div class="alert alert-warning">
                     <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    You will lose your game progress if you leave this page. Are you sure you want to leave?
+                    @WebConstants.LeaveGameWarningMessage
                 </div>
-                <p>Your animals and game state will not be saved.</p>
+                <p>@WebConstants.GameStateNotSavedMessage</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                    @onclick="OnCancelNavigation">Stay
-                    on this Page</button>
-                <button type="button" class="btn btn-danger" @onclick="OnConfirmNavigation">Leave Game</button>
+                    @onclick="OnCancelNavigation">@WebConstants.StayOnPageButtonText</button>
+                <button type="button" class="btn btn-danger"
+                    @onclick="OnConfirmNavigation">@WebConstants.LeaveGameButtonText</button>
             </div>
         </div>
     </div>

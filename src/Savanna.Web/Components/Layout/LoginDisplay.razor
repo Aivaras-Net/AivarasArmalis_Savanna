@@ -2,6 +2,7 @@
 @using Savanna.Web.Models
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
+@using Savanna.Web.Constants
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
@@ -11,14 +12,14 @@
     <AuthorizeView>
         <Authorized>
             <span class="nav-link me-1">
-                Hello, @context.User.Identity?.Name!
+                @string.Format(WebConstants.HelloUserText, context.User.Identity?.Name)
                 @if (_userRoles != null && _userRoles.Any())
                 {
                     <span class="badge bg-primary ms-1">@string.Join(", ", _userRoles)</span>
                 }
             </span>
             <a class="nav-link" href="/Account/Manage">Account</a>
-            @if (_userRoles != null && _userRoles.Contains("Admin"))
+            @if (_userRoles != null && _userRoles.Contains(WebConstants.AdminRoleName))
             {
                 <a class="nav-link" href="/Admin/Dashboard">Admin Dashboard</a>
             }

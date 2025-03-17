@@ -4,6 +4,7 @@ using Savanna.Core.Domain;
 using Savanna.Core.Interfaces;
 using Savanna.Core.Infrastructure;
 using Savanna.Web.Services.Interfaces;
+using Savanna.Web.Constants;
 using System.Timers;
 
 namespace Savanna.Web.Services
@@ -25,7 +26,7 @@ namespace Savanna.Web.Services
         private bool _isPaused;
         private bool _useLetterDisplay;
 
-        private const int TimerInterval = 500;
+        private const int TimerInterval = WebConstants.TimerInterval;
 
         public bool IsGameRunning => _isGameRunning;
 
@@ -72,7 +73,7 @@ namespace Savanna.Web.Services
             _isGameRunning = true;
             _isPaused = false;
             _gameLogs.Clear();
-            LogMessage("Game started");
+            LogMessage(WebConstants.GameStartedMessage);
 
             SpawnAntelope();
             SpawnAntelope();
@@ -87,7 +88,7 @@ namespace Savanna.Web.Services
             _isGameRunning = false;
             _isPaused = false;
             _gameEngine = null;
-            LogMessage("Game stopped");
+            LogMessage(WebConstants.GameStoppedMessage);
 
             OnGameStateChanged();
         }
@@ -95,7 +96,7 @@ namespace Savanna.Web.Services
         public void TogglePause()
         {
             _isPaused = !_isPaused;
-            LogMessage(_isPaused ? "Game paused" : "Game resumed");
+            LogMessage(_isPaused ? WebConstants.GamePausedMessage : WebConstants.GameResumedMessage);
 
             OnGameStateChanged();
         }
@@ -110,12 +111,12 @@ namespace Savanna.Web.Services
             {
                 animal.Position = position;
                 _gameEngine.AddAnimal(animal);
-                LogMessage($"Antelope spawned at ({position.X}, {position.Y})");
+                LogMessage(string.Format(WebConstants.AntelopeSpawnedMessage, position.X, position.Y));
                 OnGameStateChanged();
             }
             else
             {
-                LogMessage($"Failed to spawn Antelope");
+                LogMessage(WebConstants.FailedToSpawnAntelopeMessage);
             }
         }
 
@@ -129,12 +130,12 @@ namespace Savanna.Web.Services
             {
                 animal.Position = position;
                 _gameEngine.AddAnimal(animal);
-                LogMessage($"Lion spawned at ({position.X}, {position.Y})");
+                LogMessage(string.Format(WebConstants.LionSpawnedMessage, position.X, position.Y));
                 OnGameStateChanged();
             }
             else
             {
-                LogMessage($"Failed to spawn Lion");
+                LogMessage(WebConstants.FailedToSpawnLionMessage);
             }
         }
 
@@ -144,7 +145,7 @@ namespace Savanna.Web.Services
         public void ToggleDisplayMode()
         {
             UseLetterDisplay = !UseLetterDisplay;
-            LogMessage(UseLetterDisplay ? "Switched to letter display" : "Switched to icon display");
+            LogMessage(UseLetterDisplay ? WebConstants.SwitchedToLetterDisplayMessage : WebConstants.SwitchedToIconDisplayMessage);
         }
 
         public void Update()
@@ -159,8 +160,8 @@ namespace Savanna.Web.Services
 
         public void LogMessage(string message)
         {
-            _gameLogs.Add($"[{DateTime.Now:HH:mm:ss}] {message}");
-            if (_gameLogs.Count > 100)
+            _gameLogs.Add($"[{DateTime.Now.ToString(WebConstants.LogTimeFormat)}] {message}");
+            if (_gameLogs.Count > WebConstants.MaxLogEntries)
                 _gameLogs.RemoveAt(0);
 
             OnGameStateChanged();

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Savanna.Web.Constants;
 using Savanna.Web.Models;
 using System;
 using System.Linq;
@@ -37,7 +38,7 @@ namespace Savanna.Web.Controllers
 
                     if (user == null)
                     {
-                        return Redirect("/Account/Login?error=Invalid+login+attempt");
+                        return Redirect($"/Account/Login?error={Uri.EscapeDataString(WebConstants.InvalidLoginAttemptMessage)}");
                     }
                 }
 
@@ -57,12 +58,12 @@ namespace Savanna.Web.Controllers
                 }
                 else
                 {
-                    return Redirect("/Account/Login?error=Invalid+password");
+                    return Redirect($"/Account/Login?error={Uri.EscapeDataString(WebConstants.InvalidPasswordMessage)}");
                 }
             }
             catch (Exception ex)
             {
-                return Redirect($"/Account/Login?error={Uri.EscapeDataString("An error occurred: " + ex.Message)}");
+                return Redirect($"/Account/Login?error={Uri.EscapeDataString(string.Format(WebConstants.ErrorOccurredMessage, ex.Message))}");
             }
         }
 
@@ -77,12 +78,12 @@ namespace Savanna.Web.Controllers
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(email) ||
                 string.IsNullOrEmpty(password))
             {
-                return Redirect("/Account/Register?error=All+fields+are+required");
+                return Redirect($"/Account/Register?error={Uri.EscapeDataString(WebConstants.AllFieldsRequiredMessage)}");
             }
 
             if (password != confirmPassword)
             {
-                return Redirect("/Account/Register?error=The+password+and+confirmation+password+do+not+match");
+                return Redirect($"/Account/Register?error={Uri.EscapeDataString(WebConstants.PasswordMismatchMessage)}");
             }
 
             try
@@ -97,12 +98,12 @@ namespace Savanna.Web.Controllers
 
                 if (result.Succeeded)
                 {
-                    if (!await _roleManager.RoleExistsAsync("User"))
+                    if (!await _roleManager.RoleExistsAsync(WebConstants.UserRoleName))
                     {
-                        await _roleManager.CreateAsync(new IdentityRole("User"));
+                        await _roleManager.CreateAsync(new IdentityRole(WebConstants.UserRoleName));
                     }
 
-                    await _userManager.AddToRoleAsync(user, "User");
+                    await _userManager.AddToRoleAsync(user, WebConstants.UserRoleName);
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return LocalRedirect("/");
@@ -115,7 +116,7 @@ namespace Savanna.Web.Controllers
             }
             catch (Exception ex)
             {
-                return Redirect($"/Account/Register?error={Uri.EscapeDataString(ex.Message)}");
+                return Redirect($"/Account/Register?error={Uri.EscapeDataString(string.Format(WebConstants.ErrorOccurredMessage, ex.Message))}");
             }
         }
     }

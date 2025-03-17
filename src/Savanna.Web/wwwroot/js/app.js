@@ -7,7 +7,7 @@ window.bootstrapInterop = {
         new bootstrap.Dropdown(el);
       });
     } catch (e) {
-      console.error("Error initializing dropdowns:", e);
+      console.error(JS_CONSTANTS.ERROR_INITIALIZING_DROPDOWNS, e);
     }
   },
 
@@ -25,7 +25,7 @@ window.bootstrapInterop = {
         }
       }
     } catch (e) {
-      console.error("Error toggling dropdown:", e);
+      console.error(JS_CONSTANTS.ERROR_TOGGLING_DROPDOWN, e);
     }
   },
 };
@@ -36,7 +36,7 @@ window.gameState = {
   modalInstance: null,
 };
 window.setupGame = function () {
-  console.log("Game page initialized");
+  console.log(JS_CONSTANTS.GAME_PAGE_INITIALIZED);
 
   if (typeof bootstrap !== "undefined") {
     const modalEl = document.getElementById("navigationWarningModal");
@@ -46,13 +46,13 @@ window.setupGame = function () {
           backdrop: "static",
           keyboard: false,
         });
-        console.log("Modal initialized successfully");
+        console.log(JS_CONSTANTS.MODAL_INITIALIZED_SUCCESSFULLY);
       } catch (e) {
-        console.error("Error initializing modal:", e);
+        console.error(JS_CONSTANTS.ERROR_INITIALIZING_MODAL, e);
       }
     }
   } else {
-    console.warn("Bootstrap not available, modal functionality may be limited");
+    console.warn(JS_CONSTANTS.BOOTSTRAP_NOT_AVAILABLE);
   }
 
   return true;
@@ -64,11 +64,11 @@ window.setBeforeUnloadWarning = function (enable) {
   if (enable) {
     window.addEventListener("beforeunload", window.handleBeforeUnload);
     document.addEventListener("click", window.handleLinkClick, true);
-    console.log("Navigation warning enabled");
+    console.log(JS_CONSTANTS.NAVIGATION_WARNING_ENABLED);
   } else {
     window.removeEventListener("beforeunload", window.handleBeforeUnload);
     document.removeEventListener("click", window.handleLinkClick, true);
-    console.log("Navigation warning disabled");
+    console.log(JS_CONSTANTS.NAVIGATION_WARNING_DISABLED);
   }
 };
 
@@ -96,7 +96,7 @@ window.handleLinkClick = function (event) {
     }
 
     console.log(
-      "Navigation intercepted to:",
+      JS_CONSTANTS.NAVIGATION_INTERCEPTED,
       window.gameState.pendingNavigation
     );
 
@@ -109,8 +109,7 @@ window.handleLinkClick = function (event) {
 
 window.handleBeforeUnload = function (event) {
   if (window.gameState.isGameRunning) {
-    const message =
-      "You will lose your game progress if you leave this page. Are you sure you want to leave?";
+    const message = JS_CONSTANTS.LEAVE_GAME_WARNING;
     event.returnValue = message;
     return message;
   }
@@ -125,7 +124,7 @@ window.showNavigationWarningModal = function () {
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
       } catch (e) {
-        console.error("Error showing modal:", e);
+        console.error(JS_CONSTANTS.ERROR_SHOWING_MODAL, e);
       }
     }
   }
