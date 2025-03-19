@@ -1,0 +1,145 @@
+@page "/buttons"
+@using Savanna.Core.Domain
+@using Savanna.Core
+@rendermode InteractiveServer
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Buttons Example</PageTitle>
+
+<h1>USED FOR DEBUGGING, WILL BE REMOVED</h1>
+
+<div class="mb-4">
+    <h3>Dropdown Button</h3>
+
+    <div class="mb-3">
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" @onclick="ToggleCustomDropdown" id="customDropdownButton">
+                Dropdown Button <span class="caret"></span>
+            </button>
+            <div class="dropdown-menu @(_showCustomDropdown ? "show" : "")"
+                style="@(_showCustomDropdown ? "display:block; position:absolute;" : "")">
+                <a class="dropdown-item" href="#" @onclick="() => CustomDropdownSelected(1)"
+                    @onclick:preventDefault>Option 1</a>
+                <a class="dropdown-item" href="#" @onclick="() => CustomDropdownSelected(2)"
+                    @onclick:preventDefault>Option 2</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#" @onclick="() => CustomDropdownSelected(3)"
+                    @onclick:preventDefault>Option 3</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-2">
+        @if (!string.IsNullOrEmpty(_dropdownMessage))
+        {
+            <div class="alert alert-secondary">@_dropdownMessage</div>
+        }
+    </div>
+</div>
+
+<div class="mb-4">
+    <h3>Input Test</h3>
+    <div class="form-group">
+        <label for="testInput">Test Input:</label>
+        <input id="testInput" class="form-control" @bind="testInputValue" @bind:event="oninput" />
+        <small class="form-text text-muted">Current value: "@testInputValue"</small>
+    </div>
+    <button class="btn btn-info mt-2" @onclick="TestInputBinding">Test Input Binding</button>
+    <div class="mt-2">
+        @if (!string.IsNullOrEmpty(_inputTestMessage))
+        {
+            <div class="alert alert-info">@_inputTestMessage</div>
+        }
+    </div>
+</div>
+
+<div class="mb-4">
+    <h3>JavaScript Button</h3>
+    <button class="btn btn-primary" @onclick="ShowJavaScriptMessage">Show JavaScript Message</button>
+    <div class="mt-2">
+        @if (!string.IsNullOrEmpty(_jsMessage))
+        {
+            <div class="alert alert-info">@_jsMessage</div>
+        }
+    </div>
+</div>
+
+<div class="mb-4">
+    <h3>Razor Button</h3>
+    <button class="btn btn-success" @onclick="ShowRazorMessage">Show Razor Message</button>
+    <div class="mt-2">
+        @if (!string.IsNullOrEmpty(_razorMessage))
+        {
+            <div class="alert alert-success">@_razorMessage</div>
+        }
+    </div>
+</div>
+
+<div class="mb-4">
+    <h3>Savanna.Core Button</h3>
+    <button class="btn btn-danger" @onclick="ShowSavannaInfo">Show Savanna.Core Info</button>
+    <div class="mt-2">
+        @if (!string.IsNullOrEmpty(_savannaMessage))
+        {
+            <div class="alert alert-danger">@_savannaMessage</div>
+        }
+    </div>
+</div>
+
+@code {
+    private string _jsMessage = "";
+    private string _razorMessage = "";
+    private string _savannaMessage = "";
+    private string _inputTestMessage = "";
+    private string _dropdownMessage = "";
+    private string testInputValue = "";
+    private bool _showCustomDropdown = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("bootstrapInterop.initDropdowns");
+        }
+    }
+
+    private void ToggleCustomDropdown()
+    {
+        _showCustomDropdown = !_showCustomDropdown;
+        StateHasChanged();
+    }
+
+    private void CustomDropdownSelected(int option)
+    {
+        _dropdownMessage = $"You selected Option {option} at {DateTime.Now.ToString("HH:mm:ss")}";
+        _showCustomDropdown = false;
+        StateHasChanged();
+    }
+
+    private void TestInputBinding()
+    {
+        _inputTestMessage = $"Input value is: '{testInputValue}' at {DateTime.Now.ToString("HH:mm:ss")}";
+        StateHasChanged();
+    }
+
+    private async Task ShowJavaScriptMessage()
+    {
+        await JSRuntime.InvokeVoidAsync("alert", "Hello from JavaScript!");
+        _jsMessage = "JavaScript alert was displayed at: " + DateTime.Now.ToString("HH:mm:ss");
+    }
+
+    private void ShowRazorMessage()
+    {
+        _razorMessage = $"Hello from Razor! Current time is {DateTime.Now.ToString("HH:mm:ss")}";
+    }
+
+    private void ShowSavannaInfo()
+    {
+        var position = new Position(10, 20);
+
+        var distance = position.DistanceTo(new Position(13, 24));
+
+        _savannaMessage = $"Savanna.Core Position: ({position.X}, {position.Y}). " +
+        $"Distance to point (13, 24): {distance:F2}";
+    }
+}

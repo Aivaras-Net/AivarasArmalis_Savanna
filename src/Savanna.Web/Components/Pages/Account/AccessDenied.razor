@@ -1,0 +1,26 @@
+@page "/Account/AccessDenied"
+@inject NavigationManager NavigationManager
+
+<PageTitle>Access Denied</PageTitle>
+
+<div class="text-center mt-5">
+    <h1 class="text-danger">Access Denied</h1>
+    <p class="text-danger">You do not have permission to access this resource.</p>
+    <p>You need to be logged in to access this page.</p>
+    <div class="mt-4">
+        <a href="@GetLoginUrl()" class="btn btn-primary">Log in</a>
+        <a href="/" class="btn btn-secondary ms-2">Return to Home</a>
+    </div>
+</div>
+
+@code {
+    private string GetLoginUrl()
+    {
+        var currentUri = NavigationManager.Uri;
+        var returnUrl = currentUri.Contains("AccessDenied")
+        ? NavigationManager.ToBaseRelativePath(currentUri).Replace("Account/AccessDenied", "game")
+        : NavigationManager.ToBaseRelativePath(currentUri);
+
+        return $"/Account/Login?returnUrl={Uri.EscapeDataString(returnUrl)}";
+    }
+}

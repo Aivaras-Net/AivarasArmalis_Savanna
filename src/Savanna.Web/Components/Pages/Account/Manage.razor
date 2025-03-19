@@ -1,0 +1,272 @@
+@page "/Account/Manage"
+@using Microsoft.AspNetCore.Identity
+@using Savanna.Web.Models
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Account Management</PageTitle>
+
+<div class="container mt-4">
+    <h1>Account Management</h1>
+    <p class="lead">Manage your account settings and profile information</p>
+
+    @if (_user == null)
+    {
+        <div class="d-flex justify-content-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-3">
+                <div class="list-group mb-4">
+                    <button class="list-group-item list-group-item-action @(_activeTab == "profile" ? "active" : "")"
+                        @onclick='() => ActivateTab("profile")'>
+                        <i class="bi bi-person me-2"></i> Profile
+                    </button>
+                    <button class="list-group-item list-group-item-action @(_activeTab == "password" ? "active" : "")"
+                        @onclick='() => ActivateTab("password")'>
+                        <i class="bi bi-key me-2"></i> Password
+                    </button>
+                    <button class="list-group-item list-group-item-action @(_activeTab == "email" ? "active" : "")"
+                        @onclick='() => ActivateTab("email")'>
+                        <i class="bi bi-envelope me-2"></i> Email
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-9">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="card-title mb-0">
+                            @if (_activeTab == "profile")
+                            {
+                                <span><i class="bi bi-person me-2"></i> Profile</span>
+                            }
+                            else if (_activeTab == "password")
+                            {
+                                <span><i class="bi bi-key me-2"></i> Password</span>
+                            }
+                            else if (_activeTab == "email")
+                            {
+                                <span><i class="bi bi-envelope me-2"></i> Email</span>
+                            }
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(_statusMessage))
+                        {
+                            <div class="alert @_statusClass alert-dismissible fade show" role="alert">
+                                @_statusMessage
+                                <button type="button" class="btn-close" @onclick="ClearStatusMessage"></button>
+                            </div>
+                        }
+
+                        @if (_activeTab == "profile")
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">User ID</label>
+                                <input type="text" class="form-control" value="@_user.Id" disabled />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-control" @bind="_username" />
+                            </div>
+                            <button class="btn btn-primary" @onclick="UpdateProfileAsync">Save Changes</button>
+                        }
+                        else if (_activeTab == "password")
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Current Password</label>
+                                <input type="password" class="form-control" @bind="_currentPassword" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">New Password</label>
+                                <input type="password" class="form-control" @bind="_newPassword" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Confirm New Password</label>
+                                <input type="password" class="form-control" @bind="_confirmPassword" />
+                            </div>
+                            <button class="btn btn-primary" @onclick="ChangePasswordAsync">Change Password</button>
+                        }
+                        else if (_activeTab == "email")
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" @bind="_email" />
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" @bind="_emailConfirmed" disabled />
+                                    <label class="form-check-label">
+                                        Email Confirmed
+                                    </label>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" @onclick="UpdateEmailAsync">Update Email</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private ApplicationUser? _user;
+    private string _activeTab = "profile";
+    private string _statusMessage = "";
+    private string _statusClass = "alert-info";
+
+    private string _username = "";
+
+    private string _currentPassword = "";
+    private string _newPassword = "";
+    private string _confirmPassword = "";
+
+    private string _email = "";
+    private bool _emailConfirmed = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserDataAsync();
+    }
+
+    private async Task LoadUserDataAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            _user = await UserManager.GetUserAsync(user);
+            if (_user != null)
+            {
+                _username = _user.UserName ?? "";
+                _email = _user.Email ?? "";
+                _emailConfirmed = _user.EmailConfirmed;
+            }
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/Account/Login");
+        }
+    }
+
+    private void ActivateTab(string tabName)
+    {
+        _activeTab = tabName;
+        ClearStatusMessage();
+    }
+
+    private void ClearStatusMessage()
+    {
+        _statusMessage = "";
+    }
+
+    private async Task UpdateProfileAsync()
+    {
+        if (_user == null) return;
+
+        if (string.IsNullOrWhiteSpace(_username))
+        {
+            _statusMessage = "Username cannot be empty.";
+            _statusClass = "alert-danger";
+            return;
+        }
+
+        _user.UserName = _username;
+        var result = await UserManager.UpdateAsync(_user);
+
+        if (result.Succeeded)
+        {
+            _statusMessage = "Profile updated successfully.";
+            _statusClass = "alert-success";
+        }
+        else
+        {
+            _statusMessage = $"Error updating profile: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+            _statusClass = "alert-danger";
+        }
+    }
+
+    private async Task ChangePasswordAsync()
+    {
+        if (_user == null) return;
+
+        if (string.IsNullOrWhiteSpace(_currentPassword) ||
+        string.IsNullOrWhiteSpace(_newPassword) ||
+        string.IsNullOrWhiteSpace(_confirmPassword))
+        {
+            _statusMessage = "Please fill in all password fields.";
+            _statusClass = "alert-danger";
+            return;
+        }
+
+        if (_newPassword != _confirmPassword)
+        {
+            _statusMessage = "The new password and confirmation password do not match.";
+            _statusClass = "alert-danger";
+            return;
+        }
+
+        var result = await UserManager.ChangePasswordAsync(_user, _currentPassword, _newPassword);
+
+        if (result.Succeeded)
+        {
+            _statusMessage = "Password changed successfully.";
+            _statusClass = "alert-success";
+            _currentPassword = "";
+            _newPassword = "";
+            _confirmPassword = "";
+        }
+        else
+        {
+            _statusMessage = $"Error changing password: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+            _statusClass = "alert-danger";
+        }
+    }
+
+    private async Task UpdateEmailAsync()
+    {
+        if (_user == null) return;
+
+        if (string.IsNullOrWhiteSpace(_email))
+        {
+            _statusMessage = "Email cannot be empty.";
+            _statusClass = "alert-danger";
+            return;
+        }
+
+        if (_email == _user.Email)
+        {
+            _statusMessage = "The new email is the same as the current email.";
+            _statusClass = "alert-info";
+            return;
+        }
+
+        var token = await UserManager.GenerateChangeEmailTokenAsync(_user, _email);
+        var result = await UserManager.ChangeEmailAsync(_user, _email, token);
+
+        if (result.Succeeded)
+        {
+            _statusMessage = "Email updated successfully.";
+            _statusClass = "alert-success";
+            await LoadUserDataAsync(); // Reload data to update email confirmed status
+        }
+        else
+        {
+            _statusMessage = $"Error updating email: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+            _statusClass = "alert-danger";
+        }
+    }
+}

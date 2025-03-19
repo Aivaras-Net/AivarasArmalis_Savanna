@@ -20,6 +20,11 @@ namespace Savanna.Core
         private readonly PredatorBehaviorManager _predatorManager = new();
         private readonly FileManager _fileManager;
 
+        /// <summary>
+        /// Gets the current list of animals in the simulation
+        /// </summary>
+        public IReadOnlyList<IAnimal> Animals => _animals.AsReadOnly();
+
         public GameEngine(IConsoleRenderer renderer)
         {
             _renderer = renderer;

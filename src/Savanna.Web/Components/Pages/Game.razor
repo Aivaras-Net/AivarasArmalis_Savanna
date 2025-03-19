@@ -1,0 +1,304 @@
+@page "/game"
+@using Savanna.Core
+@using Savanna.Core.Domain
+@using Savanna.Core.Domain.Interfaces
+@using Savanna.Core.Constants
+@using Savanna.Web.Constants
+@using System.Timers
+@using Microsoft.JSInterop
+@using Savanna.Core.Interfaces
+@using Microsoft.AspNetCore.Authorization
+@using Savanna.Web.Services.Interfaces
+@attribute [Authorize]
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject IGameService GameService
+@inject IGameRenderer GameRenderer
+@implements IDisposable
+@rendermode InteractiveServer
+
+<PageTitle>Savanna Game</PageTitle>
+
+<div class="game-container mb-4">
+    <h1>Savanna Game</h1>
+
+    @if (!GameService.IsGameRunning)
+    {
+        <div class="game-menu">
+            <button class="btn btn-primary" @onclick="StartNewGame">@WebConstants.StartNewGameButtonText</button>
+        </div>
+    }
+    else
+    {
+        <div class="game-controls mb-3">
+            <button class="btn btn-warning me-2" @onclick="TogglePause">
+                @(GameService.IsPaused ? WebConstants.ResumeButtonText : WebConstants.PauseButtonText)
+            </button>
+            <button class="btn btn-danger me-2" @onclick="StopGame">
+                @WebConstants.StopGameButtonText
+            </button>
+            <div class="btn-group me-2">
+                <button class="btn btn-success" @onclick="SpawnAntelope">@WebConstants.SpawnAntelopeButtonText</button>
+                <button class="btn btn-danger" @onclick="SpawnLion">@WebConstants.SpawnLionButtonText</button>
+            </div>
+            <button class="btn btn-info" @onclick="ToggleDisplayMode">
+                @(GameService.UseLetterDisplay ? WebConstants.ShowIconsButtonText : WebConstants.ShowLettersButtonText)
+            </button>
+        </div>
+
+        <div class="game-status mb-3">
+            <div class="alert alert-info">
+                <strong>@WebConstants.GameStatusText</strong> @(GameService.IsPaused ? WebConstants.PausedStatusText : WebConstants.RunningStatusText) |
+                <strong>@WebConstants.AnimalsCountText</strong> @(GameService.GameEngine?.Animals.Count ?? 0) |
+                <strong>@WebConstants.LionsCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.LionName) ?? 0)
+                |
+                <strong>@WebConstants.AntelopesCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name ==
+                GameConstants.AntelopeName) ?? 0)
+        </div>
+    </div>
+
+    <div class="game-field mb-3" id="gameField"
+        style="position: relative; width: @(GameService.FieldWidth * 20)px; height: @(GameService.FieldHeight * 20)px; border: 1px solid #ccc; background-color: #e8d2a0;">
+        @if (GameService.GameEngine != null)
+            {
+                @foreach (var animal in GameService.GameEngine.Animals)
+                {
+                    string animalClass = GetAnimalClass(animal.Name);
+                    string animalDisplay = GetAnimalDisplay(animal.Name);
+
+                    <div class="animal @animalClass" @key="animal.GetHashCode()"
+                        style="position: absolute; left: @(animal.Position.X * 20)px; top: @(animal.Position.Y * 20)px; width: 20px; height: 20px;">
+                        @if (GameService.UseLetterDisplay)
+                        {
+                            @(animal.Name.Substring(0, 1))
+                        }
+                        else
+                        {
+                            @animalDisplay
+                        }
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="game-log mb-3">
+            <h5>@WebConstants.GameLogText</h5>
+            <div class="log-container p-2 border" style="height: 150px; overflow-y: auto; background-color: #f8f9fa;">
+                @foreach (var log in GameService.GameLogs.AsEnumerable().Reverse())
+                {
+                    <div class="log-entry">@log</div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<NavigationWarningModal @ref="_navigationWarningModal" OnCancelNavigation="CancelNavigation"
+    OnConfirmNavigation="ConfirmNavigation" />
+
+<style>
+    .animal {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 16px;
+        transition: all 0.3s ease-out;
+    }
+
+    .lion {
+        color: #cc3300;
+    }
+
+    .antelope {
+        color: #33cc33;
+    }
+</style>
+
+@code {
+    private string _pendingNavigation = null;
+    private NavigationWarningModal _navigationWarningModal;
+
+    protected override void OnInitialized()
+    {
+        GameService.GameStateChanged += OnGameStateChanged;
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("window.setupGame");
+            }
+            catch (Exception ex)
+            {
+                GameService.LogMessage(string.Format(WebConstants.JavaScriptInitializationErrorMessage, ex.Message));
+            }
+        }
+    }
+
+    private void OnGameStateChanged(object sender, EventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        if (GameService.IsGameRunning && !e.Location.EndsWith("/game"))
+        {
+            _pendingNavigation = e.Location;
+            _ = ShowNavigationWarningModal();
+        }
+    }
+
+    private async Task ShowNavigationWarningModal()
+    {
+        if (_navigationWarningModal != null)
+        {
+            await _navigationWarningModal.ShowModal();
+        }
+    }
+
+    private async void CancelNavigation()
+    {
+        _pendingNavigation = null;
+        if (_navigationWarningModal != null)
+        {
+            await _navigationWarningModal.HideModal();
+        }
+    }
+
+    private async void ConfirmNavigation()
+    {
+        if (_navigationWarningModal != null)
+        {
+            await _navigationWarningModal.HideModal();
+        }
+
+        await SetBeforeUnloadWarning(false);
+
+        try
+        {
+            string destination = await JSRuntime.InvokeAsync<string>("window.getAndClearPendingNavigation");
+
+            GameService.LogMessage(string.Format(WebConstants.NavigatingToMessage, destination));
+
+            GameService.StopTimer();
+
+            if (NavigationManager.Uri == destination)
+            {
+                await JSRuntime.InvokeVoidAsync("window.location.reload");
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(_pendingNavigation) &&
+                string.IsNullOrEmpty(destination))
+                {
+                    destination = _pendingNavigation;
+                }
+
+                NavigationManager.NavigateTo(destination);
+            }
+        }
+        catch (Exception ex)
+        {
+            GameService.LogMessage(string.Format(WebConstants.NavigationErrorMessage, ex.Message));
+        }
+    }
+
+    private async Task SetBeforeUnloadWarning(bool enable)
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("window.setBeforeUnloadWarning", enable);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop"))
+        {
+        }
+    }
+
+    private async void StartNewGame()
+    {
+        var renderer = GameRenderer.CreateRenderer(GameService.LogMessage);
+        GameService.StartNewGame(renderer);
+        GameService.StartTimer();
+
+        try
+        {
+            await SetBeforeUnloadWarning(true);
+        }
+        catch (Exception ex)
+        {
+            GameService.LogMessage(string.Format(WebConstants.ErrorOccurredMessage, $"Could not set beforeunload warning: {ex.Message}"));
+        }
+    }
+
+    private async void StopGame()
+    {
+        GameService.StopGame();
+
+        try
+        {
+            await SetBeforeUnloadWarning(false);
+        }
+        catch (Exception ex)
+        {
+            // Silent fail
+        }
+    }
+
+    private void TogglePause()
+    {
+        GameService.TogglePause();
+    }
+
+    private void SpawnAntelope()
+    {
+        GameService.SpawnAntelope();
+    }
+
+    private void SpawnLion()
+    {
+        GameService.SpawnLion();
+    }
+
+    private void ToggleDisplayMode()
+    {
+        GameService.ToggleDisplayMode();
+    }
+
+    private string GetAnimalClass(string animalName)
+    {
+        return animalName.ToLower();
+    }
+
+    private string GetAnimalDisplay(string animalName)
+    {
+        return animalName switch
+        {
+            GameConstants.LionName => "🦁",
+            GameConstants.AntelopeName => "🦌",
+            "Caracal" => "🐆",
+            _ => "🐾" // Default animal
+        };
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        GameService.GameStateChanged -= OnGameStateChanged;
+
+        try
+        {
+            if (GameService.IsGameRunning)
+            {
+                SetBeforeUnloadWarning(false).Wait();
+            }
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop"))
+        {
+        }
+    }
+}
