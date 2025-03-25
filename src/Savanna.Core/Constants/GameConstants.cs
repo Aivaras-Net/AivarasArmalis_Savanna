@@ -40,6 +40,7 @@ namespace Savanna.Core.Constants
         public const string DateTimeFormat = "yyyyMMdd_HHmmss";
         public const string UnknownAnimalTypeMessage = "Unknown animal type: {0}";
         public const string PropertySetWarningMessage = "Warning: Could not set all properties for {0}: {1}";
+        public const string PositionOccupiedWarningMessage = "Warning: Could not find unoccupied position for animal after multiple attempts.";
 
         public const string LionSymbol = "🦁";
         public const string AntelopeSymbol = "🦌";
@@ -48,5 +49,9 @@ namespace Savanna.Core.Constants
 
         public const int LowHealthThreshold = 25;
         public const int MediumHealthThreshold = 50;
+
+        public const int AdjacentDistance = 1;
+        public const int HuntingDistance = 1;
+        public const int MaxSpawnAttempts = 100;
     }
 }

@@ -47,16 +47,42 @@ namespace Savanna.Core
                         a != parent &&
                         a.Name == parent.Name &&
                         a.isAlive &&
-                        parent.Position.DistanceTo(a.Position) <= 1);
+                        parent.Position.DistanceTo(a.Position) <= GameConstants.AdjacentDistance);
 
                     if (otherParent != null)
                     {
                         otherParent.RegisterOffspring(offspring.Id);
                     }
 
+                    if (_animals.Any(a =>
+                        a.isAlive &&
+                        a.Position.X == offspring.Position.X &&
+                        a.Position.Y == offspring.Position.Y))
+                    {
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            for (int dy = -1; dy <= 1; dy++)
+                            {
+                                if (dx == 0 && dy == 0) continue;
+
+                                int newX = Math.Min(_field.Width - 1, Math.Max(0, offspring.Position.X + dx));
+                                int newY = Math.Min(_field.Height - 1, Math.Max(0, offspring.Position.Y + dy));
+
+                                if (!_animals.Any(a =>
+                                    a.isAlive &&
+                                    a.Position.X == newX &&
+                                    a.Position.Y == newY))
+                                {
+                                    offspring.Position = new Position(newX, newY);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
                     AddAnimal(offspring, false);
                     _renderer.ShowLog(string.Format(GameConstants.AnimalBornMessage,
-                        offspring.Name, position.X, position.Y),
+                        offspring.Name, offspring.Position.X, offspring.Position.Y),
                         GameConstants.LogDurationLong);
                 }
             };
@@ -92,16 +118,42 @@ namespace Savanna.Core
                         a != parent &&
                         a.Name == parent.Name &&
                         a.isAlive &&
-                        parent.Position.DistanceTo(a.Position) <= 1);
+                        parent.Position.DistanceTo(a.Position) <= GameConstants.AdjacentDistance);
 
                     if (otherParent != null)
                     {
                         otherParent.RegisterOffspring(offspring.Id);
                     }
 
+                    if (_animals.Any(a =>
+                        a.isAlive &&
+                        a.Position.X == offspring.Position.X &&
+                        a.Position.Y == offspring.Position.Y))
+                    {
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            for (int dy = -1; dy <= 1; dy++)
+                            {
+                                if (dx == 0 && dy == 0) continue;
+
+                                int newX = Math.Min(_field.Width - 1, Math.Max(0, offspring.Position.X + dx));
+                                int newY = Math.Min(_field.Height - 1, Math.Max(0, offspring.Position.Y + dy));
+
+                                if (!_animals.Any(a =>
+                                    a.isAlive &&
+                                    a.Position.X == newX &&
+                                    a.Position.Y == newY))
+                                {
+                                    offspring.Position = new Position(newX, newY);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
                     AddAnimal(offspring, false);
                     _renderer.ShowLog(string.Format(GameConstants.AnimalBornMessage,
-                        offspring.Name, position.X, position.Y),
+                        offspring.Name, offspring.Position.X, offspring.Position.Y),
                         GameConstants.LogDurationLong);
                 }
             };
@@ -123,10 +175,35 @@ namespace Savanna.Core
         {
             if (animal.Position == Position.Null)
             {
-                animal.Position = new Position(
-                    _random.Next(0, _field.Width),
-                    _random.Next(0, _field.Height)
-                );
+                bool positionFound = false;
+                int maxAttempts = GameConstants.MaxSpawnAttempts;
+                int attempts = 0;
+
+                while (!positionFound && attempts < maxAttempts)
+                {
+                    int x = _random.Next(0, _field.Width);
+                    int y = _random.Next(0, _field.Height);
+                    Position position = new Position(x, y);
+
+                    if (!_animals.Any(a => a.isAlive && a.Position.X == x && a.Position.Y == y))
+                    {
+                        animal.Position = position;
+                        positionFound = true;
+                    }
+
+                    attempts++;
+                }
+
+                if (!positionFound)
+                {
+                    animal.Position = new Position(
+                        _random.Next(0, _field.Width),
+                        _random.Next(0, _field.Height)
+                    );
+
+                    _renderer.ShowLog(GameConstants.PositionOccupiedWarningMessage,
+                        GameConstants.LogDurationShort);
+                }
             }
             _animals.Add(animal);
 
@@ -145,21 +222,42 @@ namespace Savanna.Core
         {
             _animals.RemoveAll(animal => !animal.isAlive);
 
-            var currentAnimals = _animals.ToList();
+            var predators = _animals.Where(a => a is IPredator).ToList();
+            var prey = _animals.Where(a => a is IPrey).ToList();
+            var otherAnimals = _animals.Where(a => !(a is IPredator) && !(a is IPrey)).ToList();
 
-            foreach (var animal in currentAnimals)
+            // Step 1: Move predators first (they get priority in movement)
+            foreach (var predator in predators)
+            {
+                predator.Move(_animals, _field.Width, _field.Height);
+            }
+
+            // Step 2: Check for hunting after predators have moved
+            _predatorManager.Update(_animals);
+
+            // Step 3: Remove dead animals 
+            _animals.RemoveAll(animal => !animal.isAlive);
+
+            // Step 4: Move prey (those that survived the predator movement phase)
+            foreach (var preyAnimal in prey.Where(p => p.isAlive))
+            {
+                preyAnimal.Move(_animals, _field.Width, _field.Height);
+            }
+
+            // Step 5: Move any other animal types
+            foreach (var animal in otherAnimals)
             {
                 animal.Move(_animals, _field.Width, _field.Height);
             }
 
-            currentAnimals = _animals.ToList();
-
-            foreach (var animal in currentAnimals)
+            // Step 6: Special actions for all surviving animals
+            var currentAnimals = _animals.ToList();
+            foreach (var animal in currentAnimals.Where(a => a.isAlive))
             {
                 animal.SpecialAction(_animals);
             }
 
-            _predatorManager.Update(_animals);
+            // Step 7: Life cycle updates (reproduction, aging, natural death)
             _lifeCycleManager.Update(_animals, _field.Width, _field.Height);
         }
 
