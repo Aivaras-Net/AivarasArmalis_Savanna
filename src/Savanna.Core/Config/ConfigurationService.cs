@@ -1,15 +1,44 @@
 using System.Text.Json;
 using Savanna.Core.Constants;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 
 namespace Savanna.Core.Config
 {
     /// <summary>
     /// Service for loading and accessing game configuration settings
     /// </summary>
-    public partial class ConfigurationService
+    public partial class ConfigurationService : IConfigurationProvider
     {
         private static AnimalConfig? _config;
         private static string _configPath = GetDefaultConfigPath();
+        private static readonly ConfigurationService _instance = new ConfigurationService();
+
+        /// <summary>
+        /// Gets the singleton instance of ConfigurationService that implements IConfigurationProvider
+        /// </summary>
+        public static IConfigurationProvider Instance => _instance;
+
+        /// <summary>
+        /// Gets the general configuration settings
+        /// </summary>
+        public GeneralConfig GeneralConfig => Config.General;
+
+        /// <summary>
+        /// Instance implementation of Config that delegates to the static property
+        /// </summary>
+        AnimalConfig IConfigurationProvider.Config => Config;
+
+        /// <summary>
+        /// Instance implementation of GetAnimalConfig that delegates to the static method
+        /// </summary>
+        AnimalTypeConfig IConfigurationProvider.GetAnimalConfig(string animalType) => GetAnimalConfig(animalType);
+
+        /// <summary>
+        /// Instance implementation of AddOrUpdateAnimalConfig that delegates to the static method
+        /// </summary>
+        void IConfigurationProvider.AddOrUpdateAnimalConfig(string animalName, AnimalTypeConfig config) =>
+            AddOrUpdateAnimalConfig(animalName, config);
 
         /// <summary>
         /// Gets the default path to the configuration file

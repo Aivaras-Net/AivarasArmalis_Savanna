@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SavannaCore.Tests", "tests\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Savanna.ExamplePlugin", "src\Savanna.Animals.Custom\Savanna.ExamplePlugin.csproj", "{595E1A42-73B7-4A88-B321-CBFF6911ABE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Savanna.Web", "src\Savanna.Web\Savanna.Web.csproj", "{A440DB01-EFD4-4CEF-BCA2-FD52574DC0B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Savanna.Web", "src\Savanna.Web\Savanna.Web.csproj", "{A440DB01-EFD4-4CEF-BCA2-FD52574DC0B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Savanna.Domain", "src\Savanna.Domain\Savanna.Domain.csproj", "{F374E973-A7DC-4D90-B0A8-2E99E4796A90}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{A440DB01-EFD4-4CEF-BCA2-FD52574DC0B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A440DB01-EFD4-4CEF-BCA2-FD52574DC0B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A440DB01-EFD4-4CEF-BCA2-FD52574DC0B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F374E973-A7DC-4D90-B0A8-2E99E4796A90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F374E973-A7DC-4D90-B0A8-2E99E4796A90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F374E973-A7DC-4D90-B0A8-2E99E4796A90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F374E973-A7DC-4D90-B0A8-2E99E4796A90}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

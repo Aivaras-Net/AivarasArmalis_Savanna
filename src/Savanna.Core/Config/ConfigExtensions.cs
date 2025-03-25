@@ -1,4 +1,6 @@
-﻿namespace Savanna.Core.Config
+﻿using Savanna.Domain;
+
+namespace Savanna.Core.Config
 {
     public partial class ConfigurationService
     {

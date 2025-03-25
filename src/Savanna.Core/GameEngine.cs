@@ -1,9 +1,8 @@
 ﻿using Savanna.Core.Constants;
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure;
 using Savanna.Core.Interfaces;
-using System.Text.Json;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 
 namespace Savanna.Core
 {

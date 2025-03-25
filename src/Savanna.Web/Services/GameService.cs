@@ -1,6 +1,6 @@
 using Savanna.Core;
 using Savanna.Core.Constants;
-using Savanna.Core.Domain;
+using Savanna.Domain;
 using Savanna.Core.Interfaces;
 using Savanna.Core.Infrastructure;
 using Savanna.Web.Services.Interfaces;

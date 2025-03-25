@@ -6,9 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Savanna.Core\Savanna.Core.csproj" />
-    <ProjectReference Include="..\Savanna.Domain\Savanna.Domain.csproj" />
-  </ItemGroup>
-
 </Project>

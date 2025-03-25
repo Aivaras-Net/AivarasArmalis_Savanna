@@ -1,5 +1,5 @@
 using Savanna.Core.Config;
-using Savanna.Core.Domain.Interfaces;
+using Savanna.Domain.Interfaces;
 using static Savanna.Core.Config.ConfigurationService.ConfigExtensions;
 
 namespace Savanna.Core.Infrastructure

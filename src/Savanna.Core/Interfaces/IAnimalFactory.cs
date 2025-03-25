@@ -1,4 +1,4 @@
-using Savanna.Core.Domain.Interfaces;
+using Savanna.Domain.Interfaces;
 
 namespace Savanna.Core.Interfaces
 {

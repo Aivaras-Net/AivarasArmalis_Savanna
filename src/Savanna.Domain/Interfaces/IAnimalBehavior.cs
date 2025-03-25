@@ -1,7 +1,4 @@
-using Savanna.Core.Config;
-using Savanna.Core.Interfaces;
-
-namespace Savanna.Core.Domain.Interfaces
+namespace Savanna.Domain.Interfaces
 {
     public interface IAnimalBehavior
     {

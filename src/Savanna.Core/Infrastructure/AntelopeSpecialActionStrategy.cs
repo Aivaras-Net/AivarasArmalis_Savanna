@@ -1,8 +1,6 @@
-﻿using Savanna.Core.Config;
-using Savanna.Core.Constants;
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
-using Savanna.Core.Interfaces;
+﻿using Savanna.Core.Constants;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 using static Savanna.Core.Config.ConfigurationService.ConfigExtensions;
 
 namespace Savanna.Core.Infrastructure

@@ -1,10 +1,10 @@
 ﻿using Savanna.Core.Constants;
-using Savanna.Core.Domain.Interfaces;
-using Savanna.Core.Infrastructure;
 using Savanna.Core.Config;
 using Savanna.Core.Infrastructure.Behaviors;
+using Savanna.Domain.Interfaces;
+using Savanna.Domain;
 
-namespace Savanna.Core.Domain
+namespace Savanna.Core
 {
     public class Lion : Animal, IPredator
     {

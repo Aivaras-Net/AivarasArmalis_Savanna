@@ -3,6 +3,7 @@ using Savanna.CLI.Services;
 using Savanna.CLI.UI;
 using Savanna.Core.Constants;
 using Savanna.Core.Interfaces;
+using Savanna.Core.Config;
 
 namespace Savanna.CLI
 {
@@ -18,6 +19,16 @@ namespace Savanna.CLI
         /// </summary>
         public void RegisterServices()
         {
+            try
+            {
+                ConfigurationService.LoadConfig();
+                ConfigurationBootstrap.Initialize();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing configuration: {ex.Message}");
+            }
+
             RegisterSingleton<ILogService>(new LogService());
 
             var logService = GetService<ILogService>();

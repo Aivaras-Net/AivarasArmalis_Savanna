@@ -1,6 +1,6 @@
 ﻿using Savanna.Core.Config;
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 
 namespace Savanna.Core.Infrastructure
 {

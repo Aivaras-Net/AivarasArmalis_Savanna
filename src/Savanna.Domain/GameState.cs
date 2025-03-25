@@ -1,7 +1,6 @@
-using System.Text.Json.Serialization;
-using Savanna.Core.Domain.Interfaces;
+using Savanna.Domain.Interfaces;
 
-namespace Savanna.Core.Domain
+namespace Savanna.Domain
 {
     /// <summary>
     /// Represents a serializable game state that can be saved to and loaded from a file

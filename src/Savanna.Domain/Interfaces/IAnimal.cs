@@ -1,4 +1,4 @@
-﻿namespace Savanna.Core.Domain.Interfaces
+﻿namespace Savanna.Domain.Interfaces
 {
     /// <summary>
     /// Represents an animal in the Savanna simulation

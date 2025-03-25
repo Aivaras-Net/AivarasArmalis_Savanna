@@ -1,6 +1,5 @@
-using Savanna.Core.Constants;
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 
 /// <summary>
 /// represents the simulation field where animals reside.
@@ -28,7 +27,7 @@ public class Field
         {
             for (int x = 0; x < Width; x++)
             {
-                _grid[y, x] = GameConstants.FieldFill;
+                _grid[y, x] = DomainConstants.FieldFill;
             }
         }
     }

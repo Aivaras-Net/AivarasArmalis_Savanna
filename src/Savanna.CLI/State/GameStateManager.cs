@@ -1,8 +1,7 @@
 using Savanna.CLI.Interfaces;
 using Savanna.Core;
 using Savanna.Core.Constants;
-using Savanna.Core.Domain;
-using Savanna.Core.Interfaces;
+using Savanna.Domain;
 
 namespace Savanna.CLI.State
 {

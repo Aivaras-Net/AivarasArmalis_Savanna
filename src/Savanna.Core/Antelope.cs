@@ -1,10 +1,8 @@
-﻿using Savanna.Core.Config;
-using Savanna.Core.Constants;
-using Savanna.Core.Domain.Interfaces;
-using Savanna.Core.Infrastructure;
+﻿using Savanna.Core.Constants;
 using Savanna.Core.Infrastructure.Behaviors;
+using Savanna.Domain.Interfaces;
 
-namespace Savanna.Core.Domain
+namespace Savanna.Domain
 {
     public class Antelope : Animal, IPrey
     {

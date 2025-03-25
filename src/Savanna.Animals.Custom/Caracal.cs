@@ -1,7 +1,7 @@
 ﻿using Savanna.Core.Config;
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
 using Savanna.Animals.Custom.Constants;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 
 namespace Savanna.Animals.Custom
 {
