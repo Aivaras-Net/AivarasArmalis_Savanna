@@ -22,7 +22,9 @@ namespace Savanna.Domain
         /// <returns>A new antelope instance.</returns>
         public override IAnimal CreateOffspring(Position position)
         {
-            return new Antelope(Speed, VisionRange, position);
+            var offspring = new Antelope(Speed, VisionRange, position);
+            this.RegisterOffspring(offspring.Id);
+            return offspring;
         }
     }
 }

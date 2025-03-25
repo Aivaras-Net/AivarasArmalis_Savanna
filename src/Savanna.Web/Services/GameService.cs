@@ -6,6 +6,8 @@ using Savanna.Core.Infrastructure;
 using Savanna.Web.Services.Interfaces;
 using Savanna.Web.Constants;
 using System.Timers;
+using Savanna.Domain.Interfaces;
+using Savanna.Web.Models;
 
 namespace Savanna.Web.Services
 {
@@ -25,6 +27,8 @@ namespace Savanna.Web.Services
         private bool _isGameRunning;
         private bool _isPaused;
         private bool _useLetterDisplay;
+        private IAnimal? _selectedAnimal;
+        private AnimalDetailViewModel? _selectedAnimalDetails;
 
         private const int TimerInterval = WebConstants.TimerInterval;
 
@@ -53,7 +57,11 @@ namespace Savanna.Web.Services
 
         public int FieldHeight => GameConstants.DefaultFieldHeight;
 
+        public AnimalDetailViewModel? SelectedAnimalDetails => _selectedAnimalDetails;
+
         public event EventHandler GameStateChanged;
+
+        public event EventHandler<AnimalDetailViewModel?> AnimalSelectionChanged;
 
         public GameService(
             ILogger<GameService> logger,
@@ -188,6 +196,83 @@ namespace Savanna.Web.Services
         private void GameTimerElapsed(object sender, ElapsedEventArgs e)
         {
             Update();
+        }
+
+        /// <summary>
+        /// Selects an animal by its position in the field
+        /// </summary>
+        /// <param name="x">X coordinate</param>
+        /// <param name="y">Y coordinate</param>
+        /// <returns>True if an animal was selected, false otherwise</returns>
+        public bool SelectAnimalAt(int x, int y)
+        {
+            if (!_isGameRunning) return false;
+
+            try
+            {
+                if (_selectedAnimal != null)
+                {
+                    _selectedAnimal.IsSelected = false;
+                    _selectedAnimal = null;
+                    _selectedAnimalDetails = null;
+                }
+
+                var animal = _gameEngine.Animals.FirstOrDefault(a =>
+                    a.Position.X == x && a.Position.Y == y);
+
+                if (animal != null)
+                {
+                    _selectedAnimal = animal;
+                    animal.IsSelected = true;
+                    _selectedAnimalDetails = AnimalDetailViewModel.FromAnimal(animal);
+
+                    _logger.LogInformation($"Selected animal: {animal.Name} at ({x}, {y})");
+
+                    AnimalSelectionChanged?.Invoke(this, _selectedAnimalDetails);
+                    OnGameStateChanged();
+                    return true;
+                }
+
+                AnimalSelectionChanged?.Invoke(this, null);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error selecting animal: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Deselects the currently selected animal (if any)
+        /// </summary>
+        public void DeselectAnimal()
+        {
+            if (_selectedAnimal != null)
+            {
+                _selectedAnimal.IsSelected = false;
+                _selectedAnimal = null;
+                _selectedAnimalDetails = null;
+
+                AnimalSelectionChanged?.Invoke(this, null);
+                OnGameStateChanged();
+            }
+        }
+
+        /// <summary>
+        /// Gets details for the animal at the specified position
+        /// </summary>
+        /// <param name="x">X coordinate</param>
+        /// <param name="y">Y coordinate</param>
+        /// <returns>AnimalDetailViewModel or null if no animal is at that position</returns>
+        public AnimalDetailViewModel? GetAnimalDetailsAt(int x, int y)
+        {
+            if (!_isGameRunning) return null;
+
+            var animal = _gameEngine.Animals.FirstOrDefault(a =>
+                a.Position.X == x && a.Position.Y == y);
+
+            return animal != null ? AnimalDetailViewModel.FromAnimal(animal) : null;
         }
 
         protected virtual void OnGameStateChanged()

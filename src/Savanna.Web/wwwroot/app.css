@@ -49,3 +49,130 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+.animal-details-panel {
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    margin-top: 15px;
+    max-width: 400px;
+}
+
+.animal-details-panel h3 {
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.animal-details-panel th {
+    width: 30%;
+    font-weight: 600;
+}
+
+.game-cell.selected {
+    position: relative;
+    outline: 2px solid yellow;
+    z-index: 1;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 0, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(255, 255, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 0, 0);
+    }
+}
+
+.savanna-field {
+    display: inline-block;
+    border: 2px solid #666;
+    background-color: #f0f8e4;
+    margin: 10px 0;
+    user-select: none;
+}
+
+.field-row {
+    display: flex;
+}
+
+.game-cell {
+    width: 35px;
+    height: 35px;
+    border: 1px solid #aaa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.game-cell:hover {
+    background-color: rgba(255, 255, 0, 0.3);
+    transform: scale(1.05);
+    z-index: 5;
+}
+
+.game-cell:active {
+    background-color: rgba(255, 255, 0, 0.5);
+    transform: scale(0.95);
+}
+
+.animal-cell {
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.animal-cell:hover {
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.animal-cell.selected {
+    background-color: rgba(255, 255, 0, 0.3);
+    box-shadow: 0 0 10px yellow;
+    z-index: 10;
+}
+
+.animal-details-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    margin-top: 10px;
+    position: sticky;
+    top: 20px;
+}
+
+.animal-details-card h3 {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 992px) {
+    .game-cell {
+        width: 25px;
+        height: 25px;
+        font-size: 14px;
+    }
+    
+    .animal-details-card {
+        margin-top: 30px;
+        position: static;
+    }
+}
+
+@media (max-width: 576px) {
+    .game-cell {
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+    }
+}

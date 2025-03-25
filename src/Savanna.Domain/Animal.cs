@@ -23,6 +23,13 @@ namespace Savanna.Domain
         public Position Position { get; set; }
         public bool isAlive => Health > 0;
         public bool IsStuned { get; set; } = false;
+
+        public Guid Id { get; } = Guid.NewGuid();
+        public int Age { get; private set; } = 0;
+        public Guid? ParentId { get; private set; }
+        public List<Guid> OffspringIds { get; } = new List<Guid>();
+        public bool IsSelected { get; set; } = false;
+
         protected IMovementStrategy MovementStrategy { get; }
         protected ISpecialActionStrategy SpecialActionStrategy { get; }
 
@@ -41,17 +48,40 @@ namespace Savanna.Domain
             Health = config.General.InitialHealth;
         }
 
+        protected Animal(double speed, double visionRange, Position position, IAnimalBehavior behavior, Guid parentId)
+            : this(speed, visionRange, position, behavior)
+        {
+            ParentId = parentId;
+        }
+
         public void Move(IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight)
         {
             if (!isAlive) return;
             Position = MovementStrategy.Move(this, animals, fieldWidth, fieldHeight);
-            Health -= _configProvider.GeneralConfig.HealthDecreasePerTurn;
         }
 
         public void SpecialAction(IEnumerable<IAnimal> animals)
         {
             if (!isAlive) return;
             SpecialActionStrategy.Execute(this, animals);
+        }
+
+        /// <summary>
+        /// Increments the animal's age
+        /// </summary>
+        public void IncrementAge()
+        {
+            Age++;
+        }
+
+        /// <summary>
+        /// Registers a new offspring with this parent
+        /// </summary>
+        /// <param name="offspringId">The ID of the offspring animal</param>
+        public void RegisterOffspring(Guid offspringId)
+        {
+            OffspringIds.Add(offspringId);
+            OnReproduction?.Invoke(this);
         }
 
         public event Action<IAnimal>? OnReproduction;

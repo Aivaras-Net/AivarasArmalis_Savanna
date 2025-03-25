@@ -28,13 +28,15 @@ namespace Savanna.Core.Infrastructure
 
             foreach (var animal in animalsList)
             {
+                animal.IncrementAge();
+
                 if (animal is Animal a)
                 {
                     a.Health -= ConfigurationService.Config.General.HealthDecreasePerTurn;
 
                     if (!a.isAlive)
                     {
-                        OnAnimalDeath.Invoke(a);
+                        OnAnimalDeath?.Invoke(a);
                         continue;
                     }
                     HandleMating(a, animalsList, fieldWidth, fieldHeight);

@@ -9,6 +9,7 @@
 @using Savanna.Core.Interfaces
 @using Microsoft.AspNetCore.Authorization
 @using Savanna.Web.Services.Interfaces
+@using Savanna.Web.Models
 @attribute [Authorize]
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
@@ -32,7 +33,7 @@
     {
         <div class="game-controls mb-3">
             <button class="btn btn-warning me-2" @onclick="TogglePause">
-                @(GameService.IsPaused ? WebConstants.ResumeButtonText : WebConstants.PauseButtonText)
+                @(GameService.IsPaused? WebConstants.ResumeButtonText: WebConstants.PauseButtonText)
             </button>
             <button class="btn btn-danger me-2" @onclick="StopGame">
                 @WebConstants.StopGameButtonText
@@ -41,52 +42,112 @@
                 <button class="btn btn-success" @onclick="SpawnAntelope">@WebConstants.SpawnAntelopeButtonText</button>
                 <button class="btn btn-danger" @onclick="SpawnLion">@WebConstants.SpawnLionButtonText</button>
             </div>
-            <button class="btn btn-info" @onclick="ToggleDisplayMode">
-                @(GameService.UseLetterDisplay ? WebConstants.ShowIconsButtonText : WebConstants.ShowLettersButtonText)
+            <button class="btn btn-info me-2" @onclick="ToggleDisplayMode">
+                @(GameService.UseLetterDisplay? WebConstants.ShowIconsButtonText: WebConstants.ShowLettersButtonText)
             </button>
         </div>
 
         <div class="game-status mb-3">
             <div class="alert alert-info">
-                <strong>@WebConstants.GameStatusText</strong> @(GameService.IsPaused ? WebConstants.PausedStatusText : WebConstants.RunningStatusText) |
+                <strong>@WebConstants.GameStatusText</strong> @(GameService.IsPaused ? WebConstants.PausedStatusText :
+                WebConstants.RunningStatusText) |
                 <strong>@WebConstants.AnimalsCountText</strong> @(GameService.GameEngine?.Animals.Count ?? 0) |
-                <strong>@WebConstants.LionsCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.LionName) ?? 0)
-                |
-                <strong>@WebConstants.AntelopesCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name ==
-                GameConstants.AntelopeName) ?? 0)
+                <strong>@WebConstants.LionsCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name ==
+                GameConstants.LionName) ?? 0)
+            |
+            <strong>@WebConstants.AntelopesCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name ==
+                        GameConstants.AntelopeName) ?? 0)
         </div>
     </div>
 
-    <div class="game-field mb-3" id="gameField"
-        style="position: relative; width: @(GameService.FieldWidth * 20)px; height: @(GameService.FieldHeight * 20)px; border: 1px solid #ccc; background-color: #e8d2a0;">
-        @if (GameService.GameEngine != null)
-            {
-                @foreach (var animal in GameService.GameEngine.Animals)
-                {
-                    string animalClass = GetAnimalClass(animal.Name);
-                    string animalDisplay = GetAnimalDisplay(animal.Name);
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="game-field mb-3" id="gameField"
+                style="position: relative; width: @(GameService.FieldWidth* WebConstants.CellSize)px; height: @(GameService.FieldHeight* WebConstants.CellSize)px; border: 1px solid #ccc; background-color: @WebConstants.GameFieldBackgroundColor;">
+                @if (GameService.GameEngine != null)
+                    {
+                        @foreach (var animal in GameService.GameEngine.Animals)
+                        {
+                            string animalClass = GetAnimalClass(animal.Name);
+                            string animalDisplay = GetAnimalDisplay(animal.Name);
+                            bool isSelected = animal.IsSelected;
 
-                    <div class="animal @animalClass" @key="animal.GetHashCode()"
-                        style="position: absolute; left: @(animal.Position.X * 20)px; top: @(animal.Position.Y * 20)px; width: 20px; height: 20px;">
-                        @if (GameService.UseLetterDisplay)
-                        {
-                            @(animal.Name.Substring(0, 1))
+                            <div class="animal @animalClass @(isSelected ? "selected" : "")" @key="animal.GetHashCode()"
+                                @onclick="() => SelectAnimal(animal)"
+                                style="position: absolute; left: @(animal.Position.X * WebConstants.CellSize)px; top: @(animal.Position.Y * WebConstants.CellSize)px; width: @WebConstants.CellSize px; height: @WebConstants.CellSize px; cursor: pointer;">
+                                @if (GameService.UseLetterDisplay)
+                                {
+                                    @(animal.Name.Substring(0, 1))
+                                }
+                                else
+                                {
+                                    @animalDisplay
+                                }
+                            </div>
                         }
-                        else
-                        {
-                            @animalDisplay
+                    }
+                </div>
+
+                <div class="game-log mb-3">
+                    <h5>@WebConstants.GameLogText</h5>
+                    <div class="log-container p-2 border"
+                        style="height: @WebConstants.LogContainerHeight px; overflow-y: auto; background-color: @WebConstants.LogContainerBackgroundColor;">
+                        @{
+                            var logsCopy = GameService.GameLogs.ToList();
+                            logsCopy.Reverse();
+
+                            foreach (var log in logsCopy)
+                            {
+                                <div class="log-entry">@log</div>
+                            }
                         }
                     </div>
-                }
-            }
-        </div>
+                </div>
+            </div>
 
-        <div class="game-log mb-3">
-            <h5>@WebConstants.GameLogText</h5>
-            <div class="log-container p-2 border" style="height: 150px; overflow-y: auto; background-color: #f8f9fa;">
-                @foreach (var log in GameService.GameLogs.AsEnumerable().Reverse())
+            <div class="col-lg-4">
+                @if (selectedAnimalDetails != null)
                 {
-                    <div class="log-entry">@log</div>
+                    <div class="animal-details-card">
+                        <h3>@WebConstants.AnimalDetailsTitle</h3>
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th>@WebConstants.SpeciesLabel</th>
+                                    <td>@selectedAnimalDetails.Species</td>
+                                </tr>
+                                <tr>
+                                    <th>@WebConstants.PositionLabel</th>
+                                    <td>@selectedAnimalDetails.X, @selectedAnimalDetails.Y</td>
+                                </tr>
+                                <tr>
+                                    <th>@WebConstants.HealthLabel</th>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar @GetHealthColorClass(selectedAnimalDetails)"
+                                                role="progressbar"
+                                                style="width: @((selectedAnimalDetails.HealthPercentage).ToString("0"))%;"
+                                                aria-valuenow="@selectedAnimalDetails.HealthPercentage" aria-valuemin="0"
+                                                aria-valuemax="100">
+                                                @((selectedAnimalDetails.HealthPercentage).ToString("0.0"))%
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">@selectedAnimalDetails.Health.ToString("0.0") /
+                                            @selectedAnimalDetails.MaxHealth.ToString("0.0")</small>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>@WebConstants.AgeLabel</th>
+                                    <td>@selectedAnimalDetails.Age @WebConstants.AgeUnitsText</td>
+                                </tr>
+                                <tr>
+                                    <th>@WebConstants.OffspringLabel</th>
+                                    <td>@selectedAnimalDetails.OffspringCount</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="btn btn-secondary" @onclick="DeselectAnimal">@WebConstants.CloseButtonText</button>
+                    </div>
                 }
             </div>
         </div>
@@ -105,23 +166,59 @@
         transition: all 0.3s ease-out;
     }
 
+    .animal.selected {
+        box-shadow: 0 0 10px
+            @WebConstants.SelectedAnimalGlowColor
+        ;
+        z-index: 10;
+        transform: scale(1.2);
+    }
+
     .lion {
-        color: #cc3300;
+        color:
+            @WebConstants.LionColor
+        ;
     }
 
     .antelope {
-        color: #33cc33;
+        color:
+            @WebConstants.AntelopeColor
+        ;
+    }
+
+    .animal-details-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        margin-top: 10px;
+        position: sticky;
+        top: 20px;
+    }
+
+    .animal-details-card h3 {
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
     }
 </style>
 
 @code {
     private string _pendingNavigation = null;
     private NavigationWarningModal _navigationWarningModal;
+    private AnimalDetailViewModel? selectedAnimalDetails;
+    private IAnimal? _selectedAnimal;
+    private System.Timers.Timer? _detailsUpdateTimer;
 
     protected override void OnInitialized()
     {
         GameService.GameStateChanged += OnGameStateChanged;
         NavigationManager.LocationChanged += OnLocationChanged;
+        GameService.AnimalSelectionChanged += OnAnimalSelectionChanged;
+
+        _detailsUpdateTimer = new System.Timers.Timer(WebConstants.AnimalDetailsUpdateInterval);
+        _detailsUpdateTimer.Elapsed += UpdateSelectedAnimalDetails;
+        _detailsUpdateTimer.AutoReset = true;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -141,7 +238,61 @@
 
     private void OnGameStateChanged(object sender, EventArgs e)
     {
+        if (_selectedAnimal != null && _selectedAnimal.isAlive)
+        {
+            RefreshSelectedAnimalDetails();
+        }
+        else if (_selectedAnimal != null && !_selectedAnimal.isAlive)
+        {
+            DeselectAnimal();
+        }
+
         InvokeAsync(StateHasChanged);
+    }
+
+    private void OnAnimalSelectionChanged(object? sender, AnimalDetailViewModel? animal)
+    {
+        selectedAnimalDetails = animal;
+
+        if (animal != null)
+        {
+            _selectedAnimal = GameService.GameEngine?.Animals.FirstOrDefault(a => a.Id == animal.Id);
+
+            _detailsUpdateTimer?.Start();
+        }
+        else
+        {
+            _detailsUpdateTimer?.Stop();
+            _selectedAnimal = null;
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateSelectedAnimalDetails(object? sender, ElapsedEventArgs e)
+    {
+        if (_selectedAnimal != null && _selectedAnimal.isAlive && GameService.IsGameRunning && !GameService.IsPaused)
+        {
+            RefreshSelectedAnimalDetails();
+        }
+    }
+
+    private void RefreshSelectedAnimalDetails()
+    {
+        if (_selectedAnimal != null && GameService.GameEngine != null)
+        {
+            var animal = GameService.GameEngine.Animals.FirstOrDefault(a => a.Id == _selectedAnimal.Id);
+
+            if (animal != null && animal.isAlive)
+            {
+                selectedAnimalDetails = AnimalDetailViewModel.FromAnimal(animal);
+                InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                DeselectAnimal();
+            }
+        }
     }
 
     private void OnLocationChanged(object sender, LocationChangedEventArgs e)
@@ -208,50 +359,37 @@
         }
     }
 
-    private async Task SetBeforeUnloadWarning(bool enable)
+    private async Task SetBeforeUnloadWarning(bool enabled)
     {
         try
         {
-            await JSRuntime.InvokeVoidAsync("window.setBeforeUnloadWarning", enable);
+            await JSRuntime.InvokeVoidAsync("window.setBeforeUnloadWarning", enabled);
         }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop"))
+        catch
         {
         }
     }
 
-    private async void StartNewGame()
+    private async Task StartNewGame()
     {
         var renderer = GameRenderer.CreateRenderer(GameService.LogMessage);
         GameService.StartNewGame(renderer);
         GameService.StartTimer();
+        GameService.LogMessage(WebConstants.GameStartedMessage);
 
-        try
-        {
-            await SetBeforeUnloadWarning(true);
-        }
-        catch (Exception ex)
-        {
-            GameService.LogMessage(string.Format(WebConstants.ErrorOccurredMessage, $"Could not set beforeunload warning: {ex.Message}"));
-        }
+        await SetBeforeUnloadWarning(true);
     }
 
-    private async void StopGame()
+    private void StopGame()
     {
         GameService.StopGame();
-
-        try
-        {
-            await SetBeforeUnloadWarning(false);
-        }
-        catch (Exception ex)
-        {
-            // Silent fail
-        }
+        GameService.LogMessage(WebConstants.GameStoppedMessage);
     }
 
     private void TogglePause()
     {
         GameService.TogglePause();
+        GameService.LogMessage(GameService.IsPaused ? WebConstants.GamePausedMessage : WebConstants.GameResumedMessage);
     }
 
     private void SpawnAntelope()
@@ -278,27 +416,48 @@
     {
         return animalName switch
         {
-            GameConstants.LionName => "🦁",
-            GameConstants.AntelopeName => "🦌",
-            "Caracal" => "🐆",
-            _ => "🐾" // Default animal
+            GameConstants.LionName => GameConstants.LionSymbol,
+            GameConstants.AntelopeName => GameConstants.AntelopeSymbol,
+            GameConstants.CaracalName => GameConstants.CaracalSymbol,
+            _ => GameConstants.UnknownAnimalSymbol
         };
     }
 
+    private void SelectAnimal(IAnimal animal)
+    {
+        _selectedAnimal = animal;
+        GameService.SelectAnimalAt(animal.Position.X, animal.Position.Y);
+    }
+
+    private void DeselectAnimal()
+    {
+        GameService.DeselectAnimal();
+        selectedAnimalDetails = null;
+        _selectedAnimal = null;
+        _detailsUpdateTimer?.Stop();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string GetHealthColorClass(AnimalDetailViewModel animal) => animal.HealthPercentage switch
+    {
+        <= GameConstants.LowHealthThreshold => "bg-danger",
+        <= GameConstants.MediumHealthThreshold => "bg-warning",
+        _ => "bg-success"
+    };
+
     public void Dispose()
     {
-        NavigationManager.LocationChanged -= OnLocationChanged;
         GameService.GameStateChanged -= OnGameStateChanged;
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        GameService.AnimalSelectionChanged -= OnAnimalSelectionChanged;
 
-        try
+        // Clean up timer
+        if (_detailsUpdateTimer != null)
         {
-            if (GameService.IsGameRunning)
-            {
-                SetBeforeUnloadWarning(false).Wait();
-            }
-        }
-        catch (InvalidOperationException ex) when (ex.Message.Contains("JavaScript interop"))
-        {
+            _detailsUpdateTimer.Elapsed -= UpdateSelectedAnimalDetails;
+            _detailsUpdateTimer.Stop();
+            _detailsUpdateTimer.Dispose();
+            _detailsUpdateTimer = null;
         }
     }
 }

@@ -16,6 +16,11 @@ namespace Savanna.Core
         {
         }
 
+        private Lion(double speed, double visionRange, Position position, Guid parentId)
+            : base(speed, visionRange, position, new LionBehavior(), parentId)
+        {
+        }
+
         /// <summary>
         /// Creates a new lion instance at the specified position as offspring.
         /// </summary>
@@ -23,7 +28,9 @@ namespace Savanna.Core
         /// <returns>A new lion instance.</returns>
         public override IAnimal CreateOffspring(Position position)
         {
-            return new Lion(Speed, VisionRange, position);
+            var offspring = new Lion(Speed, VisionRange, position, Id);
+            this.RegisterOffspring(offspring.Id);
+            return offspring;
         }
     }
 }

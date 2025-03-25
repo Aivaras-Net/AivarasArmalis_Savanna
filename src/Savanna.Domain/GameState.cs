@@ -59,6 +59,26 @@ namespace Savanna.Domain
         public double VisionRange { get; set; }
 
         /// <summary>
+        /// Unique identifier for the animal
+        /// </summary>
+        public Guid Id { get; set; }
+
+        /// <summary>
+        /// Age of the animal in game ticks
+        /// </summary>
+        public int Age { get; set; }
+
+        /// <summary>
+        /// Reference to the animal's parent, if any
+        /// </summary>
+        public Guid? ParentId { get; set; }
+
+        /// <summary>
+        /// References to the animal's offspring
+        /// </summary>
+        public List<Guid> OffspringIds { get; set; } = new();
+
+        /// <summary>
         /// Creates a serializable animal from an IAnimal instance
         /// </summary>
         public static SerializableAnimal FromAnimal(IAnimal animal)
@@ -70,7 +90,11 @@ namespace Savanna.Domain
                 PositionX = animal.Position.X,
                 PositionY = animal.Position.Y,
                 Speed = animal.Speed,
-                VisionRange = animal.VisionRange
+                VisionRange = animal.VisionRange,
+                Id = animal.Id,
+                Age = animal.Age,
+                ParentId = animal.ParentId,
+                OffspringIds = new List<Guid>(animal.OffspringIds)
             };
         }
     }

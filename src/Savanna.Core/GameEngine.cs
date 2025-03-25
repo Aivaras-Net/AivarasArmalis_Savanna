@@ -43,6 +43,17 @@ namespace Savanna.Core
                 var offspring = (parent as Animal)?.CreateOffspring(position);
                 if (offspring != null)
                 {
+                    var otherParent = _animals.FirstOrDefault(a =>
+                        a != parent &&
+                        a.Name == parent.Name &&
+                        a.isAlive &&
+                        parent.Position.DistanceTo(a.Position) <= 1);
+
+                    if (otherParent != null)
+                    {
+                        otherParent.RegisterOffspring(offspring.Id);
+                    }
+
                     AddAnimal(offspring, false);
                     _renderer.ShowLog(string.Format(GameConstants.AnimalBornMessage,
                         offspring.Name, position.X, position.Y),
@@ -70,6 +81,36 @@ namespace Savanna.Core
                 _renderer.ShowLog(string.Format(GameConstants.AnimalDiedMessage,
                     animal.Name, animal.Position.X, animal.Position.Y),
                     GameConstants.LogDurationLong);
+            };
+
+            _lifeCycleManager.OnAnimalBirth += (parent, position) =>
+            {
+                var offspring = (parent as Animal)?.CreateOffspring(position);
+                if (offspring != null)
+                {
+                    var otherParent = _animals.FirstOrDefault(a =>
+                        a != parent &&
+                        a.Name == parent.Name &&
+                        a.isAlive &&
+                        parent.Position.DistanceTo(a.Position) <= 1);
+
+                    if (otherParent != null)
+                    {
+                        otherParent.RegisterOffspring(offspring.Id);
+                    }
+
+                    AddAnimal(offspring, false);
+                    _renderer.ShowLog(string.Format(GameConstants.AnimalBornMessage,
+                        offspring.Name, position.X, position.Y),
+                        GameConstants.LogDurationLong);
+                }
+            };
+
+            _predatorManager.OnHunt += (predator, prey) =>
+            {
+                _renderer.ShowLog(string.Format(GameConstants.AnimalHuntedMessage,
+                    predator.Name, prey.Name, prey.Position.X, prey.Position.Y),
+                    GameConstants.LogDurationMedium);
             };
         }
 

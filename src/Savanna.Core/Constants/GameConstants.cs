@@ -29,6 +29,7 @@ namespace Savanna.Core.Constants
 
         public const string LionName = "Lion";
         public const string AntelopeName = "Antelope";
+        public const string CaracalName = "Caracal";
         public const string FieldSizeMismatchMessage = "Field size mismatch. Save: {0}x{1}, Current: {2}x{3}";
         public const string CouldNotCreateAnimalMessage = "Could not create animal of type: {0}";
         public const string SaveFromDateTimeFormat = "Save from {0}-{1}-{2} {3}:{4}:{5}";
@@ -38,5 +39,14 @@ namespace Savanna.Core.Constants
         public const string AnimalSpawnedMessage = "{0} spawned at position ({1},{2})";
         public const string DateTimeFormat = "yyyyMMdd_HHmmss";
         public const string UnknownAnimalTypeMessage = "Unknown animal type: {0}";
+        public const string PropertySetWarningMessage = "Warning: Could not set all properties for {0}: {1}";
+
+        public const string LionSymbol = "🦁";
+        public const string AntelopeSymbol = "🦌";
+        public const string CaracalSymbol = "🐆";
+        public const string UnknownAnimalSymbol = "❓";
+
+        public const int LowHealthThreshold = 25;
+        public const int MediumHealthThreshold = 50;
     }
 }

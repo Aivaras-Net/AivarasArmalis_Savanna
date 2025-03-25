@@ -29,10 +29,17 @@ namespace Savanna.Animals.Custom
         {
             _config = ConfigurationService.GetAnimalConfig(Name);
         }
+        private Caracal(double speed, double visionRange, Position position, Guid parentId)
+            : base(speed, visionRange, position, new CaracalBehavior(), parentId)
+        {
+            _config = ConfigurationService.GetAnimalConfig(Name);
+        }
 
         public override IAnimal CreateOffspring(Position position)
         {
-            return new Caracal(position);
+            var offspring = new Caracal(Speed, VisionRange, position, Id);
+            this.RegisterOffspring(offspring.Id);
+            return offspring;
         }
     }
 }
