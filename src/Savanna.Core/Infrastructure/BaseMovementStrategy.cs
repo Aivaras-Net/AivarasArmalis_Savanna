@@ -1,7 +1,6 @@
 using Savanna.Core.Config;
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
-using Savanna.Core.Interfaces;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 
 namespace Savanna.Core.Infrastructure
 {
@@ -23,11 +22,25 @@ namespace Savanna.Core.Infrastructure
         /// <summary>
         /// Generates a random movement within the field boundaries
         /// </summary>
-        protected Position RandomMove(IAnimal animal, int fieldWidth, int fieldHeight)
+        protected Position RandomMove(IAnimal animal, IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight)
         {
-            int newX = Math.Max(0, Math.Min(fieldWidth - 1, animal.Position.X + _random.Next(-1, 2)));
-            int newY = Math.Max(0, Math.Min(fieldHeight - 1, animal.Position.Y + _random.Next(-1, 2)));
-            return new Position(newX, newY);
+            for (int attempt = 0; attempt < 8; attempt++)
+            {
+                int dx = _random.Next(-1, 2);
+                int dy = _random.Next(-1, 2);
+
+                if (dx == 0 && dy == 0) continue;
+
+                int newX = animal.Position.X + dx;
+                int newY = animal.Position.Y + dy;
+
+                if (IsValidPosition(new Position(newX, newY), animals, animal, fieldWidth, fieldHeight))
+                {
+                    return new Position(newX, newY);
+                }
+            }
+
+            return animal.Position;
         }
 
         /// <summary>
@@ -38,6 +51,50 @@ namespace Savanna.Core.Infrastructure
             int newX = Math.Max(0, Math.Min(fieldWidth - 1, x));
             int newY = Math.Max(0, Math.Min(fieldHeight - 1, y));
             return new Position(newX, newY);
+        }
+
+        /// <summary>
+        /// Checks if a position is valid (within boundaries and not occupied by incompatible animals)
+        /// </summary>
+        /// <param name="position">The position to check</param>
+        /// <param name="animals">All animals in the simulation</param>
+        /// <param name="movingAnimal">The animal that is moving (to exclude from collision check)</param>
+        /// <param name="fieldWidth">Width of the game field</param>
+        /// <param name="fieldHeight">Height of the game field</param>
+        /// <returns>True if the position is valid, false otherwise</returns>
+        protected bool IsValidPosition(Position position, IEnumerable<IAnimal> animals, IAnimal movingAnimal, int fieldWidth, int fieldHeight)
+        {
+            if (position.X < 0 || position.X >= fieldWidth || position.Y < 0 || position.Y >= fieldHeight)
+            {
+                return false;
+            }
+
+            var animalsAtPosition = animals.Where(a =>
+                a != movingAnimal &&
+                a.isAlive &&
+                a.Position.X == position.X &&
+                a.Position.Y == position.Y).ToList();
+
+            if (!animalsAtPosition.Any())
+            {
+                return true;
+            }
+
+            bool isPredator = movingAnimal is IPredator;
+            bool isPrey = movingAnimal is IPrey;
+
+            if (isPredator)
+            {
+                return animalsAtPosition.All(a => a is IPrey);
+            }
+            else if (isPrey)
+            {
+                return false;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         protected bool ShouldStayForMating(IAnimal animal, IEnumerable<IAnimal> animals)

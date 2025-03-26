@@ -1,4 +1,4 @@
-﻿namespace Savanna.Core.Domain
+﻿namespace Savanna.Domain
 {
     /// <summary>
     /// Represents a coordinate in a two-dimensional space.

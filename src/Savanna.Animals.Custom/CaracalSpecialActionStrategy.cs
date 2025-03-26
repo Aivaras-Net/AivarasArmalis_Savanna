@@ -1,6 +1,5 @@
-﻿using Savanna.Core.Config;
-using Savanna.Core.Domain.Interfaces;
-using Savanna.Core.Interfaces;
+﻿using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 
 namespace Savanna.Animals.Custom
 {

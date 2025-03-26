@@ -1,5 +1,7 @@
 using Savanna.Core;
 using Savanna.Core.Interfaces;
+using Savanna.Domain.Interfaces;
+using Savanna.Web.Models;
 
 namespace Savanna.Web.Services.Interfaces
 {
@@ -42,6 +44,11 @@ namespace Savanna.Web.Services.Interfaces
         /// Gets the field height
         /// </summary>
         int FieldHeight { get; }
+
+        /// <summary>
+        /// Gets the currently selected animal details or null if none selected
+        /// </summary>
+        AnimalDetailViewModel? SelectedAnimalDetails { get; }
 
         /// <summary>
         /// Starts a new game
@@ -96,8 +103,34 @@ namespace Savanna.Web.Services.Interfaces
         void StopTimer();
 
         /// <summary>
+        /// Selects an animal by its position in the field
+        /// </summary>
+        /// <param name="x">X coordinate</param>
+        /// <param name="y">Y coordinate</param>
+        /// <returns>True if an animal was selected, false otherwise</returns>
+        bool SelectAnimalAt(int x, int y);
+
+        /// <summary>
+        /// Deselects the currently selected animal (if any)
+        /// </summary>
+        void DeselectAnimal();
+
+        /// <summary>
+        /// Gets details for the animal at the specified position
+        /// </summary>
+        /// <param name="x">X coordinate</param>
+        /// <param name="y">Y coordinate</param>
+        /// <returns>AnimalDetailViewModel or null if no animal is at that position</returns>
+        AnimalDetailViewModel? GetAnimalDetailsAt(int x, int y);
+
+        /// <summary>
         /// Event raised when the game state changes
         /// </summary>
         event EventHandler GameStateChanged;
+
+        /// <summary>
+        /// Event raised when an animal is selected or deselected
+        /// </summary>
+        event EventHandler<AnimalDetailViewModel?> AnimalSelectionChanged;
     }
 }

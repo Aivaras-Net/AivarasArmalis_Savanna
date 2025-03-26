@@ -105,5 +105,24 @@ namespace Savanna.Web.Constants
         public const string AdminUsernameLogFormat = "  Username: {0}";
         public const string AdminPasswordMaskedLogFormat = "  Password: {0}*** (masked)";
         public const string ApplicationInitErrorMessage = "An error occurred during application initialization.";
+
+        public const string AnimalDetailsTitle = "Animal Details";
+        public const string SpeciesLabel = "Species";
+        public const string PositionLabel = "Position";
+        public const string HealthLabel = "Health";
+        public const string AgeLabel = "Age";
+        public const string OffspringLabel = "Offspring";
+        public const string CloseButtonText = "Close";
+        public const string AgeUnitsText = "time units";
+
+        public const int CellSize = 20;
+        public const int AnimalDetailsUpdateInterval = 100;
+        public const int LogContainerHeight = 150;
+
+        public const string GameFieldBackgroundColor = "#e8d2a0";
+        public const string LogContainerBackgroundColor = "#f8f9fa";
+        public const string LionColor = "#cc3300";
+        public const string AntelopeColor = "#33cc33";
+        public const string SelectedAnimalGlowColor = "#00FFFF";
     }
 }

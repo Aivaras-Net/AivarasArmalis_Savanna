@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Savanna.Domain\Savanna.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Config\animals.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

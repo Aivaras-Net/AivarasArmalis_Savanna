@@ -1,7 +1,6 @@
-﻿using Savanna.Core.Config;
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
-using Savanna.Core.Infrastructure;
+﻿using Savanna.Core.Infrastructure;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 
 namespace Savanna.Animals.Custom
 {
@@ -14,7 +13,7 @@ namespace Savanna.Animals.Custom
         public override Position Move(IAnimal animal, IEnumerable<IAnimal> animals, int fieldWidth, int fieldHeight)
         {
             //May be replaced with custom animal specific movement logic
-            return RandomMove(animal, fieldWidth, fieldHeight);
+            return RandomMove(animal, animals, fieldWidth, fieldHeight);
         }
     }
 }

@@ -77,6 +77,7 @@ namespace Savanna.Web
             try
             {
                 Savanna.Core.Config.ConfigurationService.LoadConfig();
+                Savanna.Core.Config.ConfigurationBootstrap.Initialize();
             }
             catch (Exception ex)
             {

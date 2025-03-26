@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Savanna.Core.Config
+namespace Savanna.Domain
 {
     /// <summary>
     /// Root configuration class containing all animal and general game settings

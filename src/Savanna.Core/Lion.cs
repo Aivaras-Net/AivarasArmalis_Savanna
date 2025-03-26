@@ -1,10 +1,10 @@
 ﻿using Savanna.Core.Constants;
-using Savanna.Core.Domain.Interfaces;
-using Savanna.Core.Infrastructure;
 using Savanna.Core.Config;
 using Savanna.Core.Infrastructure.Behaviors;
+using Savanna.Domain.Interfaces;
+using Savanna.Domain;
 
-namespace Savanna.Core.Domain
+namespace Savanna.Core
 {
     public class Lion : Animal, IPredator
     {
@@ -16,6 +16,11 @@ namespace Savanna.Core.Domain
         {
         }
 
+        private Lion(double speed, double visionRange, Position position, Guid parentId)
+            : base(speed, visionRange, position, new LionBehavior(), parentId)
+        {
+        }
+
         /// <summary>
         /// Creates a new lion instance at the specified position as offspring.
         /// </summary>
@@ -23,7 +28,9 @@ namespace Savanna.Core.Domain
         /// <returns>A new lion instance.</returns>
         public override IAnimal CreateOffspring(Position position)
         {
-            return new Lion(Speed, VisionRange, position);
+            var offspring = new Lion(Speed, VisionRange, position, Id);
+            this.RegisterOffspring(offspring.Id);
+            return offspring;
         }
     }
 }

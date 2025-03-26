@@ -1,12 +1,12 @@
 using Savanna.CLI.Interfaces;
 using Savanna.Core;
 using Savanna.Core.Constants;
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure;
 using Savanna.Core.Interfaces;
 using System.Reflection;
 using Savanna.Core.Config;
+using Savanna.Domain.Interfaces;
+using Savanna.Domain;
 
 namespace Savanna.CLI.Services
 {

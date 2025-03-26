@@ -1,7 +1,4 @@
-﻿using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
-
-namespace Savanna.Core.Interfaces
+﻿namespace Savanna.Domain.Interfaces
 {
     /// <summary>
     /// Defines a strategy for how an animal moves in the field

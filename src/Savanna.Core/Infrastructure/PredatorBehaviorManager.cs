@@ -1,5 +1,7 @@
 using Savanna.Core.Config;
-using Savanna.Core.Domain.Interfaces;
+using Savanna.Core.Constants;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 using static Savanna.Core.Config.ConfigurationService.ConfigExtensions;
 
 namespace Savanna.Core.Infrastructure
@@ -36,23 +38,33 @@ namespace Savanna.Core.Infrastructure
         /// <param name="prey">The collection of potential prey.</param>
         private void Hunt(IPredator predator, IEnumerable<IPrey> prey)
         {
-            var target = prey
-                .Where(p => predator.Position.DistanceTo(p.Position) <= predator.HuntingRange)
-                .OrderBy(p => predator.Position.DistanceTo(p.Position))
+            var overlappingPrey = prey
+                .Where(p => p.Position.X == predator.Position.X && p.Position.Y == predator.Position.Y)
                 .FirstOrDefault();
 
-            if (target != null)
+            if (overlappingPrey != null)
             {
                 var config = ConfigurationService.GetAnimalConfig(predator.Name);
-                var healthGain = GetHealthGainFromKill(config, target.Health);
+                var healthGain = GetHealthGainFromKill(config, overlappingPrey.Health);
 
                 double actualHealthGain = Math.Min(
                     ConfigurationService.Config.General.MaxHealth - predator.Health,
                     healthGain);
 
                 predator.Health += actualHealthGain;
-                target.Health = 0;
-                OnHunt?.Invoke(predator, target);
+                overlappingPrey.Health = 0;
+                OnHunt?.Invoke(predator, overlappingPrey);
+                return;
+            }
+
+            var nearbyPrey = prey
+                .Where(p => p.Position.DistanceTo(predator.Position) <= predator.HuntingRange)
+                .OrderBy(p => p.Position.DistanceTo(predator.Position))
+                .FirstOrDefault();
+
+            if (nearbyPrey != null && nearbyPrey is IPrey preyTarget)
+            {
+                preyTarget.IsStuned = true;
             }
         }
     }

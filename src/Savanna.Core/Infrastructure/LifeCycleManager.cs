@@ -1,6 +1,6 @@
 ﻿using Savanna.Core.Config;
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 
 namespace Savanna.Core.Infrastructure
 {
@@ -28,13 +28,15 @@ namespace Savanna.Core.Infrastructure
 
             foreach (var animal in animalsList)
             {
+                animal.IncrementAge();
+
                 if (animal is Animal a)
                 {
                     a.Health -= ConfigurationService.Config.General.HealthDecreasePerTurn;
 
                     if (!a.isAlive)
                     {
-                        OnAnimalDeath.Invoke(a);
+                        OnAnimalDeath?.Invoke(a);
                         continue;
                     }
                     HandleMating(a, animalsList, fieldWidth, fieldHeight);

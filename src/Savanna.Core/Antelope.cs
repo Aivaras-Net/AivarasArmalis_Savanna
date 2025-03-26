@@ -1,10 +1,8 @@
-﻿using Savanna.Core.Config;
-using Savanna.Core.Constants;
-using Savanna.Core.Domain.Interfaces;
-using Savanna.Core.Infrastructure;
+﻿using Savanna.Core.Constants;
 using Savanna.Core.Infrastructure.Behaviors;
+using Savanna.Domain.Interfaces;
 
-namespace Savanna.Core.Domain
+namespace Savanna.Domain
 {
     public class Antelope : Animal, IPrey
     {
@@ -24,7 +22,9 @@ namespace Savanna.Core.Domain
         /// <returns>A new antelope instance.</returns>
         public override IAnimal CreateOffspring(Position position)
         {
-            return new Antelope(Speed, VisionRange, position);
+            var offspring = new Antelope(Speed, VisionRange, position);
+            this.RegisterOffspring(offspring.Id);
+            return offspring;
         }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using Savanna.Core.Config;
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure.Behaviors;
 using Savanna.Core.Interfaces;
 using Savanna.Core.Constants;
+using Savanna.Domain.Interfaces;
+using Savanna.Domain;
 
 namespace Savanna.Core.Infrastructure
 {

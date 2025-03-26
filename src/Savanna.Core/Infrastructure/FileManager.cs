@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Savanna.Core.Constants;
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Interfaces;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 
 namespace Savanna.Core.Infrastructure
 {
@@ -128,6 +128,35 @@ namespace Savanna.Core.Infrastructure
                     {
                         animal.Health = savedAnimal.Health;
                         animal.Position = new Position(savedAnimal.PositionX, savedAnimal.PositionY);
+
+                        try
+                        {
+                            if (animal is Animal a)
+                            {
+                                typeof(Animal).GetProperty("Id")?.SetValue(a, savedAnimal.Id != default ? savedAnimal.Id : Guid.NewGuid());
+
+                                for (int i = 0; i < savedAnimal.Age; i++)
+                                {
+                                    animal.IncrementAge();
+                                }
+
+                                if (savedAnimal.ParentId.HasValue)
+                                {
+                                    typeof(Animal).GetProperty("ParentId")?.SetValue(a, savedAnimal.ParentId);
+                                }
+
+                                foreach (var offspringId in savedAnimal.OffspringIds)
+                                {
+                                    a.RegisterOffspring(offspringId);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _renderer.ShowLog(string.Format(GameConstants.PropertySetWarningMessage,
+                                                            savedAnimal.Type, ex.Message), GameConstants.LogDurationShort);
+                        }
+
                         loadedAnimals.Add(animal);
                     }
                     else
