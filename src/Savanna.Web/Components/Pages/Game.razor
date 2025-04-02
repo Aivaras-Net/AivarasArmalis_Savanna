@@ -6,15 +6,19 @@
 @using Savanna.Web.Constants
 @using System.Timers
 @using Microsoft.JSInterop
+@using Microsoft.JSInterop.Infrastructure
 @using Savanna.Core.Interfaces
 @using Microsoft.AspNetCore.Authorization
 @using Savanna.Web.Services.Interfaces
 @using Savanna.Web.Models
-@attribute [Authorize]
+@using System.Text.Json
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject IGameService GameService
 @inject IGameRenderer GameRenderer
+@inject IGameSaveService GameSaveService
+@inject AuthenticationStateProvider AuthStateProvider
+@attribute [Authorize]
 @implements IDisposable
 @rendermode InteractiveServer
 
@@ -45,25 +49,112 @@
             <button class="btn btn-info me-2" @onclick="ToggleDisplayMode">
                 @(GameService.UseLetterDisplay? WebConstants.ShowIconsButtonText: WebConstants.ShowLettersButtonText)
             </button>
+            <button class="btn btn-secondary me-2" @onclick="ToggleSavePanel">
+                <i class="bi bi-save"></i> Save Game
+            </button>
+            <button class="btn btn-secondary" @onclick="ToggleLoadPanel">
+                <i class="bi bi-upload"></i> Load Game
+            </button>
         </div>
+
+        @if (_showSavePanel)
+        {
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Save Game</h5>
+                    <button type="button" class="btn-close" @onclick="ToggleSavePanel"></button>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(_saveErrorMessage))
+                    {
+                        <div class="alert alert-danger">@_saveErrorMessage</div>
+                    }
+                    <div class="form-group mb-3">
+                        <label for="saveName" class="form-label">Save Name</label>
+                        <input type="text" class="form-control" id="saveName" @bind="_saveName"
+                            placeholder="Enter a name for your save" />
+                    </div>
+                    <button class="btn btn-primary" @onclick="SaveGame" disabled="@_isSaving">
+                        @if (_isSaving)
+                        {
+                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                            <span> Saving...</span>
+                        }
+                        else
+                        {
+                            <span>Save Game</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        }
+
+        @if (_showLoadPanel)
+        {
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Load Game</h5>
+                    <button type="button" class="btn-close" @onclick="ToggleLoadPanel"></button>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(_loadErrorMessage))
+                    {
+                        <div class="alert alert-danger">@_loadErrorMessage</div>
+                    }
+                    @if (_isLoadingGames)
+                    {
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (_gameSaves.Count == 0)
+                    {
+                        <div class="alert alert-info">No saved games found.</div>
+                    }
+                    else
+                    {
+                        <div class="list-group">
+                            @foreach (var save in _gameSaves)
+                            {
+                                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">@save.Name</h6>
+                                        <small class="text-muted">@save.FormattedDate</small>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-primary me-2" @onclick="() => LoadGame(save.Id)">
+                                            Load
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteSave(save.Id)">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
 
         <div class="game-status mb-3">
             <div class="alert alert-info">
                 <strong>@WebConstants.GameStatusText</strong> @(GameService.IsPaused ? WebConstants.PausedStatusText :
                 WebConstants.RunningStatusText) |
-                <strong>@WebConstants.AnimalsCountText</strong> @(GameService.GameEngine?.Animals.Count ?? 0) |
-                <strong>@WebConstants.LionsCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name ==
-                GameConstants.LionName) ?? 0)
-            |
+            <strong>@WebConstants.AnimalsCountText</strong> @(GameService.GameEngine?.Animals.Count ?? 0) |
+            <strong>@WebConstants.LionsCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name ==
+                        GameConstants.LionName) ?? 0) |
             <strong>@WebConstants.AntelopesCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name ==
                         GameConstants.AntelopeName) ?? 0)
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="game-field mb-3" id="gameField"
-                style="position: relative; width: @(GameService.FieldWidth* WebConstants.CellSize)px; height: @(GameService.FieldHeight* WebConstants.CellSize)px; border: 1px solid #ccc; background-color: @WebConstants.GameFieldBackgroundColor;">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="game-field mb-3" id="gameField"
+                    style="position: relative; width: @(GameService.FieldWidth* WebConstants.CellSize)px; height: @(GameService.FieldHeight* WebConstants.CellSize)px; border: 1px solid #ccc; background-color: @WebConstants.GameFieldBackgroundColor;">
                 @if (GameService.GameEngine != null)
                     {
                         @foreach (var animal in GameService.GameEngine.Animals)
@@ -209,8 +300,17 @@
     private AnimalDetailViewModel? selectedAnimalDetails;
     private IAnimal? _selectedAnimal;
     private System.Timers.Timer? _detailsUpdateTimer;
+    private string _saveName = string.Empty;
+    private string _saveErrorMessage = string.Empty;
+    private string _loadErrorMessage = string.Empty;
+    private bool _isSaving = false;
+    private bool _isLoadingGames = false;
+    private List<GameSaveViewModel> _gameSaves = new();
+    private string _userId = string.Empty;
+    private bool _showSavePanel = false;
+    private bool _showLoadPanel = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         GameService.GameStateChanged += OnGameStateChanged;
         NavigationManager.LocationChanged += OnLocationChanged;
@@ -219,6 +319,10 @@
         _detailsUpdateTimer = new System.Timers.Timer(WebConstants.AnimalDetailsUpdateInterval);
         _detailsUpdateTimer.Elapsed += UpdateSelectedAnimalDetails;
         _detailsUpdateTimer.AutoReset = true;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        _userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -344,8 +448,7 @@
             }
             else
             {
-                if (!string.IsNullOrEmpty(_pendingNavigation) &&
-                string.IsNullOrEmpty(destination))
+                if (!string.IsNullOrEmpty(_pendingNavigation) && string.IsNullOrEmpty(destination))
                 {
                     destination = _pendingNavigation;
                 }
@@ -405,6 +508,131 @@
     private void ToggleDisplayMode()
     {
         GameService.ToggleDisplayMode();
+    }
+
+    private void ToggleSavePanel()
+    {
+        _showSavePanel = !_showSavePanel;
+        _saveName = string.Empty;
+        _saveErrorMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task ToggleLoadPanel()
+    {
+        if (_showLoadPanel)
+        {
+            _showLoadPanel = false;
+            StateHasChanged();
+            return;
+        }
+
+        _showLoadPanel = true;
+        _loadErrorMessage = string.Empty;
+        _isLoadingGames = true;
+        StateHasChanged();
+
+        try
+        {
+            var saves = await GameSaveService.GetSavesForUserAsync(_userId);
+            _gameSaves = saves.Select(s => new GameSaveViewModel
+            {
+                Id = s.Id,
+                Name = s.Name,
+                CreatedAt = s.CreatedAt
+            }).ToList();
+
+            _isLoadingGames = false;
+        }
+        catch (Exception ex)
+        {
+            _loadErrorMessage = "Failed to load saved games: " + ex.Message;
+            _isLoadingGames = false;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task SaveGame()
+    {
+        if (string.IsNullOrWhiteSpace(_saveName))
+        {
+            _saveErrorMessage = "Please enter a name for your save";
+            return;
+        }
+
+        try
+        {
+            _isSaving = true;
+            StateHasChanged();
+
+            string gameStateJson = GameService.SerializeGameState();
+            await GameSaveService.CreateSaveAsync(_saveName, gameStateJson, _userId);
+
+            _isSaving = false;
+            _showSavePanel = false;
+            GameService.LogMessage(WebConstants.SaveGameSuccessMessage);
+        }
+        catch (Exception ex)
+        {
+            _saveErrorMessage = "Error saving game: " + ex.Message;
+            _isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadGame(int saveId)
+    {
+        try
+        {
+            var save = await GameSaveService.GetSaveByIdAsync(saveId);
+            if (save == null)
+            {
+                _loadErrorMessage = "Save not found";
+                return;
+            }
+
+            var renderer = GameRenderer.CreateRenderer(GameService.LogMessage);
+            GameService.LoadGameState(save.GameStateJson, renderer);
+            GameService.LogMessage(WebConstants.LoadGameSuccessMessage);
+            GameService.StartTimer();
+
+            _showLoadPanel = false;
+            await SetBeforeUnloadWarning(true);
+        }
+        catch (Exception ex)
+        {
+            _loadErrorMessage = "Error loading game: " + ex.Message;
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteSave(int saveId)
+    {
+        try
+        {
+            bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this save?");
+            if (!confirmed)
+                return;
+
+            await GameSaveService.DeleteSaveAsync(saveId, _userId);
+
+            var saves = await GameSaveService.GetSavesForUserAsync(_userId);
+            _gameSaves = saves.Select(s => new GameSaveViewModel
+            {
+                Id = s.Id,
+                Name = s.Name,
+                CreatedAt = s.CreatedAt
+            }).ToList();
+
+            StateHasChanged();
+            GameService.LogMessage("Game save deleted");
+        }
+        catch (Exception ex)
+        {
+            _loadErrorMessage = "Error deleting save: " + ex.Message;
+            StateHasChanged();
+        }
     }
 
     private string GetAnimalClass(string animalName)

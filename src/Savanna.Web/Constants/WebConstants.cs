@@ -124,5 +124,16 @@ namespace Savanna.Web.Constants
         public const string LionColor = "#cc3300";
         public const string AntelopeColor = "#33cc33";
         public const string SelectedAnimalGlowColor = "#00FFFF";
+
+        public const string NoActiveGameToSaveMessage = "No active game to save";
+        public const string GameStateSerialized = "Game state serialized";
+        public const string InvalidGameStateFormat = "Invalid game state format";
+        public const string GameStateLoadedMessage = "Game state loaded";
+        public const string FailedToLoadAnimalTypeMessage = "Failed to load animal of type: {0}";
+        public const string FailedToDeserializeGameStateMessage = "Failed to deserialize game state: {0}";
+        public const string SaveGameSuccessMessage = "Game saved successfully";
+        public const string SaveGameErrorMessage = "Error saving game: {0}";
+        public const string LoadGameSuccessMessage = "Game loaded successfully";
+        public const string LoadGameErrorMessage = "Error loading game: {0}";
     }
 }

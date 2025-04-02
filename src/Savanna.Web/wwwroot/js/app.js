@@ -28,6 +28,51 @@ window.bootstrapInterop = {
       console.error(JS_CONSTANTS.ERROR_TOGGLING_DROPDOWN, e);
     }
   },
+
+  initModal: function (modalId) {
+    if (typeof bootstrap === "undefined") return null;
+
+    try {
+      const modalEl = document.getElementById(modalId);
+      if (modalEl) {
+        return new bootstrap.Modal(modalEl);
+      }
+    } catch (e) {
+      console.error("Error initializing modal: ", e);
+    }
+    return null;
+  },
+
+  showModal: function (modalId) {
+    if (typeof bootstrap === "undefined") return;
+
+    try {
+      const modalEl = document.getElementById(modalId);
+      if (modalEl) {
+        const modal =
+          bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.show();
+        return modal;
+      }
+    } catch (e) {
+      console.error("Error showing modal: ", e);
+    }
+    return null;
+  },
+
+  hideModal: function (modalId) {
+    if (typeof bootstrap === "undefined") return;
+
+    try {
+      const modalEl = document.getElementById(modalId);
+      if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+      }
+    } catch (e) {
+      console.error("Error hiding modal: ", e);
+    }
+  },
 };
 
 window.gameState = {

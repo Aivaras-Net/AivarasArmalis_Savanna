@@ -11,9 +11,18 @@ namespace Savanna.Web.Data
         {
         }
 
+        public DbSet<GameSave> GameSaves { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            // Configure GameSave entity
+            builder.Entity<GameSave>()
+                .HasOne(gs => gs.User)
+                .WithMany()
+                .HasForeignKey(gs => gs.UserId)
+                .IsRequired();
         }
     }
 }

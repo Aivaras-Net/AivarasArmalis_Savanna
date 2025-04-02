@@ -8,6 +8,8 @@ using Savanna.Web.Constants;
 using System.Timers;
 using Savanna.Domain.Interfaces;
 using Savanna.Web.Models;
+using System.Text.Json;
+using System.Collections.Generic;
 
 namespace Savanna.Web.Services
 {
@@ -278,6 +280,95 @@ namespace Savanna.Web.Services
         protected virtual void OnGameStateChanged()
         {
             GameStateChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <summary>
+        /// Serializes the current game state to JSON
+        /// </summary>
+        /// <returns>JSON string representing the game state</returns>
+        public string SerializeGameState()
+        {
+            if (!_isGameRunning || _gameEngine == null)
+            {
+                throw new InvalidOperationException(WebConstants.NoActiveGameToSaveMessage);
+            }
+
+            var gameState = new GameState
+            {
+                FieldWidth = FieldWidth,
+                FieldHeight = FieldHeight,
+                Animals = new List<SerializableAnimal>()
+            };
+
+            foreach (var animal in _gameEngine.Animals)
+            {
+                if (animal.isAlive)
+                {
+                    gameState.Animals.Add(SerializableAnimal.FromAnimal(animal));
+                }
+            }
+
+            string json = JsonSerializer.Serialize(gameState, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+
+            LogMessage(WebConstants.GameStateSerialized);
+            return json;
+        }
+
+        /// <summary>
+        /// Loads a game state from JSON
+        /// </summary>
+        /// <param name="json">JSON string representing the game state</param>
+        /// <param name="renderer">Console renderer to use</param>
+        public void LoadGameState(string json, IConsoleRenderer renderer)
+        {
+            try
+            {
+                var gameState = JsonSerializer.Deserialize<GameState>(json);
+                if (gameState == null)
+                {
+                    LogMessage(WebConstants.InvalidGameStateFormat);
+                    return;
+                }
+
+                _gameEngine = new GameEngine(renderer, gameState.FieldWidth, gameState.FieldHeight);
+                _isGameRunning = true;
+                _isPaused = true; // Start in paused state
+                LogMessage(WebConstants.GameStateLoadedMessage);
+
+                // Load animals
+                var animalFactory = new AnimalFactory();
+                var animalNameToTypeMap = new Dictionary<string, Type>
+                {
+                    { GameConstants.LionName, typeof(Lion) },
+                    { GameConstants.AntelopeName, typeof(Antelope) }
+                };
+
+                foreach (var serializedAnimal in gameState.Animals)
+                {
+                    if (animalFactory.TryCreateAnimal(serializedAnimal.Type, out var animal))
+                    {
+                        animal.Position = new Position(serializedAnimal.PositionX, serializedAnimal.PositionY);
+                        animal.Health = serializedAnimal.Health;
+
+                        // Add the animal to the game
+                        _gameEngine.AddAnimal(animal, false);
+                    }
+                    else
+                    {
+                        LogMessage(string.Format(WebConstants.FailedToLoadAnimalTypeMessage, serializedAnimal.Type));
+                    }
+                }
+
+                OnGameStateChanged();
+            }
+            catch (Exception ex)
+            {
+                LogMessage(string.Format(WebConstants.FailedToDeserializeGameStateMessage, ex.Message));
+                _logger.LogError(ex, "Failed to deserialize game state");
+            }
         }
 
         public void Dispose()

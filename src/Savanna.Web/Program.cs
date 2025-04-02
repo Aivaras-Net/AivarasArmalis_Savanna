@@ -73,6 +73,8 @@ namespace Savanna.Web
             builder.Services.AddSingleton<IGameRenderer, WebGameRenderer>();
             builder.Services.AddScoped<IGameService, GameService>();
             builder.Services.AddSingleton<IAnimalFactory, AnimalFactory>();
+            builder.Services.AddScoped<IGameSaveService, GameSaveService>();
+            builder.Services.AddHttpClient();
 
             try
             {
