@@ -1,6 +1,10 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿<!-- Navigation sidebar -->
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">Savanna.Web</a>
+        <a class="navbar-brand" href="">
+            <img src="favicon.png" alt="Savanna Logo" class="logo-sm" />
+            <span class="ms-2">Savanna</span>
+        </a>
         <button class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -11,23 +15,34 @@
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="buttons">
-                <span class="bi bi-controller-nav-menu" aria-hidden="true"></span> Buttons
+                <div class="nav-icon">
+                    <i class="bi bi-house-door-fill"></i>
+                </div>
+                <span>Home</span>
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="game">
-                <span class="bi bi-joystick-nav-menu" aria-hidden="true"></span> Savanna Game
+                <div class="nav-icon">
+                    <i class="bi bi-joystick"></i>
+                </div>
+                <span>Savanna Game</span>
             </NavLink>
         </div>
 
-        <div class="nav-item px-3 mt-3">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="buttons">
+                <div class="nav-icon">
+                    <i class="bi bi-controller"></i>
+                </div>
+                <span>Controls</span>
+            </NavLink>
+        </div>
+
+        <div class="nav-divider"></div>
+
+        <div class="nav-item px-3 d-block d-md-none">
             <LoginDisplay />
         </div>
     </nav>
@@ -43,3 +58,41 @@
         collapseNavMenu = !collapseNavMenu;
     }
 }
+
+<style>
+    .navbar-brand {
+        display: flex;
+        align-items: center;
+        font-size: 1.3rem;
+        font-weight: 500;
+    }
+
+    .logo-sm {
+        width: 24px;
+        height: 24px;
+    }
+
+    .nav-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        margin-right: 0.75rem;
+        width: 24px;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 1rem 1rem;
+    }
+
+    .bi {
+        line-height: 1;
+    }
+</style>

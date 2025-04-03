@@ -4,7 +4,7 @@
             <NotAuthorized>
                 @if (context.User.Identity?.IsAuthenticated != true)
                 {
-                    <RedirectToAccessDenied />
+                    <RedirectToLogin />
                 }
                 else
                 {
@@ -23,14 +23,5 @@
 </Router>
 
 @code {
-    public class RedirectToAccessDenied : ComponentBase
-    {
-        [Inject]
-        private NavigationManager NavigationManager { get; set; } = default!;
-
-        protected override void OnInitialized()
-        {
-            NavigationManager.NavigateTo($"/Account/AccessDenied", true);
-        }
-    }
+    // Component moved to RedirectToLogin.razor
 }

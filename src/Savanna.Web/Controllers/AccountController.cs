@@ -5,6 +5,8 @@ using Savanna.Web.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Antiforgery;
 
 namespace Savanna.Web.Controllers
 {
@@ -14,15 +16,18 @@ namespace Savanna.Web.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IAntiforgery _antiforgery;
 
         public AccountController(
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IAntiforgery antiforgery)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _roleManager = roleManager;
+            _antiforgery = antiforgery;
         }
 
         [HttpPost("ProcessLogin")]
@@ -118,6 +123,13 @@ namespace Savanna.Web.Controllers
             {
                 return Redirect($"/Account/Register?error={Uri.EscapeDataString(string.Format(WebConstants.ErrorOccurredMessage, ex.Message))}");
             }
+        }
+
+        [HttpPost("Logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return LocalRedirect("/");
         }
     }
 }
