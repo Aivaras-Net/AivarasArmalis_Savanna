@@ -37,16 +37,13 @@
                 </div>
                 <div class="status-counts">
                     <div class="status-count">
-                        <i class="bi bi-bug"></i>
                         <span>@(GameService.GameEngine?.Animals.Count ?? 0) Animals</span>
                     </div>
                     <div class="status-count lion-count">
-                        <i class="bi bi-emoji-angry"></i>
                         <span>@(GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.LionName) ?? 0)
                             Lions</span>
                     </div>
                     <div class="status-count antelope-count">
-                        <i class="bi bi-emoji-smile"></i>
                         <span>@(GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.AntelopeName) ?? 0)
                             Antelopes</span>
                     </div>
@@ -211,6 +208,11 @@
                                             <div class="saved-game-info">
                                                 <h4>@save.Name</h4>
                                                 <span class="saved-date">@save.FormattedDate</span>
+                                                <div class="saved-game-stats">
+                                                    <span class="iteration-count">Iteration: @save.IterationCount</span>
+                                                    <span class="animal-count"><i class="bi bi-circle-fill animal-indicator"></i>
+                                                        @save.TotalAnimals Animals</span>
+                                                </div>
                                             </div>
                                             <div class="saved-game-actions">
                                                 <button class="btn btn-sm btn-primary" @onclick="() => LoadGame(save.Id)">
@@ -231,8 +233,7 @@
 
             <div class="game-content">
                 <div class="game-field-container">
-                    <div class="game-field" id="gameField"
-                        style="width: @(GameService.FieldWidth* WebConstants.CellSize)px; height: @(GameService.FieldHeight* WebConstants.CellSize)px;">
+                    <div class="game-field" id="gameField">
                         @if (GameService.GameEngine != null)
                         {
                             @foreach (var animal in GameService.GameEngine.Animals)
@@ -243,7 +244,7 @@
 
                                 <div class="animal @animalClass @(isSelected ? "selected" : "")" @key="animal.GetHashCode()"
                                     @onclick="() => SelectAnimal(animal)"
-                                    style="left: @(animal.Position.X * WebConstants.CellSize)px; top: @(animal.Position.Y * WebConstants.CellSize)px;">
+                                    style="left: @(animal.Position.X * 100 / GameService.FieldWidth)%; top: @(animal.Position.Y * 100 / GameService.FieldHeight)%; width: @(100 / GameService.FieldWidth)%; height: @(100 / GameService.FieldHeight)%;">
                                     @if (GameService.UseLetterDisplay)
                                     {
                                         @(animal.Name.Substring(0, 1))
@@ -264,8 +265,6 @@
                         <div class="animal-details-panel">
                             <div class="panel-header">
                                 <h3>
-                                    <i
-                                        class="bi @(selectedAnimalDetails.Species == GameConstants.LionName ? "bi-emoji-angry" : "bi-emoji-smile")"></i>
                                     @selectedAnimalDetails.Species
                                 </h3>
                                 <button class="close-btn" @onclick="DeselectAnimal">
@@ -301,6 +300,15 @@
                                 <span class="detail-label">Offspring</span>
                                 <span class="detail-value">@selectedAnimalDetails.OffspringCount</span>
                             </div>
+
+                            <div class="detail-actions">
+                                <button class="btn btn-sm btn-danger" @onclick="() => KillSelectedAnimal()">
+                                    <i class="bi bi-x-circle me-1"></i>Kill
+                                </button>
+                                <button class="btn btn-sm btn-success" @onclick="() => MakeOffspring()">
+                                    <i class="bi bi-plus-circle me-1"></i>Reproduce
+                                </button>
+                            </div>
                         </div>
                     }
 
@@ -333,25 +341,28 @@
         background-color: var(--savanna-sand-light);
         border-radius: var(--border-radius);
         box-shadow: var(--card-shadow);
-        padding: 1.5rem;
-        margin-bottom: 2rem;
+        padding: 0.75rem;
+        margin-bottom: 0;
         max-width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
     }
 
     .game-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.5rem;
+        margin-bottom: 0.75rem;
         flex-wrap: wrap;
-        gap: 1rem;
+        gap: 0.5rem;
     }
 
     .game-title {
         color: var(--savanna-earth);
         font-weight: 700;
         margin: 0;
-        font-size: 2rem;
+        font-size: 1.5rem;
     }
 
     /* Welcome panel */
@@ -498,34 +509,33 @@
     .game-dashboard {
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
+        gap: 0.75rem;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
     }
 
     .dashboard-controls {
         display: flex;
         flex-wrap: wrap;
-        gap: 1rem;
+        gap: 0.5rem;
         background-color: #f8f0e3;
-        padding: 1.2rem;
+        padding: 0.75rem;
         border-radius: var(--border-radius);
         box-shadow: var(--card-shadow);
     }
 
     .controls-group {
         display: flex;
-        gap: 0.75rem;
-    }
-
-    .controls-group:not(:last-child) {
-        padding-right: 1rem;
-        border-right: 1px solid rgba(0, 0, 0, 0.1);
+        gap: 0.5rem;
     }
 
     .controls-group .btn {
         font-weight: 600;
-        padding: 0.5rem 1rem;
+        padding: 0.3rem 0.75rem;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
         border: none;
+        font-size: 0.9rem;
     }
 
     .controls-group .btn:hover {
@@ -557,8 +567,11 @@
     /* Game content layout */
     .game-content {
         display: grid;
-        grid-template-columns: 1fr 300px;
-        gap: 1.5rem;
+        grid-template-columns: 1fr 280px;
+        gap: 0.75rem;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
     }
 
     /* Game field */
@@ -566,13 +579,15 @@
         background-color: #f8f0e3;
         border-radius: var(--border-radius);
         box-shadow: var(--card-shadow);
-        padding: 1rem;
+        padding: 0.5rem;
         overflow: auto;
-        min-height: 70vh;
-        max-height: 80vh;
+        min-height: 0;
+        max-height: none;
         display: flex;
         justify-content: center;
         align-items: center;
+        width: 100%;
+        flex: 1;
     }
 
     .game-field {
@@ -581,16 +596,20 @@
         border-radius: var(--border-radius);
         background-color: #8ba446;
         background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239e9764' fill-opacity='0.25'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        max-width: 100%;
-        max-height: 100%;
-        margin: 0 auto;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: none;
+        max-height: none;
+        margin: 0;
     }
 
     /* Sidebar */
     .sidebar-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 0.75rem;
+        max-height: 100%;
+        overflow: hidden;
     }
 
     /* Animal details panel */
@@ -599,20 +618,24 @@
         border-radius: var(--border-radius);
         box-shadow: var(--card-shadow);
         overflow: hidden;
+        max-height: none;
+        display: flex;
+        flex-direction: column;
     }
 
     .panel-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem;
+        padding: 0.5rem 0.75rem;
         background-color: #f8f0e3;
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
     }
 
     .panel-header h3 {
         margin: 0;
-        font-size: 1.25rem;
+        font-size: 1rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -626,6 +649,7 @@
         opacity: 0.7;
         transition: opacity 0.2s;
         padding: 0.25rem;
+        font-size: 0.8rem;
     }
 
     .close-btn:hover {
@@ -633,31 +657,34 @@
     }
 
     .detail-item {
-        padding: 0.75rem 1rem;
+        padding: 0.5rem 0.75rem;
         border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        font-size: 0.9rem;
     }
 
     .detail-label {
         display: block;
         color: #6c757d;
-        font-size: 0.8rem;
-        margin-bottom: 0.25rem;
+        font-size: 0.7rem;
+        margin-bottom: 0.2rem;
     }
 
     .detail-value {
         font-weight: 500;
         color: #5d4037;
+        font-size: 0.9rem;
     }
 
     .health-indicator {
-        margin-top: 0.25rem;
+        margin-top: 0.2rem;
     }
 
     .health-indicator small {
         display: block;
         text-align: right;
         color: #6c757d;
-        margin-top: 0.25rem;
+        margin-top: 0.2rem;
+        font-size: 0.7rem;
     }
 
     /* Log panel */
@@ -666,9 +693,10 @@
         border-radius: var(--border-radius);
         box-shadow: var(--card-shadow);
         overflow: hidden;
-        flex-grow: 1;
+        flex: 1;
         display: flex;
         flex-direction: column;
+        min-height: 0;
     }
 
     .game-log-panel h3 {
@@ -681,10 +709,10 @@
 
     .log-container {
         padding: 0.5rem;
-        height: 300px;
         overflow-y: auto;
         background-color: #f8f0e3;
-        flex-grow: 1;
+        flex: 1;
+        min-height: 0;
     }
 
     .log-entry {
@@ -700,26 +728,20 @@
     /* Animals */
     .animal {
         position: absolute;
-        width:
-            @WebConstants.CellSize
-            px;
-        height:
-            @WebConstants.CellSize
-            px;
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 1.2rem;
+        font-size: 1rem;
         font-weight: bold;
         cursor: pointer;
-        transition: all 0.3s ease-out;
+        transition: all 0.2s ease-out;
         z-index: 1;
     }
 
     .animal.selected {
-        box-shadow: 0 0 0 3px #fff, 0 0 0 6px #e07b39;
+        box-shadow: 0 0 0 2px #fff, 0 0 0 3px #e07b39;
         z-index: 10;
-        transform: scale(1.2);
+        transform: scale(1.1);
     }
 
     .lion {
@@ -831,6 +853,36 @@
         color: #6c757d;
     }
 
+    .saved-game-stats {
+        display: flex;
+        gap: 10px;
+        font-size: 0.8rem;
+        margin-top: 3px;
+    }
+
+    .iteration-count {
+        color: #6c757d;
+    }
+
+    .animal-count {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .animal-indicator {
+        color: #5c9f24;
+        font-size: 0.7rem;
+    }
+
+    .lion-indicator {
+        display: none;
+    }
+
+    .antelope-indicator {
+        display: none;
+    }
+
     .saved-game-actions {
         display: flex;
         gap: 0.5rem;
@@ -881,6 +933,20 @@
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         }
     }
+
+    .detail-actions {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        justify-content: space-between;
+    }
+
+    .detail-actions .btn {
+        flex: 1;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.3rem 0.5rem;
+    }
 </style>
 
 @code {
@@ -899,8 +965,29 @@
     private bool _showSavePanel = false;
     private bool _showLoadPanel = false;
 
+    // Static handler for JavaScript interop
+    [JSInvokable]
+    public static Task HandleNavigationAttempt(string destination)
+    {
+        return _instance?.HandleNavigation(destination) ?? Task.CompletedTask;
+    }
+
+    private static Game? _instance;
+
+    // Handle navigation attempt from JavaScript
+    private async Task HandleNavigation(string destination)
+    {
+        if (GameService.IsGameRunning)
+        {
+            _pendingNavigation = destination;
+            await ShowNavigationWarningModal();
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        _instance = this;
+
         GameService.GameStateChanged += OnGameStateChanged;
         NavigationManager.LocationChanged += OnLocationChanged;
         GameService.AnimalSelectionChanged += OnAnimalSelectionChanged;
@@ -921,11 +1008,27 @@
             try
             {
                 await JSRuntime.InvokeVoidAsync("window.setupGame");
+
+                // Re-enable navigation warning if game is already running
+                if (GameService.IsGameRunning)
+                {
+                    await SetBeforeUnloadWarning(true);
+                }
             }
             catch (Exception ex)
             {
                 GameService.LogMessage(string.Format(WebConstants.JavaScriptInitializationErrorMessage, ex.Message));
             }
+        }
+    }
+
+    // This is now a backup method in case JS interception fails
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        if (GameService.IsGameRunning && !e.Location.EndsWith("/game"))
+        {
+            _pendingNavigation = e.Location;
+            _ = ShowNavigationWarningModal();
         }
     }
 
@@ -988,20 +1091,20 @@
         }
     }
 
-    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
-    {
-        if (GameService.IsGameRunning && !e.Location.EndsWith("/game"))
-        {
-            _pendingNavigation = e.Location;
-            _ = ShowNavigationWarningModal();
-        }
-    }
-
     private async Task ShowNavigationWarningModal()
     {
         if (_navigationWarningModal != null)
         {
-            await _navigationWarningModal.ShowModal();
+            try
+            {
+                await _navigationWarningModal.ShowModal();
+            }
+            catch (Exception ex)
+            {
+                GameService.LogMessage($"Error showing navigation warning modal: {ex.Message}");
+
+                await JSRuntime.InvokeVoidAsync("window.showNavigationWarningModal");
+            }
         }
     }
 
@@ -1028,8 +1131,12 @@
             string destination = await JSRuntime.InvokeAsync<string>("window.getAndClearPendingNavigation");
 
             GameService.LogMessage(string.Format(WebConstants.NavigatingToMessage, destination));
-
             GameService.StopTimer();
+
+            if (string.IsNullOrEmpty(destination) && !string.IsNullOrEmpty(_pendingNavigation))
+            {
+                destination = _pendingNavigation;
+            }
 
             if (NavigationManager.Uri == destination)
             {
@@ -1037,12 +1144,7 @@
             }
             else
             {
-                if (!string.IsNullOrEmpty(_pendingNavigation) && string.IsNullOrEmpty(destination))
-                {
-                    destination = _pendingNavigation;
-                }
-
-                NavigationManager.NavigateTo(destination);
+                NavigationManager.NavigateTo(destination, forceLoad: true);
             }
         }
         catch (Exception ex)
@@ -1057,8 +1159,9 @@
         {
             await JSRuntime.InvokeVoidAsync("window.setBeforeUnloadWarning", enabled);
         }
-        catch
+        catch (Exception ex)
         {
+            GameService.LogMessage($"Error setting beforeunload warning: {ex.Message}");
         }
     }
 
@@ -1072,10 +1175,12 @@
         await SetBeforeUnloadWarning(true);
     }
 
-    private void StopGame()
+    private async void StopGame()
     {
         GameService.StopGame();
         GameService.LogMessage(WebConstants.GameStoppedMessage);
+
+        await SetBeforeUnloadWarning(false);
     }
 
     private void TogglePause()
@@ -1124,13 +1229,28 @@
         try
         {
             var saves = await GameSaveService.GetSavesForUserAsync(_userId);
-            _gameSaves = saves.Select(s => new GameSaveViewModel
-            {
-                Id = s.Id,
-                Name = s.Name,
-                CreatedAt = s.CreatedAt
-            }).ToList();
+            _gameSaves = new List<GameSaveViewModel>();
 
+            foreach (var save in saves)
+            {
+                try
+                {
+                    _gameSaves.Add(ExtractGameInfo(save));
+                }
+                catch
+                {
+                    // If we can't parse the JSON, just add the basic info
+                    _gameSaves.Add(new GameSaveViewModel
+                    {
+                        Id = save.Id,
+                        Name = save.Name,
+                        CreatedAt = save.CreatedAt
+                    });
+                }
+            }
+
+            // Sort by creation date (newest first)
+            _gameSaves = _gameSaves.OrderByDescending(s => s.CreatedAt).ToList();
             _isLoadingGames = false;
         }
         catch (Exception ex)
@@ -1140,6 +1260,43 @@
         }
 
         StateHasChanged();
+    }
+
+    private GameSaveViewModel ExtractGameInfo(GameSave save)
+    {
+        var viewModel = new GameSaveViewModel
+        {
+            Id = save.Id,
+            Name = save.Name,
+            CreatedAt = save.CreatedAt
+        };
+
+        try
+        {
+            // Extract animal counts and iteration data from the game state JSON
+            if (!string.IsNullOrEmpty(save.GameStateJson))
+            {
+                var gameState = JsonSerializer.Deserialize<GameState>(save.GameStateJson);
+                if (gameState != null)
+                {
+                    // Count animals by type for detailed info
+                    viewModel.LionCount = gameState.Animals.Count(a => a.Type == GameConstants.LionName);
+                    viewModel.AntelopeCount = gameState.Animals.Count(a => a.Type == GameConstants.AntelopeName);
+
+                    // Count all animals for total (regardless of type)
+                    viewModel.TotalAnimals = gameState.Animals.Count;
+
+                    // Use the highest animal age as iteration count (approximation)
+                    viewModel.IterationCount = gameState.Animals.Any() ? gameState.Animals.Max(a => a.Age) : 0;
+                }
+            }
+        }
+        catch
+        {
+            // If we can't parse the JSON, just return the basic info
+        }
+
+        return viewModel;
     }
 
     private async Task SaveGame()
@@ -1206,13 +1363,30 @@
 
             await GameSaveService.DeleteSaveAsync(saveId, _userId);
 
+            // Refresh the saves list
             var saves = await GameSaveService.GetSavesForUserAsync(_userId);
-            _gameSaves = saves.Select(s => new GameSaveViewModel
+            _gameSaves = new List<GameSaveViewModel>();
+
+            foreach (var save in saves)
             {
-                Id = s.Id,
-                Name = s.Name,
-                CreatedAt = s.CreatedAt
-            }).ToList();
+                try
+                {
+                    _gameSaves.Add(ExtractGameInfo(save));
+                }
+                catch
+                {
+                    // If we can't parse the JSON, just add the basic info
+                    _gameSaves.Add(new GameSaveViewModel
+                    {
+                        Id = save.Id,
+                        Name = save.Name,
+                        CreatedAt = save.CreatedAt
+                    });
+                }
+            }
+
+            // Sort by creation date (newest first)
+            _gameSaves = _gameSaves.OrderByDescending(s => s.CreatedAt).ToList();
 
             StateHasChanged();
             GameService.LogMessage("Game save deleted");
@@ -1262,19 +1436,71 @@
         _ => "bg-success"
     };
 
+    private void KillSelectedAnimal()
+    {
+        if (_selectedAnimal != null && GameService.GameEngine != null)
+        {
+            var animal = GameService.GameEngine.Animals.FirstOrDefault(a => a.Id == _selectedAnimal.Id);
+
+            if (animal != null)
+            {
+                GameService.LogMessage($"{animal.Name} was manually removed from the simulation.");
+
+                animal.Health = 0;
+
+                DeselectAnimal();
+            }
+        }
+    }
+
+    private void MakeOffspring()
+    {
+        if (_selectedAnimal != null && GameService.GameEngine != null)
+        {
+            var parentAnimal = GameService.GameEngine.Animals.FirstOrDefault(a => a.Id == _selectedAnimal.Id);
+
+            if (parentAnimal != null)
+            {
+                var offspring = parentAnimal.CreateOffspring(parentAnimal.Position);
+
+                GameService.GameEngine.AddAnimal(offspring);
+
+                GameService.LogMessage($"New {parentAnimal.Name} offspring was manually created.");
+
+                RefreshSelectedAnimalDetails();
+            }
+        }
+    }
+
     public void Dispose()
     {
+        // Reset static instance reference when component is disposed
+        if (_instance == this)
+        {
+            _instance = null;
+        }
+
         GameService.GameStateChanged -= OnGameStateChanged;
         NavigationManager.LocationChanged -= OnLocationChanged;
         GameService.AnimalSelectionChanged -= OnAnimalSelectionChanged;
 
-        // Clean up timer
         if (_detailsUpdateTimer != null)
         {
             _detailsUpdateTimer.Elapsed -= UpdateSelectedAnimalDetails;
             _detailsUpdateTimer.Stop();
             _detailsUpdateTimer.Dispose();
             _detailsUpdateTimer = null;
+        }
+
+        try
+        {
+            if (GameService.IsGameRunning)
+            {
+                JSRuntime.InvokeVoidAsync("window.setBeforeUnloadWarning", false);
+            }
+        }
+        catch
+        {
         }
     }
 }

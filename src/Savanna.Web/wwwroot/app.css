@@ -183,7 +183,7 @@ html, body {
   border-radius: var(--border-radius);
   padding: 1rem;
   margin-bottom: 1.5rem;
-  display: flex;
+    display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
@@ -191,8 +191,8 @@ html, body {
 }
 
 .game-menu {
-  display: flex;
-  justify-content: center;
+    display: flex;
+    justify-content: center;
   padding: 2rem;
 }
 
@@ -202,7 +202,7 @@ html, body {
   border: 2px solid var(--savanna-grass) !important;
   border-radius: var(--border-radius);
   box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
-  position: relative;
+    position: relative;
 }
 
 .animal {
@@ -224,7 +224,7 @@ html, body {
 
 .lion {
   color: var(--savanna-accent);
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .antelope {
@@ -238,8 +238,8 @@ html, body {
   box-shadow: var(--card-shadow);
   padding: 1.5rem;
   margin-top: 1rem;
-  position: sticky;
-  top: 20px;
+    position: sticky;
+    top: 20px;
   border-left: 4px solid var(--savanna-accent);
   max-width: 100%;
 }
@@ -325,12 +325,12 @@ html, body {
   .game-controls .btn-group {
     display: flex;
     margin-bottom: 0.5rem;
-  }
-  
-  .animal-details-card {
+    }
+    
+    .animal-details-card {
     margin-top: 1.5rem;
-    position: static;
-  }
+        position: static;
+    }
 }
 
 @media (max-width: 768px) {

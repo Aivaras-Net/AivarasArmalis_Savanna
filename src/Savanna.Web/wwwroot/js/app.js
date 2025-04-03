@@ -100,6 +100,33 @@ window.setupGame = function () {
     console.warn(JS_CONSTANTS.BOOTSTRAP_NOT_AVAILABLE);
   }
 
+  if (window.Blazor) {
+    window.Blazor.addEventListener("beforestart", (e) => {
+      if (
+        window.gameState.isGameRunning &&
+        !e.detail.location.endsWith("/game")
+      ) {
+        e.preventDefault();
+
+        window.gameState.pendingNavigation = e.detail.location;
+
+        if (window.DotNet && window.DotNet.invokeMethodAsync) {
+          try {
+            window.DotNet.invokeMethodAsync(
+              "Savanna.Web",
+              "HandleNavigationAttempt",
+              e.detail.location
+            );
+          } catch (err) {
+            window.showNavigationWarningModal();
+          }
+        } else {
+          window.showNavigationWarningModal();
+        }
+      }
+    });
+  }
+
   return true;
 };
 
@@ -132,6 +159,11 @@ window.handleLinkClick = function (event) {
   }
 
   if (href && !href.startsWith("#") && !href.endsWith("/game")) {
+    // Prevent the navigation
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Store the destination
     if (href.startsWith("/")) {
       window.gameState.pendingNavigation = window.location.origin + href;
     } else if (!href.startsWith("http")) {
@@ -145,9 +177,22 @@ window.handleLinkClick = function (event) {
       window.gameState.pendingNavigation
     );
 
-    event.preventDefault();
-    event.stopPropagation();
-    window.showNavigationWarningModal();
+    // Notify Blazor component about the navigation attempt
+    if (window.DotNet && window.DotNet.invokeMethodAsync) {
+      try {
+        window.DotNet.invokeMethodAsync(
+          "Savanna.Web",
+          "HandleNavigationAttempt",
+          window.gameState.pendingNavigation
+        );
+      } catch (err) {
+        // Fallback to direct modal if DotNet invocation fails
+        window.showNavigationWarningModal();
+      }
+    } else {
+      window.showNavigationWarningModal();
+    }
+
     return false;
   }
 };
