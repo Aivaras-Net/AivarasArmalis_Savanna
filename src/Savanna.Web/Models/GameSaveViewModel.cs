@@ -1,3 +1,4 @@
+using Savanna.Web.Constants;
 using System.ComponentModel.DataAnnotations;
 
 namespace Savanna.Web.Models
@@ -27,7 +28,7 @@ namespace Savanna.Web.Models
         /// <summary>
         /// Formatted date/time for display
         /// </summary>
-        public string FormattedDate => CreatedAt.ToString("yyyy-MM-dd HH:mm:ss");
+        public string FormattedDate => CreatedAt.ToString(WebConstants.SaveDateFormat);
 
         /// <summary>
         /// Iteration or age of the oldest animal in the game (approximation of game iterations)

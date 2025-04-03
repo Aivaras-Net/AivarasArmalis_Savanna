@@ -228,7 +228,7 @@ namespace Savanna.Web.Services
                     animal.IsSelected = true;
                     _selectedAnimalDetails = AnimalDetailViewModel.FromAnimal(animal);
 
-                    _logger.LogInformation($"Selected animal: {animal.Name} at ({x}, {y})");
+                    _logger.LogInformation(WebConstants.SelectedAnimalLogMessage, animal.Name, x, y);
 
                     AnimalSelectionChanged?.Invoke(this, _selectedAnimalDetails);
                     OnGameStateChanged();
@@ -240,7 +240,7 @@ namespace Savanna.Web.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error selecting animal: {ex.Message}");
+                _logger.LogError(WebConstants.ErrorSelectingAnimalMessage, ex.Message);
                 return false;
             }
         }
@@ -367,7 +367,7 @@ namespace Savanna.Web.Services
             catch (Exception ex)
             {
                 LogMessage(string.Format(WebConstants.FailedToDeserializeGameStateMessage, ex.Message));
-                _logger.LogError(ex, "Failed to deserialize game state");
+                _logger.LogError(ex, WebConstants.FailedDeserializeGameStateMessage);
             }
         }
 

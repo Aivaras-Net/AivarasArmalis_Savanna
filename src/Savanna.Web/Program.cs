@@ -29,9 +29,9 @@ namespace Savanna.Web
 
             builder.Services.Configure<AdminSettings>(options =>
             {
-                var adminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL");
-                var adminUsername = Environment.GetEnvironmentVariable("ADMIN_USERNAME");
-                var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
+                var adminEmail = Environment.GetEnvironmentVariable(WebConstants.AdminEmailEnvVar);
+                var adminUsername = Environment.GetEnvironmentVariable(WebConstants.AdminUsernameEnvVar);
+                var adminPassword = Environment.GetEnvironmentVariable(WebConstants.AdminPasswordEnvVar);
 
                 if (string.IsNullOrEmpty(adminEmail) || string.IsNullOrEmpty(adminUsername) || string.IsNullOrEmpty(adminPassword))
                 {
@@ -43,7 +43,7 @@ namespace Savanna.Web
                 options.Password = adminPassword;
             });
 
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+            var connectionString = builder.Configuration.GetConnectionString(WebConstants.DefaultConnectionString) ??
                 throw new InvalidOperationException(WebConstants.ConnectionStringNotFoundMessage);
             builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
                 options.UseSqlite(connectionString));
@@ -53,17 +53,17 @@ namespace Savanna.Web
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
-                builder.Configuration.GetSection("Identity:SignIn").Bind(options.SignIn);
-                builder.Configuration.GetSection("Identity:Password").Bind(options.Password);
+                builder.Configuration.GetSection(WebConstants.IdentitySignInConfigPath).Bind(options.SignIn);
+                builder.Configuration.GetSection(WebConstants.IdentityPasswordConfigPath).Bind(options.Password);
             })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
             builder.Services.ConfigureApplicationCookie(options =>
             {
-                options.LoginPath = "/Account/AccessDenied";
-                options.LogoutPath = "/Account/Logout";
-                options.AccessDeniedPath = "/Account/AccessDenied";
+                options.LoginPath = WebConstants.LoginPath;
+                options.LogoutPath = WebConstants.LogoutPath;
+                options.AccessDeniedPath = WebConstants.AccessDeniedPath;
             });
 
             builder.Services.AddScoped<IDatabaseInitializer, DatabaseInitializer>();
@@ -93,7 +93,7 @@ namespace Savanna.Web
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
-                app.UseExceptionHandler("/Error");
+                app.UseExceptionHandler(WebConstants.ErrorPath);
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }

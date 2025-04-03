@@ -58,7 +58,7 @@ namespace Savanna.Web.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting saves");
+                _logger.LogError(ex, WebConstants.ErrorGettingSavesMessage);
                 return StatusCode(500, ex.Message);
             }
         }
@@ -91,7 +91,7 @@ namespace Savanna.Web.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error saving game");
+                _logger.LogError(ex, WebConstants.ErrorSavingGameMessage);
                 return StatusCode(500, string.Format(WebConstants.SaveGameErrorMessage, ex.Message));
             }
         }
@@ -120,7 +120,7 @@ namespace Savanna.Web.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading game");
+                _logger.LogError(ex, WebConstants.ErrorLoadingGameMessage);
                 return StatusCode(500, string.Format(WebConstants.LoadGameErrorMessage, ex.Message));
             }
         }
@@ -146,7 +146,7 @@ namespace Savanna.Web.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting save");
+                _logger.LogError(ex, WebConstants.ErrorDeletingSaveMessage);
                 return StatusCode(500, ex.Message);
             }
         }

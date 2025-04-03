@@ -31,7 +31,7 @@ namespace Savanna.Web.Controllers
         }
 
         [HttpPost("ProcessLogin")]
-        public async Task<IActionResult> ProcessLogin(string email, string password, bool rememberMe, string returnUrl = null)
+        public async Task<IActionResult> ProcessLogin(string email, string password, string? returnUrl, bool rememberMe)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace Savanna.Web.Controllers
 
                 if (result.Succeeded)
                 {
-                    return LocalRedirect(returnUrl ?? "/");
+                    return LocalRedirect(returnUrl ?? WebConstants.DefaultReturnPath);
                 }
                 else if (result.RequiresTwoFactor)
                 {
@@ -73,11 +73,7 @@ namespace Savanna.Web.Controllers
         }
 
         [HttpPost("ProcessRegister")]
-        public async Task<IActionResult> ProcessRegister(
-            string username,
-            string email,
-            string password,
-            string confirmPassword)
+        public async Task<IActionResult> ProcessRegister(string email, string username, string password, string confirmPassword)
         {
             // Simple validation
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(email) ||
@@ -111,7 +107,7 @@ namespace Savanna.Web.Controllers
                     await _userManager.AddToRoleAsync(user, WebConstants.UserRoleName);
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return LocalRedirect("/");
+                    return LocalRedirect(WebConstants.DefaultReturnPath);
                 }
                 else
                 {
@@ -129,7 +125,7 @@ namespace Savanna.Web.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return LocalRedirect("/");
+            return LocalRedirect(WebConstants.DefaultReturnPath);
         }
     }
 }

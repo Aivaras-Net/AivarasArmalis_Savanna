@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Savanna.Web.Constants;
 using Savanna.Web.Data;
 using Savanna.Web.Models;
 using Savanna.Web.Services.Interfaces;
@@ -51,7 +52,7 @@ namespace Savanna.Web.Services
             await _dbContext.GameSaves.AddAsync(gameSave);
             await _dbContext.SaveChangesAsync();
 
-            _logger.LogInformation("Created game save {SaveId} for user {UserId}", gameSave.Id, userId);
+            _logger.LogInformation(WebConstants.CreatedGameSaveLogMessage, gameSave.Id, userId);
             return gameSave;
         }
 
@@ -63,14 +64,14 @@ namespace Savanna.Web.Services
 
             if (save == null)
             {
-                _logger.LogWarning("Failed to delete save {SaveId}. Save not found or doesn't belong to user {UserId}", saveId, userId);
+                _logger.LogWarning(WebConstants.FailedDeleteSaveLogMessage, saveId, userId);
                 return false;
             }
 
             _dbContext.GameSaves.Remove(save);
             await _dbContext.SaveChangesAsync();
 
-            _logger.LogInformation("Deleted game save {SaveId} for user {UserId}", saveId, userId);
+            _logger.LogInformation(WebConstants.DeletedGameSaveLogMessage, saveId, userId);
             return true;
         }
     }

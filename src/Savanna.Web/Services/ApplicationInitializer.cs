@@ -29,17 +29,17 @@ namespace Savanna.Web.Services
             {
                 _logger.LogInformation(WebConstants.StartingAppInitLogMessage);
 
-                _logger.LogInformation("Starting database initialization...");
+                _logger.LogInformation(WebConstants.StartingDatabaseInitMessage);
                 await _databaseInitializer.EnsureDatabaseCreatedAsync();
-                _logger.LogInformation("Database initialization completed successfully");
+                _logger.LogInformation(WebConstants.DatabaseInitCompletedMessage);
 
-                _logger.LogInformation("Starting roles initialization...");
+                _logger.LogInformation(WebConstants.StartingRolesInitMessage);
                 await _identityInitializer.InitializeRolesAsync();
-                _logger.LogInformation("Roles initialization completed successfully");
+                _logger.LogInformation(WebConstants.RolesInitCompletedMessage);
 
-                _logger.LogInformation("Starting default users initialization...");
+                _logger.LogInformation(WebConstants.StartingUsersInitMessage);
                 await _identityInitializer.InitializeDefaultUsersAsync();
-                _logger.LogInformation("Default users initialization completed successfully");
+                _logger.LogInformation(WebConstants.UsersInitCompletedMessage);
 
                 _logger.LogInformation(WebConstants.AppInitCompletedLogMessage);
             }
