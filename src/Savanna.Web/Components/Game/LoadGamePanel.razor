@@ -2,7 +2,7 @@
 @using Savanna.Web.Models
 @using Savanna.Web.Components.Shared
 
-<ModalPanel Title="Load Game" ErrorMessage="@LoadErrorMessage" OnClose="OnToggleLoadPanel">
+<ModalPanel Title="Load Saved Game" ErrorMessage="@LoadErrorMessage" OnClose="OnToggleLoadPanel">
     @if (IsLoadingGames)
     {
         <div class="loading-spinner">
@@ -17,7 +17,7 @@
         <div class="empty-state">
             <i class="bi bi-archive"></i>
             <p>No saved games found</p>
-            <small>Save your current game to see it here</small>
+            <small>Start a new game and save it to see it here</small>
         </div>
     }
     else
@@ -31,8 +31,12 @@
                         <span class="saved-date">@save.FormattedDate</span>
                         <div class="saved-game-stats">
                             <span class="iteration-count">Iteration: @save.IterationCount</span>
-                            <span class="animal-count"><i class="bi bi-circle-fill animal-indicator"></i>
-                                @save.TotalAnimals Animals</span>
+                            <div class="animals-stats">
+                                <span class="animal-count"><i class="bi bi-circle-fill lion-indicator"></i> @save.LionCount
+                                    Lions</span>
+                                <span class="animal-count"><i class="bi bi-circle-fill antelope-indicator"></i>
+                                    @save.AntelopeCount Antelopes</span>
+                            </div>
                         </div>
                     </div>
                     <div class="saved-game-actions">
@@ -47,6 +51,12 @@
             }
         </div>
     }
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" @onclick="OnToggleLoadPanel">
+            <i class="bi bi-arrow-left me-1"></i> Go Back
+        </button>
+    </div>
 </ModalPanel>
 
 <style>
@@ -81,8 +91,9 @@
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
-        max-height: 300px;
+        max-height: 400px;
         overflow-y: auto;
+        margin-bottom: 1rem;
     }
 
     .saved-game-item {
@@ -96,7 +107,7 @@
     }
 
     .saved-game-item:hover {
-        background-color: rgba(0, 0, 0, 0.03);
+        background-color: rgba(224, 123, 57, 0.1);
     }
 
     .saved-game-info h4 {
@@ -111,9 +122,15 @@
 
     .saved-game-stats {
         display: flex;
-        gap: 10px;
+        flex-direction: column;
         font-size: 0.8rem;
         margin-top: 3px;
+    }
+
+    .animals-stats {
+        display: flex;
+        gap: 10px;
+        margin-top: 2px;
     }
 
     .iteration-count {
@@ -126,7 +143,12 @@
         gap: 3px;
     }
 
-    .animal-indicator {
+    .lion-indicator {
+        color: #d35400;
+        font-size: 0.7rem;
+    }
+
+    .antelope-indicator {
         color: #5c9f24;
         font-size: 0.7rem;
     }
@@ -134,6 +156,13 @@
     .saved-game-actions {
         display: flex;
         gap: 0.5rem;
+    }
+
+    .modal-footer {
+        padding-top: 0.5rem;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: flex-start;
     }
 </style>
 

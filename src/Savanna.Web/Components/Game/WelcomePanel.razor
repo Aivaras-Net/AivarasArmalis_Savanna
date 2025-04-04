@@ -28,9 +28,14 @@
                 <p>Create multiple scenarios and revisit them anytime.</p>
             </div>
         </div>
-        <button class="btn btn-primary btn-lg start-button" @onclick="OnStartNewGame">
-            <i class="bi bi-play-fill me-2"></i>Start Simulation
-        </button>
+        <div class="action-buttons">
+            <button class="btn btn-primary btn-lg start-button" @onclick="OnStartNewGame">
+                <i class="bi bi-play-fill me-2"></i>Start New Simulation
+            </button>
+            <button class="btn btn-secondary btn-lg load-button" @onclick="OnLoadGame">
+                <i class="bi bi-folder-fill me-2"></i>Load Saved Game
+            </button>
+        </div>
     </div>
 </div>
 
@@ -110,6 +115,13 @@
         font-size: 0.9rem;
     }
 
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
     .start-button {
         background-color: #e07b39;
         border: none;
@@ -126,9 +138,25 @@
         transform: translateY(-2px);
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     }
+
+    .load-button {
+        padding: 0.75rem 2rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        transition: transform 0.3s, background-color 0.3s;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .load-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
 </style>
 
 @code {
     [Parameter]
     public EventCallback OnStartNewGame { get; set; }
+
+    [Parameter]
+    public EventCallback OnLoadGame { get; set; }
 }

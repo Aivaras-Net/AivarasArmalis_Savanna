@@ -34,7 +34,13 @@
 
     @if (!GameService.IsGameRunning)
     {
-        <WelcomePanel OnStartNewGame="StartNewGame" />
+        <WelcomePanel OnStartNewGame="StartNewGame" OnLoadGame="ShowInitialLoadPanel" />
+
+        @if (_showLoadPanel)
+        {
+            <LoadGamePanel GameSaves="@_gameSaves" LoadErrorMessage="@_loadErrorMessage" IsLoadingGames="@_isLoadingGames"
+                OnToggleLoadPanel="ToggleLoadPanel" OnLoadGame="LoadGame" OnDeleteSave="DeleteSave" />
+        }
     }
     else
     {
@@ -698,6 +704,14 @@
 
                 RefreshSelectedAnimalDetails();
             }
+        }
+    }
+
+    private async Task ShowInitialLoadPanel()
+    {
+        if (!_showLoadPanel)
+        {
+            await ToggleLoadPanel();
         }
     }
 
