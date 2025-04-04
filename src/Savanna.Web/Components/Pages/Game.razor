@@ -12,6 +12,7 @@
 @using Savanna.Web.Services.Interfaces
 @using Savanna.Web.Models
 @using System.Text.Json
+@using Savanna.Web.Components.Game
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject IGameService GameService
@@ -25,310 +26,52 @@
 <PageTitle>Savanna Game</PageTitle>
 
 <div class="game-container">
-    <div class="game-header">
-        <h1 class="game-title">Savanna World Simulation</h1>
-
-        @if (GameService.IsGameRunning)
-        {
-                <div class="game-status-panel">
-                    <div class="status-indicator @(GameService.IsPaused ? "paused" : "running")">
-                        <i class="bi @(GameService.IsPaused ? "bi-pause-circle" : "bi-play-circle")"></i>
-                        <span>@(GameService.IsPaused ? "Paused" : "Running")</span>
-                    </div>
-                    <div class="status-counts">
-                        <div class="status-count">
-                            <span>@(GameService.GameEngine?.Animals.Count ?? 0) Animals</span>
-                        </div>
-                        <div class="status-count lion-count">
-                            <span>@(GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.LionName) ?? 0)
-                                Lions</span>
-                        </div>
-                        <div class="status-count antelope-count">
-                            <span>@(GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.AntelopeName) ?? 0)
-                                Antelopes</span>
-                        </div>
-                    </div>
-                </div>
-        }
-    </div>
+    <GameHeader IsGameRunning="GameService.IsGameRunning" IsPaused="GameService.IsPaused"
+        AnimalsCount="GameService.GameEngine?.Animals.Count ?? 0"
+        LionsCount="GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.LionName) ?? 0"
+        AntelopesCount="GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.AntelopeName) ?? 0" />
 
     @if (!GameService.IsGameRunning)
     {
-            <div class="welcome-panel">
-                <div class="welcome-content">
-                    <h2>Welcome to Savanna World</h2>
-                    <p>Experience the circle of life in this interactive ecosystem simulation where lions hunt antelopes in a
-                        dynamic virtual environment.</p>
-                    <div class="features-grid">
-                        <div class="feature-card">
-                            <div class="feature-icon">
-                                <i class="bi bi-compass"></i>
-                            </div>
-                            <h3>Explore</h3>
-                            <p>Watch as lions hunt antelopes in a realistic ecosystem.</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">
-                                <i class="bi bi-sliders"></i>
-                            </div>
-                            <h3>Control</h3>
-                            <p>Add new animals, pause simulation, and influence the ecosystem.</p>
-                        </div>
-                        <div class="feature-card">
-                            <div class="feature-icon">
-                                <i class="bi bi-save"></i>
-                            </div>
-                            <h3>Save</h3>
-                            <p>Create multiple scenarios and revisit them anytime.</p>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary btn-lg start-button" @onclick="StartNewGame">
-                        <i class="bi bi-play-fill me-2"></i>Start Simulation
-                    </button>
-                </div>
-            </div>
+        <WelcomePanel OnStartNewGame="StartNewGame" />
     }
     else
     {
-            <div class="game-dashboard">
-                <div class="dashboard-controls">
-                    <div class="controls-group">
-                        <button class="btn @(GameService.IsPaused ? "btn-success" : "btn-warning")" @onclick="TogglePause">
-                            <i class="bi @(GameService.IsPaused ? "bi-play-fill" : "bi-pause-fill")"></i>
-                            @(GameService.IsPaused ? "Resume" : "Pause")
-                        </button>
-                        <button class="btn btn-danger" @onclick="StopGame">
-                            <i class="bi bi-stop-fill"></i> Stop
-                        </button>
-                    </div>
+        <div class="game-dashboard">
+            <GameControls IsPaused="GameService.IsPaused" UseLetterDisplay="GameService.UseLetterDisplay"
+                OnTogglePause="TogglePause" OnStopGame="StopGame" OnSpawnAntelope="SpawnAntelope" OnSpawnLion="SpawnLion"
+                OnToggleDisplayMode="ToggleDisplayMode" OnToggleSavePanel="ToggleSavePanel"
+                OnToggleLoadPanel="ToggleLoadPanel" />
 
-                    <div class="controls-group">
-                        <button class="btn btn-success" @onclick="SpawnAntelope">
-                            <i class="bi bi-plus-circle"></i> Add Antelope
-                        </button>
-                        <button class="btn btn-danger" @onclick="SpawnLion">
-                            <i class="bi bi-plus-circle"></i> Add Lion
-                        </button>
-                    </div>
+            @if (_showSavePanel)
+            {
+                <SaveGamePanel SaveName="@_saveName" SaveNameChanged="value => _saveName = value"
+                    SaveErrorMessage="@_saveErrorMessage" SaveSuccessMessage="@_saveSuccessMessage" IsSaving="@_isSaving"
+                    OnSaveGame="SaveGame" OnToggleSavePanel="ToggleSavePanel" />
+            }
 
-                    <div class="controls-group">
-                        <button class="btn btn-info" @onclick="ToggleDisplayMode">
-                            <i class="bi bi-eye"></i>
-                            @(GameService.UseLetterDisplay ? "Show Icons" : "Show Letters")
-                        </button>
-                    </div>
+            @if (_showLoadPanel)
+            {
+                <LoadGamePanel GameSaves="@_gameSaves" LoadErrorMessage="@_loadErrorMessage" IsLoadingGames="@_isLoadingGames"
+                    OnToggleLoadPanel="ToggleLoadPanel" OnLoadGame="LoadGame" OnDeleteSave="DeleteSave" />
+            }
 
-                    <div class="controls-group">
-                        <button class="btn btn-secondary" @onclick="ToggleSavePanel">
-                            <i class="bi bi-save"></i> Save
-                        </button>
-                        <button class="btn btn-secondary" @onclick="ToggleLoadPanel">
-                            <i class="bi bi-upload"></i> Load
-                        </button>
-                    </div>
-                </div>
+            <div class="game-content">
+                <GameField GameEngine="GameService.GameEngine" FieldWidth="GameService.FieldWidth"
+                    FieldHeight="GameService.FieldHeight" UseLetterDisplay="GameService.UseLetterDisplay"
+                    OnSelectAnimal="SelectAnimal" />
 
-                @if (_showSavePanel)
-                {
-                        <div class="modal-overlay">
-                            <div class="modal-panel">
-                                <div class="modal-header">
-                                    <h3>Save Game</h3>
-                                    <button type="button" class="btn-close" @onclick="ToggleSavePanel"></button>
-                                </div>
-                                <div class="modal-body">
-                                    @if (!string.IsNullOrEmpty(_saveErrorMessage))
-                                    {
-                                            <div class="alert alert-danger">
-                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                                @_saveErrorMessage
-                                            </div>
-                                    }
-                                    <div class="form-group mb-3">
-                                        <label for="saveName" class="form-label">Save Name</label>
-                                        <input type="text" class="form-control" id="saveName" @bind="_saveName"
-                                            placeholder="Enter a name for your save" />
-                                    </div>
-                                    <button class="btn btn-primary w-100" @onclick="SaveGame" disabled="@_isSaving">
-                                        @if (_isSaving)
-                                        {
-                                                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                                <span> Saving...</span>
-                                        }
-                                        else
-                                        {
-                                                <span>Save Game</span>
-                                        }
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                }
+                <div class="sidebar-container">
+                    @if (selectedAnimalDetails != null)
+                    {
+                        <AnimalDetailsPanel AnimalDetails="selectedAnimalDetails" OnDeselectAnimal="DeselectAnimal"
+                            OnKillAnimal="KillSelectedAnimal" OnMakeOffspring="MakeOffspring" />
+                    }
 
-                @if (_showLoadPanel)
-                {
-                        <div class="modal-overlay">
-                            <div class="modal-panel">
-                                <div class="modal-header">
-                                    <h3>Load Game</h3>
-                                    <button type="button" class="btn-close" @onclick="ToggleLoadPanel"></button>
-                                </div>
-                                <div class="modal-body">
-                                    @if (!string.IsNullOrEmpty(_loadErrorMessage))
-                                    {
-                                            <div class="alert alert-danger">
-                                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                                @_loadErrorMessage
-                                            </div>
-                                    }
-
-                                    @if (_isLoadingGames)
-                                    {
-                                            <div class="loading-spinner">
-                                                <div class="spinner-border" role="status">
-                                                    <span class="visually-hidden">Loading...</span>
-                                                </div>
-                                                <p>Loading your saved games...</p>
-                                            </div>
-                                    }
-                                    else if (_gameSaves.Count == 0)
-                                    {
-                                            <div class="empty-state">
-                                                <i class="bi bi-archive"></i>
-                                                <p>No saved games found</p>
-                                                <small>Save your current game to see it here</small>
-                                            </div>
-                                    }
-                                    else
-                                    {
-                                            <div class="saved-games-list">
-                                                @foreach (var save in _gameSaves)
-                                                {
-                                                        <div class="saved-game-item">
-                                                            <div class="saved-game-info">
-                                                                <h4>@save.Name</h4>
-                                                                <span class="saved-date">@save.FormattedDate</span>
-                                                                <div class="saved-game-stats">
-                                                                    <span class="iteration-count">Iteration: @save.IterationCount</span>
-                                                                    <span class="animal-count"><i class="bi bi-circle-fill animal-indicator"></i>
-                                                                        @save.TotalAnimals Animals</span>
-                                                                </div>
-                                                            </div>
-                                                            <div class="saved-game-actions">
-                                                                <button class="btn btn-sm btn-primary" @onclick="() => LoadGame(save.Id)">
-                                                                    <i class="bi bi-play-fill"></i> Load
-                                                                </button>
-                                                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteSave(save.Id)">
-                                                                    <i class="bi bi-trash"></i>
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                }
-                                            </div>
-                                    }
-                                </div>
-                            </div>
-                        </div>
-                }
-
-                <div class="game-content">
-                    <div class="game-field-container">
-                        <div class="game-field" id="gameField">
-                            @if (GameService.GameEngine != null)
-                            {
-                                    @foreach (var animal in GameService.GameEngine.Animals)
-                                    {
-                                            string animalClass = GetAnimalClass(animal.Name);
-                                            string animalDisplay = GetAnimalDisplay(animal.Name);
-                                            bool isSelected = animal.IsSelected;
-
-                                            <div class="animal @animalClass @(isSelected ? "selected" : "")" @key="animal.GetHashCode()"
-                                                @onclick="() => SelectAnimal(animal)"
-                                                style="left: @(animal.Position.X * 100 / GameService.FieldWidth)%; top: @(animal.Position.Y * 100 / GameService.FieldHeight)%; width: @(100 / GameService.FieldWidth)%; height: @(100 / GameService.FieldHeight)%;">
-                                                @if (GameService.UseLetterDisplay)
-                                                {
-                                                        @(animal.Name.Substring(0, 1))
-                                                }
-                                                else
-                                                {
-                                                        @animalDisplay
-                                                }
-                                            </div>
-                                    }
-                            }
-                        </div>
-                    </div>
-
-                    <div class="sidebar-container">
-                        @if (selectedAnimalDetails != null)
-                        {
-                                <div class="animal-details-panel">
-                                    <div class="panel-header">
-                                        <h3>
-                                            @selectedAnimalDetails.Species
-                                        </h3>
-                                        <button class="close-btn" @onclick="DeselectAnimal">
-                                            <i class="bi bi-x-lg"></i>
-                                        </button>
-                                    </div>
-
-                                    <div class="detail-item">
-                                        <span class="detail-label">Position</span>
-                                        <span class="detail-value">@selectedAnimalDetails.X, @selectedAnimalDetails.Y</span>
-                                    </div>
-
-                                    <div class="detail-item">
-                                        <span class="detail-label">Health</span>
-                                        <div class="health-indicator">
-                                            <div class="progress">
-                                                <div class="progress-bar @GetHealthColorClass(selectedAnimalDetails)"
-                                                    style="width: @((selectedAnimalDetails.HealthPercentage).ToString("0"))%;">
-                                                    @((selectedAnimalDetails.HealthPercentage).ToString("0.0"))%
-                                                </div>
-                                            </div>
-                                            <small>@selectedAnimalDetails.Health.ToString("0.0") /
-                                                @selectedAnimalDetails.MaxHealth.ToString("0.0")</small>
-                                        </div>
-                                    </div>
-
-                                    <div class="detail-item">
-                                        <span class="detail-label">Age</span>
-                                        <span class="detail-value">@selectedAnimalDetails.Age @WebConstants.AgeUnitsText</span>
-                                    </div>
-
-                                    <div class="detail-item">
-                                        <span class="detail-label">Offspring</span>
-                                        <span class="detail-value">@selectedAnimalDetails.OffspringCount</span>
-                                    </div>
-
-                                    <div class="detail-actions">
-                                        <button class="btn btn-sm btn-danger" @onclick="() => KillSelectedAnimal()">
-                                            <i class="bi bi-x-circle me-1"></i>Kill
-                                        </button>
-                                        <button class="btn btn-sm btn-success" @onclick="() => MakeOffspring()">
-                                            <i class="bi bi-plus-circle me-1"></i>Reproduce
-                                        </button>
-                                    </div>
-                                </div>
-                        }
-
-                        <div class="game-log-panel">
-                            <h3>Activity Log</h3>
-                            <div class="log-container">
-                                @{
-                                        var logsCopy = GameService.GameLogs.ToList();
-                                        logsCopy.Reverse();
-
-                                        foreach (var log in logsCopy)
-                                        {
-                                                <div class="log-entry">@log</div>
-                                        }
-                                }
-                            </div>
-                        </div>
-                    </div>
+                    <GameLogPanel GameLogs="GameService.GameLogs" />
                 </div>
             </div>
+        </div>
     }
 </div>
 
@@ -336,7 +79,6 @@
     OnConfirmNavigation="ConfirmNavigation" />
 
 <style>
-    /* Main layout */
     .game-container {
         background-color: var(--savanna-sand-light);
         border-radius: var(--border-radius);
@@ -349,163 +91,6 @@
         flex-direction: column;
     }
 
-    .game-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.75rem;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .game-title {
-        color: var(--savanna-earth);
-        font-weight: 700;
-        margin: 0;
-        font-size: 1.5rem;
-    }
-
-    /* Welcome panel */
-    .welcome-panel {
-        background: linear-gradient(135deg, #e9c583 0%, #f2e2c9 100%);
-        border-radius: var(--border-radius);
-        overflow: hidden;
-        padding: 3rem 2rem;
-        text-align: center;
-        position: relative;
-    }
-
-    .welcome-panel:before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 5px;
-        background: linear-gradient(to right, #e07b39, #8ba446, #e07b39);
-    }
-
-    .welcome-content {
-        max-width: 800px;
-        margin: 0 auto;
-    }
-
-    .welcome-content h2 {
-        color: #5d4037;
-        margin-bottom: 1rem;
-        font-weight: 700;
-    }
-
-    .welcome-content p {
-        color: #5d4037;
-        margin-bottom: 2rem;
-        font-size: 1.1rem;
-    }
-
-    .features-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2.5rem;
-    }
-
-    .feature-card {
-        background-color: rgba(255, 255, 255, 0.8);
-        border-radius: var(--border-radius);
-        padding: 1.5rem;
-        text-align: center;
-        transition: transform 0.3s, box-shadow 0.3s;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-    }
-
-    .feature-icon {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-        color: #e07b39;
-        display: inline-block;
-    }
-
-    .feature-card h3 {
-        color: #5d4037;
-        margin-bottom: 0.5rem;
-    }
-
-    .feature-card p {
-        color: #5d4037;
-        margin-bottom: 0;
-        font-size: 0.9rem;
-    }
-
-    .start-button {
-        background-color: #e07b39;
-        border: none;
-        padding: 0.75rem 2rem;
-        font-size: 1.2rem;
-        font-weight: 600;
-        transition: transform 0.3s, background-color 0.3s;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        color: white;
-    }
-
-    .start-button:hover {
-        background-color: #c56a2d;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Game Status Panel */
-    .game-status-panel {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        background-color: white;
-        padding: 0.75rem 1.25rem;
-        border-radius: var(--border-radius);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    .status-indicator {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding-right: 1.5rem;
-        border-right: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    .status-indicator.running {
-        color: var(--success);
-    }
-
-    .status-indicator.paused {
-        color: var(--warning);
-    }
-
-    .status-counts {
-        display: flex;
-        align-items: center;
-        gap: 1.25rem;
-    }
-
-    .status-count {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .lion-count {
-        color: var(--danger);
-    }
-
-    .antelope-count {
-        color: var(--success);
-    }
-
-    /* Dashboard layout */
     .game-dashboard {
         display: flex;
         flex-direction: column;
@@ -515,56 +100,6 @@
         overflow: hidden;
     }
 
-    .dashboard-controls {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        background-color: #f8f0e3;
-        padding: 0.75rem;
-        border-radius: var(--border-radius);
-        box-shadow: var(--card-shadow);
-    }
-
-    .controls-group {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .controls-group .btn {
-        font-weight: 600;
-        padding: 0.3rem 0.75rem;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-        border: none;
-        font-size: 0.9rem;
-    }
-
-    .controls-group .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    .controls-group .btn-success {
-        background-color: #5cb85c;
-    }
-
-    .controls-group .btn-danger {
-        background-color: #d9534f;
-    }
-
-    .controls-group .btn-warning {
-        background-color: #f0ad4e;
-    }
-
-    .controls-group .btn-info {
-        background-color: #5bc0de;
-    }
-
-    .controls-group .btn-secondary {
-        background-color: #6c757d;
-        color: white;
-    }
-
-    /* Game content layout */
     .game-content {
         display: grid;
         grid-template-columns: 1fr 280px;
@@ -574,36 +109,6 @@
         overflow: hidden;
     }
 
-    /* Game field */
-    .game-field-container {
-        background-color: #f8f0e3;
-        border-radius: var(--border-radius);
-        box-shadow: var(--card-shadow);
-        padding: 0.5rem;
-        overflow: auto;
-        min-height: 0;
-        max-height: none;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        flex: 1;
-    }
-
-    .game-field {
-        position: relative;
-        border: 2px solid #5d4037;
-        border-radius: var(--border-radius);
-        background-color: #8ba446;
-        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239e9764' fill-opacity='0.25'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        width: 100% !important;
-        height: 100% !important;
-        max-width: none;
-        max-height: none;
-        margin: 0;
-    }
-
-    /* Sidebar */
     .sidebar-container {
         display: grid;
         grid-template-rows: auto 1fr;
@@ -612,296 +117,6 @@
         overflow: hidden;
     }
 
-    /* Animal details panel */
-    .animal-details-panel {
-        background-color: white;
-        border-radius: var(--border-radius);
-        box-shadow: var(--card-shadow);
-        overflow: hidden;
-        max-height: none;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .panel-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5rem 0.75rem;
-        background-color: #f8f0e3;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        flex-shrink: 0;
-    }
-
-    .panel-header h3 {
-        margin: 0;
-        font-size: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .close-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #5d4037;
-        opacity: 0.7;
-        transition: opacity 0.2s;
-        padding: 0.25rem;
-        font-size: 0.8rem;
-    }
-
-    .close-btn:hover {
-        opacity: 1;
-    }
-
-    .detail-item {
-        padding: 0.5rem 0.75rem;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        font-size: 0.9rem;
-    }
-
-    .detail-label {
-        display: block;
-        color: #6c757d;
-        font-size: 0.7rem;
-        margin-bottom: 0.2rem;
-    }
-
-    .detail-value {
-        font-weight: 500;
-        color: #5d4037;
-        font-size: 0.9rem;
-    }
-
-    .health-indicator {
-        margin-top: 0.2rem;
-    }
-
-    .health-indicator small {
-        display: block;
-        text-align: right;
-        color: #6c757d;
-        margin-top: 0.2rem;
-        font-size: 0.7rem;
-    }
-
-    /* Log panel */
-    .game-log-panel {
-        background-color: white;
-        border-radius: var(--border-radius);
-        box-shadow: var(--card-shadow);
-        overflow: hidden;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-    }
-
-    .game-log-panel h3 {
-        margin: 0;
-        padding: 1rem;
-        background-color: #f8f0e3;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        font-size: 1.25rem;
-    }
-
-    .log-container {
-        padding: 0.5rem;
-        overflow-y: auto;
-        background-color: #f8f0e3;
-        flex: 1;
-        min-height: 0;
-    }
-
-    .log-entry {
-        padding: 0.5rem;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        font-size: 0.9rem;
-    }
-
-    .log-entry:last-child {
-        border-bottom: none;
-    }
-
-    /* Animals */
-    .animal {
-        position: absolute;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 1rem;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.2s ease-out;
-        z-index: 1;
-    }
-
-    .animal.selected {
-        box-shadow: 0 0 0 2px #fff, 0 0 0 3px #e07b39;
-        z-index: 10;
-        transform: scale(1.1);
-    }
-
-    .lion {
-        color: #ff4136;
-        text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-    }
-
-    .antelope {
-        color: #3d9970;
-        text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-    }
-
-    /* Modal */
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-
-    .modal-panel {
-        background-color: white;
-        border-radius: var(--border-radius);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        width: 100%;
-        max-width: 450px;
-        animation: fadeIn 0.3s;
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    .modal-header h3 {
-        margin: 0;
-        font-size: 1.25rem;
-    }
-
-    .modal-body {
-        padding: 1.5rem;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 2rem 1rem;
-        color: #6c757d;
-    }
-
-    .empty-state i {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-    }
-
-    .empty-state p {
-        margin-bottom: 0.5rem;
-        font-size: 1.1rem;
-    }
-
-    .loading-spinner {
-        text-align: center;
-        padding: 2rem 1rem;
-    }
-
-    .loading-spinner .spinner-border {
-        margin-bottom: 1rem;
-        color: #e07b39;
-    }
-
-    .saved-games-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        max-height: 300px;
-        overflow-y: auto;
-    }
-
-    .saved-game-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem;
-        border-radius: var(--border-radius);
-        background-color: #f8f0e3;
-        transition: background-color 0.2s;
-    }
-
-    .saved-game-item:hover {
-        background-color: rgba(0, 0, 0, 0.03);
-    }
-
-    .saved-game-info h4 {
-        margin: 0;
-        font-size: 1rem;
-    }
-
-    .saved-date {
-        font-size: 0.8rem;
-        color: #6c757d;
-    }
-
-    .saved-game-stats {
-        display: flex;
-        gap: 10px;
-        font-size: 0.8rem;
-        margin-top: 3px;
-    }
-
-    .iteration-count {
-        color: #6c757d;
-    }
-
-    .animal-count {
-        display: flex;
-        align-items: center;
-        gap: 3px;
-    }
-
-    .animal-indicator {
-        color: #5c9f24;
-        font-size: 0.7rem;
-    }
-
-    .lion-indicator {
-        display: none;
-    }
-
-    .antelope-indicator {
-        display: none;
-    }
-
-    .saved-game-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    /* Keyframes animation */
-    @@keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* Responsive adjustments */
     @@media only screen and (max-width: 992px) {
         .game-content {
             grid-template-columns: 1fr;
@@ -921,31 +136,6 @@
         .sidebar-container {
             grid-template-columns: 1fr;
         }
-
-        .controls-group {
-            flex-direction: column;
-        }
-
-        .controls-group:not(:last-child) {
-            padding-right: 0;
-            border-right: none;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-        }
-    }
-
-    .detail-actions {
-        display: flex;
-        gap: 0.5rem;
-        padding: 0.5rem 0.75rem;
-        justify-content: space-between;
-    }
-
-    .detail-actions .btn {
-        flex: 1;
-        font-size: 0.8rem;
-        font-weight: 600;
-        padding: 0.3rem 0.5rem;
     }
 </style>
 
@@ -957,6 +147,7 @@
     private System.Timers.Timer? _detailsUpdateTimer;
     private string _saveName = string.Empty;
     private string _saveErrorMessage = string.Empty;
+    private string _saveSuccessMessage = string.Empty;
     private string _loadErrorMessage = string.Empty;
     private bool _isSaving = false;
     private bool _isLoadingGames = false;
@@ -965,7 +156,6 @@
     private bool _showSavePanel = false;
     private bool _showLoadPanel = false;
 
-    // Static handler for JavaScript interop
     [JSInvokable]
     public static Task HandleNavigationAttempt(string destination)
     {
@@ -974,7 +164,6 @@
 
     private static Game? _instance;
 
-    // Handle navigation attempt from JavaScript
     private async Task HandleNavigation(string destination)
     {
         if (GameService.IsGameRunning)
@@ -1009,7 +198,6 @@
             {
                 await JSRuntime.InvokeVoidAsync("window.setupGame");
 
-                // Re-enable navigation warning if game is already running
                 if (GameService.IsGameRunning)
                 {
                     await SetBeforeUnloadWarning(true);
@@ -1022,7 +210,6 @@
         }
     }
 
-    // This is now a backup method in case JS interception fails
     private void OnLocationChanged(object sender, LocationChangedEventArgs e)
     {
         if (GameService.IsGameRunning && !e.Location.EndsWith("/game"))
@@ -1209,6 +396,7 @@
         _showSavePanel = !_showSavePanel;
         _saveName = string.Empty;
         _saveErrorMessage = string.Empty;
+        _saveSuccessMessage = string.Empty;
         StateHasChanged();
     }
 
@@ -1239,7 +427,6 @@
                 }
                 catch
                 {
-                    // If we can't parse the JSON, just add the basic info
                     _gameSaves.Add(new GameSaveViewModel
                     {
                         Id = save.Id,
@@ -1249,7 +436,6 @@
                 }
             }
 
-            // Sort by creation date (newest first)
             _gameSaves = _gameSaves.OrderByDescending(s => s.CreatedAt).ToList();
             _isLoadingGames = false;
         }
@@ -1273,27 +459,22 @@
 
         try
         {
-            // Extract animal counts and iteration data from the game state JSON
             if (!string.IsNullOrEmpty(save.GameStateJson))
             {
                 var gameState = JsonSerializer.Deserialize<GameState>(save.GameStateJson);
                 if (gameState != null)
                 {
-                    // Count animals by type for detailed info
                     viewModel.LionCount = gameState.Animals.Count(a => a.Type == GameConstants.LionName);
                     viewModel.AntelopeCount = gameState.Animals.Count(a => a.Type == GameConstants.AntelopeName);
 
-                    // Count all animals for total (regardless of type)
                     viewModel.TotalAnimals = gameState.Animals.Count;
 
-                    // Use the highest animal age as iteration count (approximation)
                     viewModel.IterationCount = gameState.Animals.Any() ? gameState.Animals.Max(a => a.Age) : 0;
                 }
             }
         }
         catch
         {
-            // If we can't parse the JSON, just return the basic info
         }
 
         return viewModel;
@@ -1304,24 +485,37 @@
         if (string.IsNullOrWhiteSpace(_saveName))
         {
             _saveErrorMessage = "Please enter a name for your save";
+            _saveSuccessMessage = string.Empty;
+            StateHasChanged();
             return;
         }
 
         try
         {
             _isSaving = true;
+            _saveErrorMessage = string.Empty;
+            _saveSuccessMessage = string.Empty;
             StateHasChanged();
 
             string gameStateJson = GameService.SerializeGameState();
             await GameSaveService.CreateSaveAsync(_saveName, gameStateJson, _userId);
 
             _isSaving = false;
-            _showSavePanel = false;
+            _saveSuccessMessage = "Game saved successfully!";
             GameService.LogMessage(WebConstants.SaveGameSuccessMessage);
+            StateHasChanged();
+
+            // Auto-hide the success message after 3 seconds
+            await Task.Delay(3000);
+            _showSavePanel = false;
+            _saveName = string.Empty;
+            _saveSuccessMessage = string.Empty;
+            StateHasChanged();
         }
         catch (Exception ex)
         {
             _saveErrorMessage = "Error saving game: " + ex.Message;
+            _saveSuccessMessage = string.Empty;
             _isSaving = false;
             StateHasChanged();
         }
@@ -1363,7 +557,6 @@
 
             await GameSaveService.DeleteSaveAsync(saveId, _userId);
 
-            // Refresh the saves list
             var saves = await GameSaveService.GetSavesForUserAsync(_userId);
             _gameSaves = new List<GameSaveViewModel>();
 
@@ -1375,7 +568,6 @@
                 }
                 catch
                 {
-                    // If we can't parse the JSON, just add the basic info
                     _gameSaves.Add(new GameSaveViewModel
                     {
                         Id = save.Id,
@@ -1385,7 +577,6 @@
                 }
             }
 
-            // Sort by creation date (newest first)
             _gameSaves = _gameSaves.OrderByDescending(s => s.CreatedAt).ToList();
 
             StateHasChanged();

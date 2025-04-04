@@ -1,0 +1,133 @@
+@namespace Savanna.Web.Components.Game
+
+<div class="modal-overlay" @onclick:stopPropagation>
+    <div class="modal-panel">
+        <div class="modal-header">
+            <h3>Save Game</h3>
+            <button type="button" class="btn-close" @onclick="OnToggleSavePanel"></button>
+        </div>
+        <div class="modal-body">
+            @if (!string.IsNullOrEmpty(SaveErrorMessage))
+            {
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    @SaveErrorMessage
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(SaveSuccessMessage))
+            {
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    @SaveSuccessMessage
+                </div>
+            }
+            <div class="form-group mb-3">
+                <label for="saveName" class="form-label">Save Name</label>
+                <input type="text" class="form-control" id="saveName" @oninput="HandleInput" value="@SaveName"
+                    placeholder="Enter a name for your save" />
+            </div>
+            <button class="btn btn-primary w-100" @onclick="HandleSaveClick" disabled="@IsSaving">
+                @if (IsSaving)
+                {
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span> Saving...</span>
+                }
+                else
+                {
+                    <span>Save Game</span>
+                }
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-panel {
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        max-width: 450px;
+        animation: fadeIn 0.3s;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.25rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+@code {
+    private string _saveName = string.Empty;
+
+    [Parameter]
+    public string SaveName { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> SaveNameChanged { get; set; }
+
+    [Parameter]
+    public string SaveErrorMessage { get; set; } = string.Empty;
+
+    [Parameter]
+    public string SaveSuccessMessage { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool IsSaving { get; set; }
+
+    [Parameter]
+    public EventCallback OnToggleSavePanel { get; set; }
+
+    [Parameter]
+    public EventCallback OnSaveGame { get; set; }
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        if (e.Value is string value)
+        {
+            await SaveNameChanged.InvokeAsync(value);
+        }
+    }
+
+    private async Task HandleSaveClick()
+    {
+        await OnSaveGame.InvokeAsync();
+    }
+}
