@@ -13,6 +13,7 @@
 @using Savanna.Web.Models
 @using System.Text.Json
 @using Savanna.Web.Components.Game
+@using Savanna.Web.Components.Shared
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject IGameService GameService
@@ -77,6 +78,13 @@
 
 <NavigationWarningModal @ref="_navigationWarningModal" OnCancelNavigation="CancelNavigation"
     OnConfirmNavigation="ConfirmNavigation" />
+
+@if (_showDeleteConfirmation)
+{
+    <DeleteConfirmationModal Message="Are you sure you want to delete this save game? This action cannot be undone."
+        ItemName="@_pendingSaveName" ErrorMessage="@_deleteErrorMessage" OnCancel="CancelDeleteSave"
+        OnConfirm="ConfirmDeleteSave" />
+}
 
 <style>
     .game-container {
@@ -155,6 +163,10 @@
     private string _userId = string.Empty;
     private bool _showSavePanel = false;
     private bool _showLoadPanel = false;
+    private bool _showDeleteConfirmation = false;
+    private string _deleteErrorMessage = string.Empty;
+    private int _pendingDeleteSaveId = -1;
+    private string _pendingSaveName = string.Empty;
 
     [JSInvokable]
     public static Task HandleNavigationAttempt(string destination)
@@ -549,10 +561,36 @@
 
     private async Task DeleteSave(int saveId)
     {
+        var saveToDelete = _gameSaves.FirstOrDefault(s => s.Id == saveId);
+        if (saveToDelete != null)
+        {
+            _pendingDeleteSaveId = saveId;
+            _pendingSaveName = saveToDelete.Name;
+            _showDeleteConfirmation = true;
+            _deleteErrorMessage = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    private void CancelDeleteSave()
+    {
+        _showDeleteConfirmation = false;
+        _pendingDeleteSaveId = -1;
+        _pendingSaveName = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmDeleteSave()
+    {
         try
         {
-            bool confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this save?");
-            if (!confirmed)
+            _showDeleteConfirmation = false;
+            int saveId = _pendingDeleteSaveId;
+            string saveName = _pendingSaveName;
+            _pendingDeleteSaveId = -1;
+            _pendingSaveName = string.Empty;
+
+            if (saveId < 0)
                 return;
 
             await GameSaveService.DeleteSaveAsync(saveId, _userId);
@@ -580,7 +618,7 @@
             _gameSaves = _gameSaves.OrderByDescending(s => s.CreatedAt).ToList();
 
             StateHasChanged();
-            GameService.LogMessage("Game save deleted");
+            GameService.LogMessage($"Game save '{saveName}' deleted");
         }
         catch (Exception ex)
         {

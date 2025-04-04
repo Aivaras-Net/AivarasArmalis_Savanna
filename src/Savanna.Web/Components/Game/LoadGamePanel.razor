@@ -1,109 +1,55 @@
 @namespace Savanna.Web.Components.Game
 @using Savanna.Web.Models
+@using Savanna.Web.Components.Shared
 
-<div class="modal-overlay" @onclick:stopPropagation>
-    <div class="modal-panel">
-        <div class="modal-header">
-            <h3>Load Game</h3>
-            <button type="button" class="btn-close" @onclick="OnToggleLoadPanel"></button>
+<ModalPanel Title="Load Game" ErrorMessage="@LoadErrorMessage" OnClose="OnToggleLoadPanel">
+    @if (IsLoadingGames)
+    {
+        <div class="loading-spinner">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Loading your saved games...</p>
         </div>
-        <div class="modal-body">
-            @if (!string.IsNullOrEmpty(LoadErrorMessage))
+    }
+    else if (GameSaves.Count == 0)
+    {
+        <div class="empty-state">
+            <i class="bi bi-archive"></i>
+            <p>No saved games found</p>
+            <small>Save your current game to see it here</small>
+        </div>
+    }
+    else
+    {
+        <div class="saved-games-list">
+            @foreach (var save in GameSaves)
             {
-                <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    @LoadErrorMessage
-                </div>
-            }
-
-            @if (IsLoadingGames)
-            {
-                <div class="loading-spinner">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p>Loading your saved games...</p>
-                </div>
-            }
-            else if (GameSaves.Count == 0)
-            {
-                <div class="empty-state">
-                    <i class="bi bi-archive"></i>
-                    <p>No saved games found</p>
-                    <small>Save your current game to see it here</small>
-                </div>
-            }
-            else
-            {
-                <div class="saved-games-list">
-                    @foreach (var save in GameSaves)
-                    {
-                        <div class="saved-game-item">
-                            <div class="saved-game-info">
-                                <h4>@save.Name</h4>
-                                <span class="saved-date">@save.FormattedDate</span>
-                                <div class="saved-game-stats">
-                                    <span class="iteration-count">Iteration: @save.IterationCount</span>
-                                    <span class="animal-count"><i class="bi bi-circle-fill animal-indicator"></i>
-                                        @save.TotalAnimals Animals</span>
-                                </div>
-                            </div>
-                            <div class="saved-game-actions">
-                                <button class="btn btn-sm btn-primary" @onclick="() => OnLoadGame.InvokeAsync(save.Id)">
-                                    <i class="bi bi-play-fill"></i> Load
-                                </button>
-                                <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteSave.InvokeAsync(save.Id)">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
+                <div class="saved-game-item">
+                    <div class="saved-game-info">
+                        <h4>@save.Name</h4>
+                        <span class="saved-date">@save.FormattedDate</span>
+                        <div class="saved-game-stats">
+                            <span class="iteration-count">Iteration: @save.IterationCount</span>
+                            <span class="animal-count"><i class="bi bi-circle-fill animal-indicator"></i>
+                                @save.TotalAnimals Animals</span>
                         </div>
-                    }
+                    </div>
+                    <div class="saved-game-actions">
+                        <button class="btn btn-sm btn-primary" @onclick="() => OnLoadGame.InvokeAsync(save.Id)">
+                            <i class="bi bi-play-fill"></i> Load
+                        </button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteSave.InvokeAsync(save.Id)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
                 </div>
             }
         </div>
-    </div>
-</div>
+    }
+</ModalPanel>
 
 <style>
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-    }
-
-    .modal-panel {
-        background-color: white;
-        border-radius: var(--border-radius);
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-        width: 100%;
-        max-width: 450px;
-        animation: fadeIn 0.3s;
-    }
-
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    .modal-header h3 {
-        margin: 0;
-        font-size: 1.25rem;
-    }
-
-    .modal-body {
-        padding: 1.5rem;
-    }
-
     .empty-state {
         text-align: center;
         padding: 2rem 1rem;
@@ -189,18 +135,6 @@
         display: flex;
         gap: 0.5rem;
     }
-
-    @@keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
 </style>
 
 @code {
@@ -208,7 +142,7 @@
     public List<GameSaveViewModel> GameSaves { get; set; } = new();
 
     [Parameter]
-    public string LoadErrorMessage { get; set; }
+    public string LoadErrorMessage { get; set; } = string.Empty;
 
     [Parameter]
     public bool IsLoadingGames { get; set; }
