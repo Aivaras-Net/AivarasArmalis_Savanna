@@ -137,5 +137,18 @@ namespace Savanna.Web.Services.Interfaces
         /// Event fired when an animal is selected or deselected
         /// </summary>
         event EventHandler<AnimalDetailViewModel?> AnimalSelectionChanged;
+
+        /// <summary>
+        /// Spawns a custom animal type from a plugin
+        /// </summary>
+        /// <param name="animalType">Type of animal to spawn</param>
+        /// <returns>True if the animal was spawned successfully</returns>
+        bool SpawnPluginAnimal(string animalType);
+
+        /// <summary>
+        /// Gets a list of available plugin animals
+        /// </summary>
+        /// <returns>List of animal names from plugins</returns>
+        IEnumerable<string> GetAvailablePluginAnimals();
     }
 }

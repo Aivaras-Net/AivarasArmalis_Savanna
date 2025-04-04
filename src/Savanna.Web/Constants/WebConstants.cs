@@ -171,5 +171,14 @@ namespace Savanna.Web.Constants
         public const string IdentityPasswordConfigPath = "Identity:Password";
 
         public const string SaveDateFormat = "yyyy-MM-dd HH:mm:ss";
+
+        public const string PluginsDirectory = "Plugins";
+        public const string PluginFileSearchPattern = "*.dll";
+        public const string PluginLoadedMessage = "Loaded plugin animal: {0}";
+        public const string PluginLoadFailedMessage = "Failed to load plugin: {0}. Error: {1}";
+        public const string PluginAnimalSpawnedMessage = "{0} spawned at ({1}, {2})";
+        public const string FailedToSpawnPluginAnimalMessage = "Failed to spawn {0}";
+        public const string PluginsPath = "/admin/plugins";
+        public const string PluginDetailsPath = "/admin/plugins/{0}";
     }
 }

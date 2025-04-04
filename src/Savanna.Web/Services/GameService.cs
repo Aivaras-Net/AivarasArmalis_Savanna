@@ -20,6 +20,7 @@ namespace Savanna.Web.Services
     {
         private readonly ILogger<GameService> _logger;
         private readonly IGameRenderer _gameRenderer;
+        private readonly IPluginService _pluginService;
         private readonly Random _random = new Random();
         private readonly List<string> _gameLogs = new List<string>();
         private readonly System.Timers.Timer _gameTimer;
@@ -67,11 +68,14 @@ namespace Savanna.Web.Services
 
         public GameService(
             ILogger<GameService> logger,
-            IGameRenderer gameRenderer)
+            IGameRenderer gameRenderer,
+            IAnimalFactory animalFactory,
+            IPluginService pluginService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _gameRenderer = gameRenderer ?? throw new ArgumentNullException(nameof(gameRenderer));
-            _animalFactory = new AnimalFactory();
+            _animalFactory = animalFactory ?? throw new ArgumentNullException(nameof(animalFactory));
+            _pluginService = pluginService ?? throw new ArgumentNullException(nameof(pluginService));
 
             _gameTimer = new System.Timers.Timer(TimerInterval);
             _gameTimer.Elapsed += GameTimerElapsed;
@@ -340,14 +344,12 @@ namespace Savanna.Web.Services
 
                 // Load animals
                 var animalFactory = new AnimalFactory();
-                var animalNameToTypeMap = new Dictionary<string, Type>
-                {
-                    { GameConstants.LionName, typeof(Lion) },
-                    { GameConstants.AntelopeName, typeof(Antelope) }
-                };
 
                 foreach (var serializedAnimal in gameState.Animals)
                 {
+                    bool animalCreated = false;
+
+                    // First try to create standard animals
                     if (animalFactory.TryCreateAnimal(serializedAnimal.Type, out var animal))
                     {
                         animal.Position = new Position(serializedAnimal.PositionX, serializedAnimal.PositionY);
@@ -355,8 +357,20 @@ namespace Savanna.Web.Services
 
                         // Add the animal to the game
                         _gameEngine.AddAnimal(animal, false);
+                        animalCreated = true;
                     }
-                    else
+                    // Then try to create plugin animals
+                    else if (_pluginService.TryCreatePluginAnimal(serializedAnimal.Type, out var pluginAnimal))
+                    {
+                        pluginAnimal.Position = new Position(serializedAnimal.PositionX, serializedAnimal.PositionY);
+                        pluginAnimal.Health = serializedAnimal.Health;
+
+                        // Add the plugin animal to the game
+                        _gameEngine.AddAnimal(pluginAnimal, false);
+                        animalCreated = true;
+                    }
+
+                    if (!animalCreated)
                     {
                         LogMessage(string.Format(WebConstants.FailedToLoadAnimalTypeMessage, serializedAnimal.Type));
                     }
@@ -369,6 +383,41 @@ namespace Savanna.Web.Services
                 LogMessage(string.Format(WebConstants.FailedToDeserializeGameStateMessage, ex.Message));
                 _logger.LogError(ex, WebConstants.FailedDeserializeGameStateMessage);
             }
+        }
+
+        /// <summary>
+        /// Spawns a custom animal type from a plugin
+        /// </summary>
+        /// <param name="animalType">Type of animal to spawn</param>
+        /// <returns>True if the animal was spawned successfully</returns>
+        public bool SpawnPluginAnimal(string animalType)
+        {
+            if (!_isGameRunning || _gameEngine == null)
+                return false;
+
+            var position = GetRandomPosition();
+            if (_pluginService.TryCreatePluginAnimal(animalType, out var animal))
+            {
+                animal.Position = position;
+                _gameEngine.AddAnimal(animal);
+                LogMessage(string.Format(WebConstants.PluginAnimalSpawnedMessage, animalType, position.X, position.Y));
+                OnGameStateChanged();
+                return true;
+            }
+            else
+            {
+                LogMessage(string.Format(WebConstants.FailedToSpawnPluginAnimalMessage, animalType));
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets a list of available plugin animals
+        /// </summary>
+        /// <returns>List of animal names from plugins</returns>
+        public IEnumerable<string> GetAvailablePluginAnimals()
+        {
+            return _pluginService.GetAvailablePluginAnimals();
         }
 
         public void Dispose()

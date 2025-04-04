@@ -1,0 +1,248 @@
+@page "/animal-info"
+@using Savanna.Web.Services.Interfaces
+@using Savanna.Web.Constants
+@using Savanna.Domain.Interfaces
+@using Savanna.Web.Services
+@using System.Reflection
+@using System.Text.Json
+@using Savanna.Core.Constants
+@using Microsoft.AspNetCore.Components.Web
+@using Savanna.Core.Config
+
+@inject IPluginService PluginService
+@inject IGameService GameService
+@inject ILogger<AnimalInformation> Logger
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Animal Information</PageTitle>
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h3>Animal Information</h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="mb-3">Animals</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Source</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Default Animals -->
+                                <tr>
+                                    <td>Lion</td>
+                                    <td><span class="badge bg-danger">Predator</span></td>
+                                    <td>Savanna.Core</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-primary"
+                                            @onclick="() => ViewDefaultAnimalDetails(GameConstants.LionName)">
+                                            Details
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Antelope</td>
+                                    <td><span class="badge bg-success">Prey</span></td>
+                                    <td>Savanna.Core</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-primary"
+                                            @onclick="() => ViewDefaultAnimalDetails(GameConstants.AntelopeName)">
+                                            Details
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Plugin Animals -->
+                                @foreach (var animalName in _availableAnimals)
+                                {
+                                    var info = PluginService.GetPluginAnimalInfo(animalName);
+                                    <tr>
+                                        <td>@info.Name</td>
+                                        <td>
+                                            @if (info.IsPredator)
+                                            {
+                                                <span class="badge bg-danger">Predator</span>
+                                            }
+                                            else if (info.IsPrey)
+                                            {
+                                                <span class="badge bg-success">Prey</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">Unknown</span>
+                                            }
+                                        </td>
+                                        <td>@info.SourceAssembly</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-primary"
+                                                @onclick="() => ViewAnimalDetails(animalName)">
+                                                Details
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (_showAnimalDetailsModal)
+{
+    <div class="modal" tabindex="-1" role="dialog" style="display: block; background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">@_selectedAnimal?.Name Details</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-header bg-light">JSON Representation</div>
+                        <div class="card-body">
+                            <pre class="bg-dark text-light p-3 rounded"><code>@_selectedAnimalJson</code></pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(_statusMessage))
+{
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header @_statusMessageClass">
+                <strong class="me-auto text-white">@_statusMessageTitle</strong>
+                <button type="button" class="btn-close btn-close-white" @onclick="() => _statusMessage = null"></button>
+            </div>
+            <div class="toast-body">
+                @_statusMessage
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<string> _availableAnimals = new();
+    private PluginAnimalInfo? _selectedAnimal;
+    private string _selectedAnimalJson = "{}";
+    private string? _statusMessage;
+    private string _statusMessageClass = "";
+    private string _statusMessageTitle = "";
+    private bool _showAnimalDetailsModal = false;
+    private string? _selectedDefaultAnimal;
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            _availableAnimals = PluginService.GetAvailablePluginAnimals().ToList();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading plugin animals");
+            _statusMessage = $"Error loading plugin animals: {ex.Message}";
+            _statusMessageClass = "bg-danger text-white";
+            _statusMessageTitle = "Error";
+        }
+    }
+
+    private void ViewAnimalDetails(string animalName)
+    {
+        try
+        {
+            _selectedAnimal = PluginService.GetPluginAnimalInfo(animalName);
+            _selectedAnimalJson = JsonSerializer.Serialize(_selectedAnimal, new JsonSerializerOptions { WriteIndented = true });
+            _showAnimalDetailsModal = true;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading animal details for {AnimalName}", animalName);
+            _statusMessage = $"Error loading animal details: {ex.Message}";
+            _statusMessageClass = "bg-danger text-white";
+            _statusMessageTitle = "Error";
+        }
+    }
+
+    private void ViewDefaultAnimalDetails(string animalName)
+    {
+        try
+        {
+            _selectedDefaultAnimal = animalName;
+            _selectedAnimal = GetDefaultAnimalInfo(animalName);
+            _selectedAnimalJson = JsonSerializer.Serialize(_selectedAnimal, new JsonSerializerOptions { WriteIndented = true });
+            _showAnimalDetailsModal = true;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading default animal details for {AnimalName}", animalName);
+            _statusMessage = $"Error loading animal details: {ex.Message}";
+            _statusMessageClass = "bg-danger text-white";
+            _statusMessageTitle = "Error";
+        }
+    }
+
+    private PluginAnimalInfo GetDefaultAnimalInfo(string animalName)
+    {
+        var animalConfig = ConfigurationService.GetAnimalConfig(animalName);
+
+        var defaultAnimalInfo = new PluginAnimalInfo
+        {
+            Name = animalName,
+            AnimalType = animalName,
+            SourceAssembly = "Savanna.Core",
+            IsPredator = animalConfig.Predator != null,
+            IsPrey = animalConfig.Prey != null,
+            Speed = animalConfig.Speed,
+            VisionRange = animalConfig.VisionRange,
+            SpecialActionChance = animalConfig.SpecialActionChance
+        };
+
+        // Add predator-specific properties if applicable
+        if (animalConfig.Predator != null)
+        {
+            defaultAnimalInfo.HuntingRange = animalConfig.Predator.HuntingRange;
+            defaultAnimalInfo.HealthGainFromKill = animalConfig.Predator.HealthGainFromKill;
+
+            if (animalConfig.Predator.RoarRange > 0)
+            {
+                defaultAnimalInfo.RoarRange = animalConfig.Predator.RoarRange;
+            }
+        }
+
+        // Add prey-specific properties if applicable
+        if (animalConfig.Prey != null)
+        {
+            defaultAnimalInfo.HealthFromGrazing = animalConfig.Prey.HealthFromGrazing;
+        }
+
+        return defaultAnimalInfo;
+    }
+
+    private void CloseModal()
+    {
+        _showAnimalDetailsModal = false;
+        _selectedAnimal = null;
+        _selectedDefaultAnimal = null;
+        StateHasChanged();
+    }
+}

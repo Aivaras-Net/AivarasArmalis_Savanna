@@ -1,4 +1,5 @@
 @namespace Savanna.Web.Components.Game
+@using Savanna.Web.Services.Interfaces
 
 <div class="dashboard-controls">
     <div class="controls-group">
@@ -18,6 +19,16 @@
         <button class="btn btn-danger" @onclick="OnSpawnLion">
             <i class="bi bi-plus-circle"></i> Add Lion
         </button>
+
+        @if (PluginAnimals != null && PluginAnimals.Any())
+        {
+            @foreach (var animal in PluginAnimals)
+            {
+                <button class="btn btn-primary" @onclick="() => OnSpawnPluginAnimal.InvokeAsync(animal)">
+                    <i class="bi bi-plus-circle"></i> Add @animal
+                </button>
+            }
+        }
     </div>
 
     <div class="controls-group">
@@ -53,12 +64,16 @@
         gap: 0.5rem;
     }
 
-    .controls-group .btn {
+    .controls-group .btn,
+    .dropdown-item {
         font-weight: 600;
         padding: 0.3rem 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .controls-group .btn {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
         border: none;
-        font-size: 0.9rem;
     }
 
     .controls-group .btn:hover {
@@ -87,6 +102,16 @@
         color: white;
     }
 
+    .controls-group .btn-primary {
+        background-color: #0d6efd;
+    }
+
+    .dropdown-menu {
+        min-width: 10rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
     @@media only screen and (max-width: 768px) {
         .controls-group {
             flex-direction: column;
@@ -109,6 +134,9 @@
     public bool UseLetterDisplay { get; set; }
 
     [Parameter]
+    public IEnumerable<string> PluginAnimals { get; set; }
+
+    [Parameter]
     public EventCallback OnTogglePause { get; set; }
 
     [Parameter]
@@ -119,6 +147,9 @@
 
     [Parameter]
     public EventCallback OnSpawnLion { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnSpawnPluginAnimal { get; set; }
 
     [Parameter]
     public EventCallback OnToggleDisplayMode { get; set; }

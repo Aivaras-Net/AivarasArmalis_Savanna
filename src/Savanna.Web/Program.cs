@@ -73,6 +73,7 @@ namespace Savanna.Web
             builder.Services.AddSingleton<IGameRenderer, WebGameRenderer>();
             builder.Services.AddScoped<IGameService, GameService>();
             builder.Services.AddSingleton<IAnimalFactory, AnimalFactory>();
+            builder.Services.AddSingleton<IPluginService, PluginService>();
             builder.Services.AddScoped<IGameSaveService, GameSaveService>();
             builder.Services.AddHttpClient();
 
@@ -126,6 +127,11 @@ namespace Savanna.Web
 
                     var initializer = services.GetRequiredService<IApplicationInitializer>();
                     initializer.InitializeAsync().Wait();
+
+                    var pluginService = services.GetRequiredService<IPluginService>();
+                    var pluginsFolder = Path.Combine(app.Environment.ContentRootPath, WebConstants.PluginsDirectory);
+                    logger.LogInformation("Loading plugins from {PluginsFolder}", pluginsFolder);
+                    pluginService.LoadPlugins(pluginsFolder);
                 }
                 catch (Exception ex)
                 {

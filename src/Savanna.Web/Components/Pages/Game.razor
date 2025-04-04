@@ -48,7 +48,8 @@
             <GameControls IsPaused="GameService.IsPaused" UseLetterDisplay="GameService.UseLetterDisplay"
                 OnTogglePause="TogglePause" OnStopGame="StopGame" OnSpawnAntelope="SpawnAntelope" OnSpawnLion="SpawnLion"
                 OnToggleDisplayMode="ToggleDisplayMode" OnToggleSavePanel="ToggleSavePanel"
-                OnToggleLoadPanel="ToggleLoadPanel" />
+                OnToggleLoadPanel="ToggleLoadPanel" PluginAnimals="GameService.GetAvailablePluginAnimals()"
+                OnSpawnPluginAnimal="SpawnPluginAnimal" />
 
             @if (_showSavePanel)
             {
@@ -449,7 +450,8 @@
                     {
                         Id = save.Id,
                         Name = save.Name,
-                        CreatedAt = save.CreatedAt
+                        CreatedAt = save.CreatedAt,
+                        TotalAnimals = 0
                     });
                 }
             }
@@ -616,7 +618,8 @@
                     {
                         Id = save.Id,
                         Name = save.Name,
-                        CreatedAt = save.CreatedAt
+                        CreatedAt = save.CreatedAt,
+                        TotalAnimals = 0
                     });
                 }
             }
@@ -713,6 +716,11 @@
         {
             await ToggleLoadPanel();
         }
+    }
+
+    private async Task SpawnPluginAnimal(string animalType)
+    {
+        GameService.SpawnPluginAnimal(animalType);
     }
 
     public void Dispose()

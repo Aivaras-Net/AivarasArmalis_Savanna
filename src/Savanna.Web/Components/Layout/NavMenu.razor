@@ -31,13 +31,32 @@
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="buttons">
+            <NavLink class="nav-link" href="animal-info">
                 <div class="nav-icon">
-                    <i class="bi bi-controller"></i>
+                    <i class="bi bi-info-circle"></i>
                 </div>
-                <span>Controls</span>
+                <span>Animal Information</span>
             </NavLink>
         </div>
+
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <div class="nav-divider"></div>
+
+                <div class="nav-category px-3">
+                    <small>ADMIN</small>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="admin/dashboard">
+                        <div class="nav-icon">
+                            <i class="bi bi-speedometer2"></i>
+                        </div>
+                        <span>Dashboard</span>
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
         <div class="nav-divider"></div>
 
@@ -89,6 +108,14 @@
         height: 1px;
         background: rgba(255, 255, 255, 0.1);
         margin: 1rem 1rem;
+    }
+
+    .nav-category {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin: 0.5rem 0;
     }
 
     .bi {

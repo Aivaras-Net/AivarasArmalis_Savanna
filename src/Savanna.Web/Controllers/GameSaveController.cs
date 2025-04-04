@@ -51,7 +51,8 @@ namespace Savanna.Web.Controllers
                 {
                     Id = s.Id,
                     Name = s.Name,
-                    CreatedAt = s.CreatedAt
+                    CreatedAt = s.CreatedAt,
+                    TotalAnimals = 0
                 }).ToList();
 
                 return Ok(saveViewModels);
