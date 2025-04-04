@@ -180,5 +180,45 @@ namespace Savanna.Web.Constants
         public const string FailedToSpawnPluginAnimalMessage = "Failed to spawn {0}";
         public const string PluginsPath = "/admin/plugins";
         public const string PluginDetailsPath = "/admin/plugins/{0}";
+
+        public const string ErrorShowingNavigationWarningModalMessage = "Error showing navigation warning modal: {0}";
+        public const string ErrorSettingBeforeUnloadWarningMessage = "Error setting beforeunload warning: {0}";
+        public const string SaveNotFoundMessage = "Save not found";
+
+        public const string GameSaveDeletedMessage = "Game save '{0}' deleted";
+        public const string FailedToLoadSavedGamesMessage = "Failed to load saved games: {0}";
+        public const string PleaseEnterSaveNameMessage = "Please enter a name for your save";
+
+        public const string AnimalManuallyRemovedMessage = "{0} was manually removed from the simulation.";
+        public const string NewOffspringCreatedMessage = "New {0} offspring was manually created.";
+        public const string ErrorLoadingPluginAnimalsMessage = "Error loading plugin animals: {0}";
+        public const string ErrorLoadingAnimalDetailsMessage = "Error loading animal details: {0}";
+
+        public const string ErrorTitleText = "Error";
+        public const string SuccessTitleText = "Success";
+        public const string WarningTitleText = "Warning";
+        public const string InfoTitleText = "Information";
+
+        public const string RoleAddedSuccessMessage = "Role '{0}' added successfully.";
+        public const string FailedToAddRoleMessage = "Failed to add role: {0}";
+        public const string RoleRemovedSuccessMessage = "Role '{0}' removed successfully.";
+        public const string FailedToRemoveRoleMessage = "Failed to remove role: {0}";
+        public const string FailedToLockAccountMessage = "Failed to lock account: {0}";
+        public const string FailedToUnlockAccountMessage = "Failed to unlock account: {0}";
+
+        public const string ErrorUpdatingProfileMessage = "Error updating profile: {0}";
+        public const string ErrorChangingPasswordMessage = "Error changing password: {0}";
+        public const string ErrorUpdatingEmailMessage = "Error updating email: {0}";
+        public const string ProfileUpdatedSuccessMessage = "Profile updated successfully.";
+        public const string PasswordChangedSuccessMessage = "Password changed successfully.";
+        public const string EmailUpdatedSuccessMessage = "Email updated successfully.";
+        public const string AllPasswordFieldsRequiredMessage = "Please fill in all password fields.";
+        public const string PasswordMismatchNewConfirmMessage = "The new password and confirmation password do not match.";
+        public const string EmailCannotBeEmptyMessage = "Email cannot be empty.";
+        public const string EmailSameAsCurrentMessage = "The new email is the same as the current email.";
+        public const string AccountLockedSuccessMessage = "Account locked successfully.";
+        public const string AccountUnlockedSuccessMessage = "Account unlocked successfully.";
+        public const string CannotLockLastAdminMessage = "Cannot lock the last Admin user account.";
+        public const string CannotRemoveLastAdminMessage = "Cannot remove the last Admin user from the system.";
     }
 }

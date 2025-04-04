@@ -2,6 +2,7 @@
 @using Microsoft.AspNetCore.Identity
 @using Savanna.Web.Models
 @using Microsoft.AspNetCore.Authorization
+@using Savanna.Web.Constants
 @attribute [Authorize]
 @rendermode InteractiveServer
 
@@ -189,12 +190,13 @@
 
         if (result.Succeeded)
         {
-            _statusMessage = "Profile updated successfully.";
+            _statusMessage = WebConstants.ProfileUpdatedSuccessMessage;
             _statusClass = "alert-success";
         }
         else
         {
-            _statusMessage = $"Error updating profile: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+            _statusMessage = string.Format(WebConstants.ErrorUpdatingProfileMessage,
+            string.Join(", ", result.Errors.Select(e => e.Description)));
             _statusClass = "alert-danger";
         }
     }
@@ -207,14 +209,14 @@
         string.IsNullOrWhiteSpace(_newPassword) ||
         string.IsNullOrWhiteSpace(_confirmPassword))
         {
-            _statusMessage = "Please fill in all password fields.";
+            _statusMessage = WebConstants.AllPasswordFieldsRequiredMessage;
             _statusClass = "alert-danger";
             return;
         }
 
         if (_newPassword != _confirmPassword)
         {
-            _statusMessage = "The new password and confirmation password do not match.";
+            _statusMessage = WebConstants.PasswordMismatchNewConfirmMessage;
             _statusClass = "alert-danger";
             return;
         }
@@ -223,7 +225,7 @@
 
         if (result.Succeeded)
         {
-            _statusMessage = "Password changed successfully.";
+            _statusMessage = WebConstants.PasswordChangedSuccessMessage;
             _statusClass = "alert-success";
             _currentPassword = "";
             _newPassword = "";
@@ -231,7 +233,8 @@
         }
         else
         {
-            _statusMessage = $"Error changing password: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+            _statusMessage = string.Format(WebConstants.ErrorChangingPasswordMessage,
+            string.Join(", ", result.Errors.Select(e => e.Description)));
             _statusClass = "alert-danger";
         }
     }
@@ -242,14 +245,14 @@
 
         if (string.IsNullOrWhiteSpace(_email))
         {
-            _statusMessage = "Email cannot be empty.";
+            _statusMessage = WebConstants.EmailCannotBeEmptyMessage;
             _statusClass = "alert-danger";
             return;
         }
 
         if (_email == _user.Email)
         {
-            _statusMessage = "The new email is the same as the current email.";
+            _statusMessage = WebConstants.EmailSameAsCurrentMessage;
             _statusClass = "alert-info";
             return;
         }
@@ -259,13 +262,14 @@
 
         if (result.Succeeded)
         {
-            _statusMessage = "Email updated successfully.";
+            _statusMessage = WebConstants.EmailUpdatedSuccessMessage;
             _statusClass = "alert-success";
             await LoadUserDataAsync(); // Reload data to update email confirmed status
         }
         else
         {
-            _statusMessage = $"Error updating email: {string.Join(", ", result.Errors.Select(e => e.Description))}";
+            _statusMessage = string.Format(WebConstants.ErrorUpdatingEmailMessage,
+            string.Join(", ", result.Errors.Select(e => e.Description)));
             _statusClass = "alert-danger";
         }
     }

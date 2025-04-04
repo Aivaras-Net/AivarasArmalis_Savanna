@@ -37,7 +37,6 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <!-- Default Animals -->
                                 <tr>
                                     <td>Lion</td>
                                     <td><span class="badge bg-danger">Predator</span></td>
@@ -61,7 +60,6 @@
                                     </td>
                                 </tr>
 
-                                <!-- Plugin Animals -->
                                 @foreach (var animalName in _availableAnimals)
                                 {
                                     var info = PluginService.GetPluginAnimalInfo(animalName);
@@ -217,7 +215,6 @@
             SpecialActionChance = animalConfig.SpecialActionChance
         };
 
-        // Add predator-specific properties if applicable
         if (animalConfig.Predator != null)
         {
             defaultAnimalInfo.HuntingRange = animalConfig.Predator.HuntingRange;
@@ -229,7 +226,6 @@
             }
         }
 
-        // Add prey-specific properties if applicable
         if (animalConfig.Prey != null)
         {
             defaultAnimalInfo.HealthFromGrazing = animalConfig.Prey.HealthFromGrazing;

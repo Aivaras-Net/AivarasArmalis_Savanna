@@ -307,7 +307,7 @@
             }
             catch (Exception ex)
             {
-                GameService.LogMessage($"Error showing navigation warning modal: {ex.Message}");
+                GameService.LogMessage(string.Format(WebConstants.ErrorShowingNavigationWarningModalMessage, ex.Message));
 
                 await JSRuntime.InvokeVoidAsync("window.showNavigationWarningModal");
             }
@@ -367,7 +367,7 @@
         }
         catch (Exception ex)
         {
-            GameService.LogMessage($"Error setting beforeunload warning: {ex.Message}");
+            GameService.LogMessage(string.Format(WebConstants.ErrorSettingBeforeUnloadWarningMessage, ex.Message));
         }
     }
 
@@ -461,7 +461,7 @@
         }
         catch (Exception ex)
         {
-            _loadErrorMessage = "Failed to load saved games: " + ex.Message;
+            _loadErrorMessage = string.Format(WebConstants.FailedToLoadSavedGamesMessage, ex.Message);
             _isLoadingGames = false;
         }
 
@@ -504,7 +504,7 @@
     {
         if (string.IsNullOrWhiteSpace(_saveName))
         {
-            _saveErrorMessage = "Please enter a name for your save";
+            _saveErrorMessage = WebConstants.PleaseEnterSaveNameMessage;
             _saveSuccessMessage = string.Empty;
             StateHasChanged();
             return;
@@ -521,7 +521,7 @@
             await GameSaveService.CreateSaveAsync(_saveName, gameStateJson, _userId);
 
             _isSaving = false;
-            _saveSuccessMessage = "Game saved successfully!";
+            _saveSuccessMessage = WebConstants.SaveGameSuccessMessage;
             GameService.LogMessage(WebConstants.SaveGameSuccessMessage);
             StateHasChanged();
 
@@ -534,7 +534,7 @@
         }
         catch (Exception ex)
         {
-            _saveErrorMessage = "Error saving game: " + ex.Message;
+            _saveErrorMessage = string.Format(WebConstants.SaveGameErrorMessage, ex.Message);
             _saveSuccessMessage = string.Empty;
             _isSaving = false;
             StateHasChanged();
@@ -548,7 +548,7 @@
             var save = await GameSaveService.GetSaveByIdAsync(saveId);
             if (save == null)
             {
-                _loadErrorMessage = "Save not found";
+                _loadErrorMessage = WebConstants.SaveNotFoundMessage;
                 return;
             }
 
@@ -562,7 +562,7 @@
         }
         catch (Exception ex)
         {
-            _loadErrorMessage = "Error loading game: " + ex.Message;
+            _loadErrorMessage = string.Format(WebConstants.LoadGameErrorMessage, ex.Message);
             StateHasChanged();
         }
     }
@@ -627,11 +627,11 @@
             _gameSaves = _gameSaves.OrderByDescending(s => s.CreatedAt).ToList();
 
             StateHasChanged();
-            GameService.LogMessage($"Game save '{saveName}' deleted");
+            GameService.LogMessage(string.Format(WebConstants.GameSaveDeletedMessage, saveName));
         }
         catch (Exception ex)
         {
-            _loadErrorMessage = "Error deleting save: " + ex.Message;
+            _loadErrorMessage = string.Format(WebConstants.ErrorDeletingSaveMessage, ex.Message);
             StateHasChanged();
         }
     }
@@ -682,7 +682,7 @@
 
             if (animal != null)
             {
-                GameService.LogMessage($"{animal.Name} was manually removed from the simulation.");
+                GameService.LogMessage(string.Format(WebConstants.AnimalManuallyRemovedMessage, animal.Name));
 
                 animal.Health = 0;
 
@@ -703,7 +703,7 @@
 
                 GameService.GameEngine.AddAnimal(offspring);
 
-                GameService.LogMessage($"New {parentAnimal.Name} offspring was manually created.");
+                GameService.LogMessage(string.Format(WebConstants.NewOffspringCreatedMessage, parentAnimal.Name));
 
                 RefreshSelectedAnimalDetails();
             }
