@@ -1,6 +1,6 @@
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 using SavannaCore.Tests.Helpers;
 
 namespace SavannaCore.Tests.Infrastructure;

@@ -1,5 +1,5 @@
 using Savanna.Core.Constants;
-using Savanna.Core.Domain;
+using Savanna.Domain;
 using SavannaCore.Tests.Helpers;
 
 namespace SavannaCore.Tests.Domain;

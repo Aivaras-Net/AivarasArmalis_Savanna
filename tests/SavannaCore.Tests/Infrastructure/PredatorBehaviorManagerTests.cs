@@ -1,6 +1,6 @@
-using Savanna.Core.Domain;
-using Savanna.Core.Domain.Interfaces;
 using Savanna.Core.Infrastructure;
+using Savanna.Domain;
+using Savanna.Domain.Interfaces;
 using SavannaCore.Tests.Helpers;
 
 namespace SavannaCore.Tests.Infrastructure;
@@ -12,7 +12,7 @@ public class PredatorBehaviorManagerTests
     {
         var manager = new PredatorBehaviorManager();
         var lion = AnimalTestHelper.CreateLion(new Position(0, 0));
-        var antelope = AnimalTestHelper.CreateAntelope(new Position(1, 0));
+        var antelope = AnimalTestHelper.CreateAntelope(new Position(0, 0));
         IAnimal[] animals = { lion, antelope };
 
         manager.Update(animals);
@@ -39,7 +39,7 @@ public class PredatorBehaviorManagerTests
     {
         var manager = new PredatorBehaviorManager();
         var lion = AnimalTestHelper.CreateLion(new Position(0, 0), 24.5); // Near max health
-        var antelope = AnimalTestHelper.CreateAntelope(new Position(1, 0));
+        var antelope = AnimalTestHelper.CreateAntelope(new Position(0, 0));
         IAnimal[] animals = { lion, antelope };
 
         manager.Update(animals);

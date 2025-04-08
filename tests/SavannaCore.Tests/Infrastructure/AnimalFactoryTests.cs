@@ -1,6 +1,7 @@
+using Savanna.Core;
 using Savanna.Core.Constants;
-using Savanna.Core.Domain;
 using Savanna.Core.Infrastructure;
+using Savanna.Domain;
 
 namespace SavannaCore.Tests.Infrastructure;
 
