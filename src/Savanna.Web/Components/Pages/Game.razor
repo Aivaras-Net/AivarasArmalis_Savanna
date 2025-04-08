@@ -6,149 +6,78 @@
 @using Savanna.Web.Constants
 @using System.Timers
 @using Microsoft.JSInterop
+@using Microsoft.JSInterop.Infrastructure
 @using Savanna.Core.Interfaces
 @using Microsoft.AspNetCore.Authorization
 @using Savanna.Web.Services.Interfaces
 @using Savanna.Web.Models
-@attribute [Authorize]
+@using System.Text.Json
+@using Savanna.Web.Components.Game
+@using Savanna.Web.Components.Shared
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
 @inject IGameService GameService
 @inject IGameRenderer GameRenderer
+@inject IGameSaveService GameSaveService
+@inject AuthenticationStateProvider AuthStateProvider
+@attribute [Authorize]
 @implements IDisposable
 @rendermode InteractiveServer
 
 <PageTitle>Savanna Game</PageTitle>
 
-<div class="game-container mb-4">
-    <h1>Savanna Game</h1>
+<div class="game-container">
+    <GameHeader IsGameRunning="GameService.IsGameRunning" IsPaused="GameService.IsPaused"
+        AnimalsCount="GameService.GameEngine?.Animals.Count ?? 0"
+        LionsCount="GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.LionName) ?? 0"
+        AntelopesCount="GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.AntelopeName) ?? 0" />
 
     @if (!GameService.IsGameRunning)
     {
-        <div class="game-menu">
-            <button class="btn btn-primary" @onclick="StartNewGame">@WebConstants.StartNewGameButtonText</button>
-        </div>
+        <WelcomePanel OnStartNewGame="StartNewGame" OnLoadGame="ShowInitialLoadPanel" />
+
+        @if (_showLoadPanel)
+        {
+            <LoadGamePanel GameSaves="@_gameSaves" LoadErrorMessage="@_loadErrorMessage" IsLoadingGames="@_isLoadingGames"
+                OnToggleLoadPanel="ToggleLoadPanel" OnLoadGame="LoadGame" OnDeleteSave="DeleteSave" />
+        }
     }
     else
     {
-        <div class="game-controls mb-3">
-            <button class="btn btn-warning me-2" @onclick="TogglePause">
-                @(GameService.IsPaused? WebConstants.ResumeButtonText: WebConstants.PauseButtonText)
-            </button>
-            <button class="btn btn-danger me-2" @onclick="StopGame">
-                @WebConstants.StopGameButtonText
-            </button>
-            <div class="btn-group me-2">
-                <button class="btn btn-success" @onclick="SpawnAntelope">@WebConstants.SpawnAntelopeButtonText</button>
-                <button class="btn btn-danger" @onclick="SpawnLion">@WebConstants.SpawnLionButtonText</button>
-            </div>
-            <button class="btn btn-info me-2" @onclick="ToggleDisplayMode">
-                @(GameService.UseLetterDisplay? WebConstants.ShowIconsButtonText: WebConstants.ShowLettersButtonText)
-            </button>
-        </div>
+        <div class="game-dashboard">
+            <GameControls IsPaused="GameService.IsPaused" UseLetterDisplay="GameService.UseLetterDisplay"
+                OnTogglePause="TogglePause" OnStopGame="StopGame" OnSpawnAntelope="SpawnAntelope" OnSpawnLion="SpawnLion"
+                OnToggleDisplayMode="ToggleDisplayMode" OnToggleSavePanel="ToggleSavePanel"
+                OnToggleLoadPanel="ToggleLoadPanel" PluginAnimals="GameService.GetAvailablePluginAnimals()"
+                OnSpawnPluginAnimal="SpawnPluginAnimal" />
 
-        <div class="game-status mb-3">
-            <div class="alert alert-info">
-                <strong>@WebConstants.GameStatusText</strong> @(GameService.IsPaused ? WebConstants.PausedStatusText :
-                WebConstants.RunningStatusText) |
-                <strong>@WebConstants.AnimalsCountText</strong> @(GameService.GameEngine?.Animals.Count ?? 0) |
-                <strong>@WebConstants.LionsCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name ==
-                GameConstants.LionName) ?? 0)
-            |
-            <strong>@WebConstants.AntelopesCountText</strong> @(GameService.GameEngine?.Animals.Count(a => a.Name ==
-                        GameConstants.AntelopeName) ?? 0)
-        </div>
-    </div>
+            @if (_showSavePanel)
+            {
+                <SaveGamePanel SaveName="@_saveName" SaveNameChanged="value => _saveName = value"
+                    SaveErrorMessage="@_saveErrorMessage" SaveSuccessMessage="@_saveSuccessMessage" IsSaving="@_isSaving"
+                    OnSaveGame="SaveGame" OnToggleSavePanel="ToggleSavePanel" />
+            }
 
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="game-field mb-3" id="gameField"
-                style="position: relative; width: @(GameService.FieldWidth* WebConstants.CellSize)px; height: @(GameService.FieldHeight* WebConstants.CellSize)px; border: 1px solid #ccc; background-color: @WebConstants.GameFieldBackgroundColor;">
-                @if (GameService.GameEngine != null)
+            @if (_showLoadPanel)
+            {
+                <LoadGamePanel GameSaves="@_gameSaves" LoadErrorMessage="@_loadErrorMessage" IsLoadingGames="@_isLoadingGames"
+                    OnToggleLoadPanel="ToggleLoadPanel" OnLoadGame="LoadGame" OnDeleteSave="DeleteSave" />
+            }
+
+            <div class="game-content">
+                <GameField GameEngine="GameService.GameEngine" FieldWidth="GameService.FieldWidth"
+                    FieldHeight="GameService.FieldHeight" UseLetterDisplay="GameService.UseLetterDisplay"
+                    OnSelectAnimal="SelectAnimal" />
+
+                <div class="sidebar-container">
+                    @if (selectedAnimalDetails != null)
                     {
-                        @foreach (var animal in GameService.GameEngine.Animals)
-                        {
-                            string animalClass = GetAnimalClass(animal.Name);
-                            string animalDisplay = GetAnimalDisplay(animal.Name);
-                            bool isSelected = animal.IsSelected;
-
-                            <div class="animal @animalClass @(isSelected ? "selected" : "")" @key="animal.GetHashCode()"
-                                @onclick="() => SelectAnimal(animal)"
-                                style="position: absolute; left: @(animal.Position.X * WebConstants.CellSize)px; top: @(animal.Position.Y * WebConstants.CellSize)px; width: @WebConstants.CellSize px; height: @WebConstants.CellSize px; cursor: pointer;">
-                                @if (GameService.UseLetterDisplay)
-                                {
-                                    @(animal.Name.Substring(0, 1))
-                                }
-                                else
-                                {
-                                    @animalDisplay
-                                }
-                            </div>
-                        }
+                        <AnimalDetailsPanel AnimalDetails="selectedAnimalDetails" OnDeselectAnimal="DeselectAnimal"
+                            OnKillAnimal="KillSelectedAnimal" OnMakeOffspring="MakeOffspring" />
                     }
+
+                    <GameLogPanel GameLogs="GameService.GameLogs" />
                 </div>
-
-                <div class="game-log mb-3">
-                    <h5>@WebConstants.GameLogText</h5>
-                    <div class="log-container p-2 border"
-                        style="height: @WebConstants.LogContainerHeight px; overflow-y: auto; background-color: @WebConstants.LogContainerBackgroundColor;">
-                        @{
-                            var logsCopy = GameService.GameLogs.ToList();
-                            logsCopy.Reverse();
-
-                            foreach (var log in logsCopy)
-                            {
-                                <div class="log-entry">@log</div>
-                            }
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4">
-                @if (selectedAnimalDetails != null)
-                {
-                    <div class="animal-details-card">
-                        <h3>@WebConstants.AnimalDetailsTitle</h3>
-                        <table class="table">
-                            <tbody>
-                                <tr>
-                                    <th>@WebConstants.SpeciesLabel</th>
-                                    <td>@selectedAnimalDetails.Species</td>
-                                </tr>
-                                <tr>
-                                    <th>@WebConstants.PositionLabel</th>
-                                    <td>@selectedAnimalDetails.X, @selectedAnimalDetails.Y</td>
-                                </tr>
-                                <tr>
-                                    <th>@WebConstants.HealthLabel</th>
-                                    <td>
-                                        <div class="progress">
-                                            <div class="progress-bar @GetHealthColorClass(selectedAnimalDetails)"
-                                                role="progressbar"
-                                                style="width: @((selectedAnimalDetails.HealthPercentage).ToString("0"))%;"
-                                                aria-valuenow="@selectedAnimalDetails.HealthPercentage" aria-valuemin="0"
-                                                aria-valuemax="100">
-                                                @((selectedAnimalDetails.HealthPercentage).ToString("0.0"))%
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">@selectedAnimalDetails.Health.ToString("0.0") /
-                                            @selectedAnimalDetails.MaxHealth.ToString("0.0")</small>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>@WebConstants.AgeLabel</th>
-                                    <td>@selectedAnimalDetails.Age @WebConstants.AgeUnitsText</td>
-                                </tr>
-                                <tr>
-                                    <th>@WebConstants.OffspringLabel</th>
-                                    <td>@selectedAnimalDetails.OffspringCount</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <button class="btn btn-secondary" @onclick="DeselectAnimal">@WebConstants.CloseButtonText</button>
-                    </div>
-                }
             </div>
         </div>
     }
@@ -157,49 +86,71 @@
 <NavigationWarningModal @ref="_navigationWarningModal" OnCancelNavigation="CancelNavigation"
     OnConfirmNavigation="ConfirmNavigation" />
 
+@if (_showDeleteConfirmation)
+{
+    <DeleteConfirmationModal Message="Are you sure you want to delete this save game? This action cannot be undone."
+        ItemName="@_pendingSaveName" ErrorMessage="@_deleteErrorMessage" OnCancel="CancelDeleteSave"
+        OnConfirm="ConfirmDeleteSave" />
+}
+
 <style>
-    .animal {
+    .game-container {
+        background-color: var(--savanna-sand-light);
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 0.75rem;
+        margin-bottom: 0;
+        max-width: 100%;
+        height: 100%;
         display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 16px;
-        transition: all 0.3s ease-out;
+        flex-direction: column;
     }
 
-    .animal.selected {
-        box-shadow: 0 0 10px
-            @WebConstants.SelectedAnimalGlowColor
-        ;
-        z-index: 10;
-        transform: scale(1.2);
+    .game-dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
     }
 
-    .lion {
-        color:
-            @WebConstants.LionColor
-        ;
+    .game-content {
+        display: grid;
+        grid-template-columns: 1fr 280px;
+        gap: 0.75rem;
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
     }
 
-    .antelope {
-        color:
-            @WebConstants.AntelopeColor
-        ;
+    .sidebar-container {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 0.75rem;
+        max-height: 100%;
+        overflow: hidden;
     }
 
-    .animal-details-card {
-        background-color: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-        padding: 20px;
-        margin-top: 10px;
-        position: sticky;
-        top: 20px;
+    @@media only screen and (max-width: 992px) {
+        .game-content {
+            grid-template-columns: 1fr;
+        }
+
+        .sidebar-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .game-field-container {
+            min-height: 50vh;
+        }
     }
 
-    .animal-details-card h3 {
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
+    @@media only screen and (max-width: 768px) {
+        .sidebar-container {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
@@ -209,9 +160,42 @@
     private AnimalDetailViewModel? selectedAnimalDetails;
     private IAnimal? _selectedAnimal;
     private System.Timers.Timer? _detailsUpdateTimer;
+    private string _saveName = string.Empty;
+    private string _saveErrorMessage = string.Empty;
+    private string _saveSuccessMessage = string.Empty;
+    private string _loadErrorMessage = string.Empty;
+    private bool _isSaving = false;
+    private bool _isLoadingGames = false;
+    private List<GameSaveViewModel> _gameSaves = new();
+    private string _userId = string.Empty;
+    private bool _showSavePanel = false;
+    private bool _showLoadPanel = false;
+    private bool _showDeleteConfirmation = false;
+    private string _deleteErrorMessage = string.Empty;
+    private int _pendingDeleteSaveId = -1;
+    private string _pendingSaveName = string.Empty;
 
-    protected override void OnInitialized()
+    [JSInvokable]
+    public static Task HandleNavigationAttempt(string destination)
     {
+        return _instance?.HandleNavigation(destination) ?? Task.CompletedTask;
+    }
+
+    private static Game? _instance;
+
+    private async Task HandleNavigation(string destination)
+    {
+        if (GameService.IsGameRunning)
+        {
+            _pendingNavigation = destination;
+            await ShowNavigationWarningModal();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _instance = this;
+
         GameService.GameStateChanged += OnGameStateChanged;
         NavigationManager.LocationChanged += OnLocationChanged;
         GameService.AnimalSelectionChanged += OnAnimalSelectionChanged;
@@ -219,6 +203,10 @@
         _detailsUpdateTimer = new System.Timers.Timer(WebConstants.AnimalDetailsUpdateInterval);
         _detailsUpdateTimer.Elapsed += UpdateSelectedAnimalDetails;
         _detailsUpdateTimer.AutoReset = true;
+
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        _userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -228,11 +216,25 @@
             try
             {
                 await JSRuntime.InvokeVoidAsync("window.setupGame");
+
+                if (GameService.IsGameRunning)
+                {
+                    await SetBeforeUnloadWarning(true);
+                }
             }
             catch (Exception ex)
             {
                 GameService.LogMessage(string.Format(WebConstants.JavaScriptInitializationErrorMessage, ex.Message));
             }
+        }
+    }
+
+    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        if (GameService.IsGameRunning && !e.Location.EndsWith("/game"))
+        {
+            _pendingNavigation = e.Location;
+            _ = ShowNavigationWarningModal();
         }
     }
 
@@ -295,20 +297,20 @@
         }
     }
 
-    private void OnLocationChanged(object sender, LocationChangedEventArgs e)
-    {
-        if (GameService.IsGameRunning && !e.Location.EndsWith("/game"))
-        {
-            _pendingNavigation = e.Location;
-            _ = ShowNavigationWarningModal();
-        }
-    }
-
     private async Task ShowNavigationWarningModal()
     {
         if (_navigationWarningModal != null)
         {
-            await _navigationWarningModal.ShowModal();
+            try
+            {
+                await _navigationWarningModal.ShowModal();
+            }
+            catch (Exception ex)
+            {
+                GameService.LogMessage(string.Format(WebConstants.ErrorShowingNavigationWarningModalMessage, ex.Message));
+
+                await JSRuntime.InvokeVoidAsync("window.showNavigationWarningModal");
+            }
         }
     }
 
@@ -335,8 +337,12 @@
             string destination = await JSRuntime.InvokeAsync<string>("window.getAndClearPendingNavigation");
 
             GameService.LogMessage(string.Format(WebConstants.NavigatingToMessage, destination));
-
             GameService.StopTimer();
+
+            if (string.IsNullOrEmpty(destination) && !string.IsNullOrEmpty(_pendingNavigation))
+            {
+                destination = _pendingNavigation;
+            }
 
             if (NavigationManager.Uri == destination)
             {
@@ -344,13 +350,7 @@
             }
             else
             {
-                if (!string.IsNullOrEmpty(_pendingNavigation) &&
-                string.IsNullOrEmpty(destination))
-                {
-                    destination = _pendingNavigation;
-                }
-
-                NavigationManager.NavigateTo(destination);
+                NavigationManager.NavigateTo(destination, forceLoad: true);
             }
         }
         catch (Exception ex)
@@ -365,8 +365,9 @@
         {
             await JSRuntime.InvokeVoidAsync("window.setBeforeUnloadWarning", enabled);
         }
-        catch
+        catch (Exception ex)
         {
+            GameService.LogMessage(string.Format(WebConstants.ErrorSettingBeforeUnloadWarningMessage, ex.Message));
         }
     }
 
@@ -380,10 +381,12 @@
         await SetBeforeUnloadWarning(true);
     }
 
-    private void StopGame()
+    private async void StopGame()
     {
         GameService.StopGame();
         GameService.LogMessage(WebConstants.GameStoppedMessage);
+
+        await SetBeforeUnloadWarning(false);
     }
 
     private void TogglePause()
@@ -405,6 +408,232 @@
     private void ToggleDisplayMode()
     {
         GameService.ToggleDisplayMode();
+    }
+
+    private void ToggleSavePanel()
+    {
+        _showSavePanel = !_showSavePanel;
+        _saveName = string.Empty;
+        _saveErrorMessage = string.Empty;
+        _saveSuccessMessage = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task ToggleLoadPanel()
+    {
+        if (_showLoadPanel)
+        {
+            _showLoadPanel = false;
+            StateHasChanged();
+            return;
+        }
+
+        _showLoadPanel = true;
+        _loadErrorMessage = string.Empty;
+        _isLoadingGames = true;
+        StateHasChanged();
+
+        try
+        {
+            var saves = await GameSaveService.GetSavesForUserAsync(_userId);
+            _gameSaves = new List<GameSaveViewModel>();
+
+            foreach (var save in saves)
+            {
+                try
+                {
+                    _gameSaves.Add(ExtractGameInfo(save));
+                }
+                catch
+                {
+                    _gameSaves.Add(new GameSaveViewModel
+                    {
+                        Id = save.Id,
+                        Name = save.Name,
+                        CreatedAt = save.CreatedAt,
+                        TotalAnimals = 0
+                    });
+                }
+            }
+
+            _gameSaves = _gameSaves.OrderByDescending(s => s.CreatedAt).ToList();
+            _isLoadingGames = false;
+        }
+        catch (Exception ex)
+        {
+            _loadErrorMessage = string.Format(WebConstants.FailedToLoadSavedGamesMessage, ex.Message);
+            _isLoadingGames = false;
+        }
+
+        StateHasChanged();
+    }
+
+    private GameSaveViewModel ExtractGameInfo(GameSave save)
+    {
+        var viewModel = new GameSaveViewModel
+        {
+            Id = save.Id,
+            Name = save.Name,
+            CreatedAt = save.CreatedAt
+        };
+
+        try
+        {
+            if (!string.IsNullOrEmpty(save.GameStateJson))
+            {
+                var gameState = JsonSerializer.Deserialize<GameState>(save.GameStateJson);
+                if (gameState != null)
+                {
+                    viewModel.LionCount = gameState.Animals.Count(a => a.Type == GameConstants.LionName);
+                    viewModel.AntelopeCount = gameState.Animals.Count(a => a.Type == GameConstants.AntelopeName);
+
+                    viewModel.TotalAnimals = gameState.Animals.Count;
+
+                    viewModel.IterationCount = gameState.Animals.Any() ? gameState.Animals.Max(a => a.Age) : 0;
+                }
+            }
+        }
+        catch
+        {
+        }
+
+        return viewModel;
+    }
+
+    private async Task SaveGame()
+    {
+        if (string.IsNullOrWhiteSpace(_saveName))
+        {
+            _saveErrorMessage = WebConstants.PleaseEnterSaveNameMessage;
+            _saveSuccessMessage = string.Empty;
+            StateHasChanged();
+            return;
+        }
+
+        try
+        {
+            _isSaving = true;
+            _saveErrorMessage = string.Empty;
+            _saveSuccessMessage = string.Empty;
+            StateHasChanged();
+
+            string gameStateJson = GameService.SerializeGameState();
+            await GameSaveService.CreateSaveAsync(_saveName, gameStateJson, _userId);
+
+            _isSaving = false;
+            _saveSuccessMessage = WebConstants.SaveGameSuccessMessage;
+            GameService.LogMessage(WebConstants.SaveGameSuccessMessage);
+            StateHasChanged();
+
+            // Auto-hide the success message after 3 seconds
+            await Task.Delay(3000);
+            _showSavePanel = false;
+            _saveName = string.Empty;
+            _saveSuccessMessage = string.Empty;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            _saveErrorMessage = string.Format(WebConstants.SaveGameErrorMessage, ex.Message);
+            _saveSuccessMessage = string.Empty;
+            _isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadGame(int saveId)
+    {
+        try
+        {
+            var save = await GameSaveService.GetSaveByIdAsync(saveId);
+            if (save == null)
+            {
+                _loadErrorMessage = WebConstants.SaveNotFoundMessage;
+                return;
+            }
+
+            var renderer = GameRenderer.CreateRenderer(GameService.LogMessage);
+            GameService.LoadGameState(save.GameStateJson, renderer);
+            GameService.LogMessage(WebConstants.LoadGameSuccessMessage);
+            GameService.StartTimer();
+
+            _showLoadPanel = false;
+            await SetBeforeUnloadWarning(true);
+        }
+        catch (Exception ex)
+        {
+            _loadErrorMessage = string.Format(WebConstants.LoadGameErrorMessage, ex.Message);
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteSave(int saveId)
+    {
+        var saveToDelete = _gameSaves.FirstOrDefault(s => s.Id == saveId);
+        if (saveToDelete != null)
+        {
+            _pendingDeleteSaveId = saveId;
+            _pendingSaveName = saveToDelete.Name;
+            _showDeleteConfirmation = true;
+            _deleteErrorMessage = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+    private void CancelDeleteSave()
+    {
+        _showDeleteConfirmation = false;
+        _pendingDeleteSaveId = -1;
+        _pendingSaveName = string.Empty;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmDeleteSave()
+    {
+        try
+        {
+            _showDeleteConfirmation = false;
+            int saveId = _pendingDeleteSaveId;
+            string saveName = _pendingSaveName;
+            _pendingDeleteSaveId = -1;
+            _pendingSaveName = string.Empty;
+
+            if (saveId < 0)
+                return;
+
+            await GameSaveService.DeleteSaveAsync(saveId, _userId);
+
+            var saves = await GameSaveService.GetSavesForUserAsync(_userId);
+            _gameSaves = new List<GameSaveViewModel>();
+
+            foreach (var save in saves)
+            {
+                try
+                {
+                    _gameSaves.Add(ExtractGameInfo(save));
+                }
+                catch
+                {
+                    _gameSaves.Add(new GameSaveViewModel
+                    {
+                        Id = save.Id,
+                        Name = save.Name,
+                        CreatedAt = save.CreatedAt,
+                        TotalAnimals = 0
+                    });
+                }
+            }
+
+            _gameSaves = _gameSaves.OrderByDescending(s => s.CreatedAt).ToList();
+
+            StateHasChanged();
+            GameService.LogMessage(string.Format(WebConstants.GameSaveDeletedMessage, saveName));
+        }
+        catch (Exception ex)
+        {
+            _loadErrorMessage = string.Format(WebConstants.ErrorDeletingSaveMessage, ex.Message);
+            StateHasChanged();
+        }
     }
 
     private string GetAnimalClass(string animalName)
@@ -445,19 +674,84 @@
         _ => "bg-success"
     };
 
+    private void KillSelectedAnimal()
+    {
+        if (_selectedAnimal != null && GameService.GameEngine != null)
+        {
+            var animal = GameService.GameEngine.Animals.FirstOrDefault(a => a.Id == _selectedAnimal.Id);
+
+            if (animal != null)
+            {
+                GameService.LogMessage(string.Format(WebConstants.AnimalManuallyRemovedMessage, animal.Name));
+
+                animal.Health = 0;
+
+                DeselectAnimal();
+            }
+        }
+    }
+
+    private void MakeOffspring()
+    {
+        if (_selectedAnimal != null && GameService.GameEngine != null)
+        {
+            var parentAnimal = GameService.GameEngine.Animals.FirstOrDefault(a => a.Id == _selectedAnimal.Id);
+
+            if (parentAnimal != null)
+            {
+                var offspring = parentAnimal.CreateOffspring(parentAnimal.Position);
+
+                GameService.GameEngine.AddAnimal(offspring);
+
+                GameService.LogMessage(string.Format(WebConstants.NewOffspringCreatedMessage, parentAnimal.Name));
+
+                RefreshSelectedAnimalDetails();
+            }
+        }
+    }
+
+    private async Task ShowInitialLoadPanel()
+    {
+        if (!_showLoadPanel)
+        {
+            await ToggleLoadPanel();
+        }
+    }
+
+    private async Task SpawnPluginAnimal(string animalType)
+    {
+        GameService.SpawnPluginAnimal(animalType);
+    }
+
     public void Dispose()
     {
+        // Reset static instance reference when component is disposed
+        if (_instance == this)
+        {
+            _instance = null;
+        }
+
         GameService.GameStateChanged -= OnGameStateChanged;
         NavigationManager.LocationChanged -= OnLocationChanged;
         GameService.AnimalSelectionChanged -= OnAnimalSelectionChanged;
 
-        // Clean up timer
         if (_detailsUpdateTimer != null)
         {
             _detailsUpdateTimer.Elapsed -= UpdateSelectedAnimalDetails;
             _detailsUpdateTimer.Stop();
             _detailsUpdateTimer.Dispose();
             _detailsUpdateTimer = null;
+        }
+
+        try
+        {
+            if (GameService.IsGameRunning)
+            {
+                JSRuntime.InvokeVoidAsync("window.setBeforeUnloadWarning", false);
+            }
+        }
+        catch
+        {
         }
     }
 }

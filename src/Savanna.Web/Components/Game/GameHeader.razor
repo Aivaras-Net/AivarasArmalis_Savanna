@@ -1,0 +1,110 @@
+@namespace Savanna.Web.Components.Game
+@using Savanna.Core
+@using Savanna.Core.Constants
+@using Savanna.Domain.Interfaces
+
+<div class="game-header">
+    <h1 class="game-title">Savanna World Simulation</h1>
+
+    @if (IsGameRunning)
+    {
+        <div class="game-status-panel">
+            <div class="status-indicator @(IsPaused ? "paused" : "running")">
+                <i class="bi @(IsPaused ? "bi-pause-circle" : "bi-play-circle")"></i>
+                <span>@(IsPaused ? "Paused" : "Running")</span>
+            </div>
+            <div class="status-counts">
+                <div class="status-count">
+                    <span>@AnimalsCount Animals</span>
+                </div>
+                <div class="status-count lion-count">
+                    <span>@LionsCount Lions</span>
+                </div>
+                <div class="status-count antelope-count">
+                    <span>@AntelopesCount Antelopes</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .game-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .game-title {
+        color: var(--savanna-earth);
+        font-weight: 700;
+        margin: 0;
+        font-size: 1.5rem;
+    }
+
+    .game-status-panel {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        background-color: white;
+        padding: 0.75rem 1.25rem;
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-right: 1.5rem;
+        border-right: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .status-indicator.running {
+        color: var(--success);
+    }
+
+    .status-indicator.paused {
+        color: var(--warning);
+    }
+
+    .status-counts {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+    }
+
+    .status-count {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .lion-count {
+        color: var(--danger);
+    }
+
+    .antelope-count {
+        color: var(--success);
+    }
+</style>
+
+@code {
+    [Parameter]
+    public bool IsGameRunning { get; set; }
+
+    [Parameter]
+    public bool IsPaused { get; set; }
+
+    [Parameter]
+    public int AnimalsCount { get; set; }
+
+    [Parameter]
+    public int LionsCount { get; set; }
+
+    [Parameter]
+    public int AntelopesCount { get; set; }
+}

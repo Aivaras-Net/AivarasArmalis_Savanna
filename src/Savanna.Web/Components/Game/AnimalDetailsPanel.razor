@@ -1,0 +1,166 @@
+@namespace Savanna.Web.Components.Game
+@using Savanna.Web.Models
+@using Savanna.Web.Constants
+
+<div class="animal-details-panel">
+    <div class="panel-header">
+        <h3>
+            @AnimalDetails.Species
+        </h3>
+        <button class="close-btn" @onclick="OnDeselectAnimal">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <div class="detail-item">
+        <span class="detail-label">Position</span>
+        <span class="detail-value">@AnimalDetails.X, @AnimalDetails.Y</span>
+    </div>
+
+    <div class="detail-item">
+        <span class="detail-label">Health</span>
+        <div class="health-indicator">
+            <div class="progress">
+                <div class="progress-bar @GetHealthColorClass()"
+                    style="width: @((AnimalDetails.HealthPercentage).ToString("0"))%;">
+                    @((AnimalDetails.HealthPercentage).ToString("0.0"))%
+                </div>
+            </div>
+            <small>@AnimalDetails.Health.ToString("0.0") /
+                @AnimalDetails.MaxHealth.ToString("0.0")</small>
+        </div>
+    </div>
+
+    <div class="detail-item">
+        <span class="detail-label">Age</span>
+        <span class="detail-value">@AnimalDetails.Age @WebConstants.AgeUnitsText</span>
+    </div>
+
+    <div class="detail-item">
+        <span class="detail-label">Offspring</span>
+        <span class="detail-value">@AnimalDetails.OffspringCount</span>
+    </div>
+
+    <div class="detail-actions">
+        <button class="btn btn-sm btn-danger" @onclick="OnKillAnimal">
+            <i class="bi bi-x-circle me-1"></i>Kill
+        </button>
+        <button class="btn btn-sm btn-success" @onclick="OnMakeOffspring">
+            <i class="bi bi-plus-circle me-1"></i>Reproduce
+        </button>
+    </div>
+</div>
+
+<style>
+    .animal-details-panel {
+        background-color: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        max-height: none;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        background-color: #f8f0e3;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+    }
+
+    .panel-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #5d4037;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+        padding: 0.25rem;
+        font-size: 0.8rem;
+    }
+
+    .close-btn:hover {
+        opacity: 1;
+    }
+
+    .detail-item {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        font-size: 0.9rem;
+    }
+
+    .detail-label {
+        display: block;
+        color: #6c757d;
+        font-size: 0.7rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .detail-value {
+        font-weight: 500;
+        color: #5d4037;
+        font-size: 0.9rem;
+    }
+
+    .health-indicator {
+        margin-top: 0.2rem;
+    }
+
+    .health-indicator small {
+        display: block;
+        text-align: right;
+        color: #6c757d;
+        margin-top: 0.2rem;
+        font-size: 0.7rem;
+    }
+
+    .detail-actions {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        justify-content: space-between;
+    }
+
+    .detail-actions .btn {
+        flex: 1;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.3rem 0.5rem;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public AnimalDetailViewModel AnimalDetails { get; set; }
+
+    [Parameter]
+    public EventCallback OnDeselectAnimal { get; set; }
+
+    [Parameter]
+    public EventCallback OnKillAnimal { get; set; }
+
+    [Parameter]
+    public EventCallback OnMakeOffspring { get; set; }
+
+    private string GetHealthColorClass()
+    {
+        return AnimalDetails.HealthPercentage switch
+        {
+            <= 30 => "bg-danger",
+            <= 60 => "bg-warning",
+            _ => "bg-success"
+        };
+    }
+}

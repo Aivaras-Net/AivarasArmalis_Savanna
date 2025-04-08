@@ -1,0 +1,180 @@
+@namespace Savanna.Web.Components.Game
+@using Savanna.Web.Models
+@using Savanna.Web.Components.Shared
+
+<ModalPanel Title="Load Saved Game" ErrorMessage="@LoadErrorMessage" OnClose="OnToggleLoadPanel">
+    @if (IsLoadingGames)
+    {
+        <div class="loading-spinner">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Loading your saved games...</p>
+        </div>
+    }
+    else if (GameSaves.Count == 0)
+    {
+        <div class="empty-state">
+            <i class="bi bi-archive"></i>
+            <p>No saved games found</p>
+            <small>Start a new game and save it to see it here</small>
+        </div>
+    }
+    else
+    {
+        <div class="saved-games-list">
+            @foreach (var save in GameSaves)
+            {
+                <div class="saved-game-item">
+                    <div class="saved-game-info">
+                        <h4>@save.Name</h4>
+                        <span class="saved-date">@save.FormattedDate</span>
+                        <div class="saved-game-stats">
+                            <span class="iteration-count">Iteration: @save.IterationCount</span>
+                            <div class="animals-stats">
+                                <span class="animal-count"><i class="bi bi-circle-fill animal-indicator"></i> @save.TotalAnimals
+                                    Animals</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="saved-game-actions">
+                        <button class="btn btn-sm btn-primary" @onclick="() => OnLoadGame.InvokeAsync(save.Id)">
+                            <i class="bi bi-play-fill"></i> Load
+                        </button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => OnDeleteSave.InvokeAsync(save.Id)">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" @onclick="OnToggleLoadPanel">
+            <i class="bi bi-arrow-left me-1"></i> Go Back
+        </button>
+    </div>
+</ModalPanel>
+
+<style>
+    .empty-state {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .loading-spinner {
+        text-align: center;
+        padding: 2rem 1rem;
+    }
+
+    .loading-spinner .spinner-border {
+        margin-bottom: 1rem;
+        color: #e07b39;
+    }
+
+    .saved-games-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        max-height: 400px;
+        overflow-y: auto;
+        margin-bottom: 1rem;
+    }
+
+    .saved-game-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        border-radius: var(--border-radius);
+        background-color: #f8f0e3;
+        transition: background-color 0.2s;
+    }
+
+    .saved-game-item:hover {
+        background-color: rgba(224, 123, 57, 0.1);
+    }
+
+    .saved-game-info h4 {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .saved-date {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .saved-game-stats {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.8rem;
+        margin-top: 3px;
+    }
+
+    .animals-stats {
+        display: flex;
+        gap: 10px;
+        margin-top: 2px;
+    }
+
+    .iteration-count {
+        color: #6c757d;
+    }
+
+    .animal-count {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .animal-indicator {
+        color: #8e44ad;
+        font-size: 0.7rem;
+    }
+
+    .saved-game-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .modal-footer {
+        padding-top: 0.5rem;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: flex-start;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public List<GameSaveViewModel> GameSaves { get; set; } = new();
+
+    [Parameter]
+    public string LoadErrorMessage { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool IsLoadingGames { get; set; }
+
+    [Parameter]
+    public EventCallback OnToggleLoadPanel { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnLoadGame { get; set; }
+
+    [Parameter]
+    public EventCallback<int> OnDeleteSave { get; set; }
+}

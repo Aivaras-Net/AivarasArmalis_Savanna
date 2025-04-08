@@ -1,0 +1,60 @@
+@namespace Savanna.Web.Components.Game
+@using Savanna.Web.Components.Shared
+
+<ModalPanel Title="Save Game" ErrorMessage="@SaveErrorMessage" SuccessMessage="@SaveSuccessMessage"
+    OnClose="OnToggleSavePanel">
+    <div class="form-group mb-3">
+        <label for="saveName" class="form-label">Save Name</label>
+        <input type="text" class="form-control" id="saveName" @oninput="HandleInput" value="@SaveName"
+            placeholder="Enter a name for your save" />
+    </div>
+    <button class="btn btn-primary w-100" @onclick="HandleSaveClick" disabled="@IsSaving">
+        @if (IsSaving)
+        {
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span> Saving...</span>
+        }
+        else
+        {
+            <span>Save Game</span>
+        }
+    </button>
+</ModalPanel>
+
+@code {
+    private string _saveName = string.Empty;
+
+    [Parameter]
+    public string SaveName { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> SaveNameChanged { get; set; }
+
+    [Parameter]
+    public string SaveErrorMessage { get; set; } = string.Empty;
+
+    [Parameter]
+    public string SaveSuccessMessage { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool IsSaving { get; set; }
+
+    [Parameter]
+    public EventCallback OnToggleSavePanel { get; set; }
+
+    [Parameter]
+    public EventCallback OnSaveGame { get; set; }
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        if (e.Value is string value)
+        {
+            await SaveNameChanged.InvokeAsync(value);
+        }
+    }
+
+    private async Task HandleSaveClick()
+    {
+        await OnSaveGame.InvokeAsync();
+    }
+}

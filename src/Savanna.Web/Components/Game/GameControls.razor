@@ -1,0 +1,162 @@
+@namespace Savanna.Web.Components.Game
+@using Savanna.Web.Services.Interfaces
+
+<div class="dashboard-controls">
+    <div class="controls-group">
+        <button class="btn @(IsPaused ? "btn-success" : "btn-warning")" @onclick="OnTogglePause">
+            <i class="bi @(IsPaused ? "bi-play-fill" : "bi-pause-fill")"></i>
+            @(IsPaused ? "Resume" : "Pause")
+        </button>
+        <button class="btn btn-danger" @onclick="OnStopGame">
+            <i class="bi bi-stop-fill"></i> Stop
+        </button>
+    </div>
+
+    <div class="controls-group">
+        <button class="btn btn-success" @onclick="OnSpawnAntelope">
+            <i class="bi bi-plus-circle"></i> Add Antelope
+        </button>
+        <button class="btn btn-danger" @onclick="OnSpawnLion">
+            <i class="bi bi-plus-circle"></i> Add Lion
+        </button>
+
+        @if (PluginAnimals != null && PluginAnimals.Any())
+        {
+            @foreach (var animal in PluginAnimals)
+            {
+                <button class="btn btn-primary" @onclick="() => OnSpawnPluginAnimal.InvokeAsync(animal)">
+                    <i class="bi bi-plus-circle"></i> Add @animal
+                </button>
+            }
+        }
+    </div>
+
+    <div class="controls-group">
+        <button class="btn btn-info" @onclick="OnToggleDisplayMode">
+            <i class="bi bi-eye"></i>
+            @(UseLetterDisplay ? "Show Icons" : "Show Letters")
+        </button>
+    </div>
+
+    <div class="controls-group">
+        <button class="btn btn-secondary" @onclick="OnToggleSavePanel">
+            <i class="bi bi-save"></i> Save
+        </button>
+        <button class="btn btn-secondary" @onclick="OnToggleLoadPanel">
+            <i class="bi bi-upload"></i> Load
+        </button>
+    </div>
+</div>
+
+<style>
+    .dashboard-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        background-color: #f8f0e3;
+        padding: 0.75rem;
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+    }
+
+    .controls-group {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .controls-group .btn,
+    .dropdown-item {
+        font-weight: 600;
+        padding: 0.3rem 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .controls-group .btn {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        border: none;
+    }
+
+    .controls-group .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .controls-group .btn-success {
+        background-color: #5cb85c;
+    }
+
+    .controls-group .btn-danger {
+        background-color: #d9534f;
+    }
+
+    .controls-group .btn-warning {
+        background-color: #f0ad4e;
+    }
+
+    .controls-group .btn-info {
+        background-color: #5bc0de;
+    }
+
+    .controls-group .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .controls-group .btn-primary {
+        background-color: #0d6efd;
+    }
+
+    .dropdown-menu {
+        min-width: 10rem;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    @@media only screen and (max-width: 768px) {
+        .controls-group {
+            flex-direction: column;
+        }
+
+        .controls-group:not(:last-child) {
+            padding-right: 0;
+            border-right: none;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+    }
+</style>
+
+@code {
+    [Parameter]
+    public bool IsPaused { get; set; }
+
+    [Parameter]
+    public bool UseLetterDisplay { get; set; }
+
+    [Parameter]
+    public IEnumerable<string> PluginAnimals { get; set; }
+
+    [Parameter]
+    public EventCallback OnTogglePause { get; set; }
+
+    [Parameter]
+    public EventCallback OnStopGame { get; set; }
+
+    [Parameter]
+    public EventCallback OnSpawnAntelope { get; set; }
+
+    [Parameter]
+    public EventCallback OnSpawnLion { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnSpawnPluginAnimal { get; set; }
+
+    [Parameter]
+    public EventCallback OnToggleDisplayMode { get; set; }
+
+    [Parameter]
+    public EventCallback OnToggleSavePanel { get; set; }
+
+    [Parameter]
+    public EventCallback OnToggleLoadPanel { get; set; }
+}

@@ -5,6 +5,8 @@ using Savanna.Web.Models;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Antiforgery;
 
 namespace Savanna.Web.Controllers
 {
@@ -14,19 +16,22 @@ namespace Savanna.Web.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IAntiforgery _antiforgery;
 
         public AccountController(
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager)
+            RoleManager<IdentityRole> roleManager,
+            IAntiforgery antiforgery)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _roleManager = roleManager;
+            _antiforgery = antiforgery;
         }
 
         [HttpPost("ProcessLogin")]
-        public async Task<IActionResult> ProcessLogin(string email, string password, bool rememberMe, string returnUrl = null)
+        public async Task<IActionResult> ProcessLogin(string email, string password, string? returnUrl, bool rememberMe)
         {
             try
             {
@@ -46,7 +51,7 @@ namespace Savanna.Web.Controllers
 
                 if (result.Succeeded)
                 {
-                    return LocalRedirect(returnUrl ?? "/");
+                    return LocalRedirect(returnUrl ?? WebConstants.DefaultReturnPath);
                 }
                 else if (result.RequiresTwoFactor)
                 {
@@ -68,11 +73,7 @@ namespace Savanna.Web.Controllers
         }
 
         [HttpPost("ProcessRegister")]
-        public async Task<IActionResult> ProcessRegister(
-            string username,
-            string email,
-            string password,
-            string confirmPassword)
+        public async Task<IActionResult> ProcessRegister(string email, string username, string password, string confirmPassword)
         {
             // Simple validation
             if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(email) ||
@@ -106,7 +107,7 @@ namespace Savanna.Web.Controllers
                     await _userManager.AddToRoleAsync(user, WebConstants.UserRoleName);
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    return LocalRedirect("/");
+                    return LocalRedirect(WebConstants.DefaultReturnPath);
                 }
                 else
                 {
@@ -118,6 +119,13 @@ namespace Savanna.Web.Controllers
             {
                 return Redirect($"/Account/Register?error={Uri.EscapeDataString(string.Format(WebConstants.ErrorOccurredMessage, ex.Message))}");
             }
+        }
+
+        [HttpPost("Logout")]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return LocalRedirect(WebConstants.DefaultReturnPath);
         }
     }
 }

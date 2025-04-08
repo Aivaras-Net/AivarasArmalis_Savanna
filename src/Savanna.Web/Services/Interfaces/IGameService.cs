@@ -6,54 +6,54 @@ using Savanna.Web.Models;
 namespace Savanna.Web.Services.Interfaces
 {
     /// <summary>
-    /// Service handling game logic and state management
+    /// Service for managing game state and logic
     /// </summary>
     public interface IGameService
     {
         /// <summary>
-        /// Gets whether the game is currently running
-        /// </summary>
-        bool IsGameRunning { get; }
-
-        /// <summary>
-        /// Gets whether the game is currently paused
-        /// </summary>
-        bool IsPaused { get; }
-
-        /// <summary>
-        /// Gets the game engine instance
+        /// Current game engine
         /// </summary>
         GameEngine GameEngine { get; }
 
         /// <summary>
-        /// Gets or sets whether to use letters instead of icons to display animals
+        /// Whether the game is currently running
+        /// </summary>
+        bool IsGameRunning { get; }
+
+        /// <summary>
+        /// Whether the game is paused
+        /// </summary>
+        bool IsPaused { get; }
+
+        /// <summary>
+        /// Whether to use letter display or icons
         /// </summary>
         bool UseLetterDisplay { get; set; }
 
         /// <summary>
-        /// Gets the game logs
+        /// Game logs
         /// </summary>
         IReadOnlyList<string> GameLogs { get; }
 
         /// <summary>
-        /// Gets the field width
+        /// Width of the field
         /// </summary>
         int FieldWidth { get; }
 
         /// <summary>
-        /// Gets the field height
+        /// Height of the field
         /// </summary>
         int FieldHeight { get; }
 
         /// <summary>
-        /// Gets the currently selected animal details or null if none selected
+        /// Selected animal details
         /// </summary>
         AnimalDetailViewModel? SelectedAnimalDetails { get; }
 
         /// <summary>
         /// Starts a new game
         /// </summary>
-        /// <param name="renderer">The renderer to use</param>
+        /// <param name="renderer">Console renderer to use</param>
         void StartNewGame(IConsoleRenderer renderer);
 
         /// <summary>
@@ -62,22 +62,22 @@ namespace Savanna.Web.Services.Interfaces
         void StopGame();
 
         /// <summary>
-        /// Toggles between paused and running states
+        /// Toggles pause state
         /// </summary>
         void TogglePause();
 
         /// <summary>
-        /// Spawns a new antelope at a random position
+        /// Spawns an antelope at a random position
         /// </summary>
         void SpawnAntelope();
 
         /// <summary>
-        /// Spawns a new lion at a random position
+        /// Spawns a lion at a random position
         /// </summary>
         void SpawnLion();
 
         /// <summary>
-        /// Toggles between letter and icon display modes
+        /// Toggles display mode between letters and icons
         /// </summary>
         void ToggleDisplayMode();
 
@@ -87,9 +87,9 @@ namespace Savanna.Web.Services.Interfaces
         void Update();
 
         /// <summary>
-        /// Logs a message to the game log
+        /// Logs a message
         /// </summary>
-        /// <param name="message">The message to log</param>
+        /// <param name="message">Message to log</param>
         void LogMessage(string message);
 
         /// <summary>
@@ -101,6 +101,19 @@ namespace Savanna.Web.Services.Interfaces
         /// Stops the game timer
         /// </summary>
         void StopTimer();
+
+        /// <summary>
+        /// Serializes the current game state to JSON
+        /// </summary>
+        /// <returns>JSON string representing the game state</returns>
+        string SerializeGameState();
+
+        /// <summary>
+        /// Loads a game state from JSON
+        /// </summary>
+        /// <param name="json">JSON string representing the game state</param>
+        /// <param name="renderer">Console renderer to use</param>
+        void LoadGameState(string json, IConsoleRenderer renderer);
 
         /// <summary>
         /// Selects an animal by its position in the field
@@ -116,21 +129,26 @@ namespace Savanna.Web.Services.Interfaces
         void DeselectAnimal();
 
         /// <summary>
-        /// Gets details for the animal at the specified position
-        /// </summary>
-        /// <param name="x">X coordinate</param>
-        /// <param name="y">Y coordinate</param>
-        /// <returns>AnimalDetailViewModel or null if no animal is at that position</returns>
-        AnimalDetailViewModel? GetAnimalDetailsAt(int x, int y);
-
-        /// <summary>
-        /// Event raised when the game state changes
+        /// Event fired when the game state changes
         /// </summary>
         event EventHandler GameStateChanged;
 
         /// <summary>
-        /// Event raised when an animal is selected or deselected
+        /// Event fired when an animal is selected or deselected
         /// </summary>
         event EventHandler<AnimalDetailViewModel?> AnimalSelectionChanged;
+
+        /// <summary>
+        /// Spawns a custom animal type from a plugin
+        /// </summary>
+        /// <param name="animalType">Type of animal to spawn</param>
+        /// <returns>True if the animal was spawned successfully</returns>
+        bool SpawnPluginAnimal(string animalType);
+
+        /// <summary>
+        /// Gets a list of available plugin animals
+        /// </summary>
+        /// <returns>List of animal names from plugins</returns>
+        IEnumerable<string> GetAvailablePluginAnimals();
     }
 }

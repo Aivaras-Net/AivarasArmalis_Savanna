@@ -1,7 +1,201 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Authorization
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Savanna World Simulation</PageTitle>
 
-<h1>Hello, world!</h1>
+<section class="hero">
+    <div class="container">
+        <h1 class="hero-title">
+            Welcome to <span class="accent">Savanna World</span>
+        </h1>
+        <p class="hero-subtitle">
+            An interactive ecosystem simulation where lions and antelopes roam the virtual plains
+        </p>
 
-Welcome to Savanna web app.
+        <AuthorizeView>
+            <Authorized>
+                <div class="cta-buttons">
+                    <a href="/game" class="btn btn-primary btn-lg">
+                        <i class="bi bi-play-fill me-2"></i>Start Simulation
+                    </a>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="cta-buttons">
+                    <a href="/account/login" class="btn btn-primary btn-lg me-3">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                    </a>
+                    <a href="/account/register" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-person-plus me-2"></i>Create Account
+                    </a>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+</section>
+
+<section class="features">
+    <div class="container">
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div class="col">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-compass"></i>
+                    </div>
+                    <h3>Explore the Savanna</h3>
+                    <p>Watch as lions hunt antelopes in a dynamic virtual ecosystem that simulates predator-prey
+                        relationships.</p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-sliders"></i>
+                    </div>
+                    <h3>Control the Simulation</h3>
+                    <p>Add new animals, pause the simulation, and influence the delicate balance of the ecosystem.</p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-save"></i>
+                    </div>
+                    <h3>Save Your Progress</h3>
+                    <p>Create multiple simulation scenarios and revisit them anytime to continue your experiments.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .hero {
+        text-align: center;
+        padding: 5rem 0 3rem;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239e9764' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+            linear-gradient(135deg, var(--savanna-sand) 0%, var(--secondary-bg) 100%);
+        border-radius: var(--border-radius);
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+    }
+
+    .hero:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(to right, var(--savanna-accent), var(--savanna-grass), var(--savanna-accent));
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--savanna-earth);
+        margin-bottom: 1.5rem;
+        text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .accent {
+        color: var(--savanna-accent);
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--secondary-text);
+        max-width: 700px;
+        margin: 0 auto 2.5rem;
+    }
+
+    .cta-buttons {
+        margin-bottom: 2rem;
+    }
+
+    .features {
+        padding: 2rem 0 4rem;
+    }
+
+    .feature-card {
+        background-color: var(--panel-bg);
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        height: 100%;
+        box-shadow: var(--card-shadow);
+        transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+        text-align: center;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1.5rem;
+        color: var(--savanna-accent);
+        display: inline-block;
+        background-color: rgba(194, 112, 61, 0.1);
+        width: 70px;
+        height: 70px;
+        line-height: 70px;
+        border-radius: 50%;
+    }
+
+    .feature-card h3 {
+        color: var(--savanna-earth);
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .feature-card p {
+        color: var(--secondary-text);
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+
+    /* Mobile styles */
+    .mobile-hero {
+        padding: 3rem 1rem 2rem;
+    }
+
+    .mobile-hero-title {
+        font-size: 2.2rem;
+    }
+
+    .mobile-hero-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .mobile-cta-buttons .btn {
+        display: block;
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+</style>
+
+<script>
+    // Apply mobile styles based on screen width
+    function applyMobileStyles() {
+        if (window.innerWidth <= 768) {
+            document.querySelector('.hero').classList.add('mobile-hero');
+            document.querySelector('.hero-title').classList.add('mobile-hero-title');
+            document.querySelector('.hero-subtitle').classList.add('mobile-hero-subtitle');
+            document.querySelectorAll('.cta-buttons').forEach(el => el.classList.add('mobile-cta-buttons'));
+        } else {
+            document.querySelector('.hero').classList.remove('mobile-hero');
+            document.querySelector('.hero-title').classList.remove('mobile-hero-title');
+            document.querySelector('.hero-subtitle').classList.remove('mobile-hero-subtitle');
+            document.querySelectorAll('.cta-buttons').forEach(el => el.classList.remove('mobile-cta-buttons'));
+        }
+    }
+
+    // Initial application and listener for resize
+    window.addEventListener('DOMContentLoaded', applyMobileStyles);
+    window.addEventListener('resize', applyMobileStyles);
+</script>

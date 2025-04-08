@@ -124,5 +124,101 @@ namespace Savanna.Web.Constants
         public const string LionColor = "#cc3300";
         public const string AntelopeColor = "#33cc33";
         public const string SelectedAnimalGlowColor = "#00FFFF";
+
+        public const string NoActiveGameToSaveMessage = "No active game to save";
+        public const string GameStateSerialized = "Game state serialized";
+        public const string InvalidGameStateFormat = "Invalid game state format";
+        public const string GameStateLoadedMessage = "Game state loaded";
+        public const string FailedToLoadAnimalTypeMessage = "Failed to load animal of type: {0}";
+        public const string FailedToDeserializeGameStateMessage = "Failed to deserialize game state: {0}";
+        public const string SaveGameSuccessMessage = "Game saved successfully";
+        public const string SaveGameErrorMessage = "Error saving game: {0}";
+        public const string LoadGameSuccessMessage = "Game loaded successfully";
+        public const string LoadGameErrorMessage = "Error loading game: {0}";
+
+        public const string StartingDatabaseInitMessage = "Starting database initialization...";
+        public const string DatabaseInitCompletedMessage = "Database initialization completed successfully";
+        public const string StartingRolesInitMessage = "Starting roles initialization...";
+        public const string RolesInitCompletedMessage = "Roles initialization completed successfully";
+        public const string StartingUsersInitMessage = "Starting default users initialization...";
+        public const string UsersInitCompletedMessage = "Default users initialization completed successfully";
+
+        public const string CreatedGameSaveLogMessage = "Created game save {0} for user {1}";
+        public const string FailedDeleteSaveLogMessage = "Failed to delete save {0}. Save not found or doesn't belong to user {1}";
+        public const string DeletedGameSaveLogMessage = "Deleted game save {0} for user {1}";
+
+        public const string SelectedAnimalLogMessage = "Selected animal: {0} at ({1}, {2})";
+        public const string ErrorSelectingAnimalMessage = "Error selecting animal: {0}";
+        public const string FailedDeserializeGameStateMessage = "Failed to deserialize game state";
+
+        public const string ErrorGettingSavesMessage = "Error getting saves";
+        public const string ErrorSavingGameMessage = "Error saving game";
+        public const string ErrorLoadingGameMessage = "Error loading game";
+        public const string ErrorDeletingSaveMessage = "Error deleting save";
+
+        public const string LoginPath = "/Account/AccessDenied";
+        public const string LogoutPath = "/Account/Logout";
+        public const string AccessDeniedPath = "/Account/AccessDenied";
+        public const string ErrorPath = "/Error";
+        public const string DefaultReturnPath = "/";
+
+        public const string AdminEmailEnvVar = "ADMIN_EMAIL";
+        public const string AdminUsernameEnvVar = "ADMIN_USERNAME";
+        public const string AdminPasswordEnvVar = "ADMIN_PASSWORD";
+
+        public const string DefaultConnectionString = "DefaultConnection";
+        public const string IdentitySignInConfigPath = "Identity:SignIn";
+        public const string IdentityPasswordConfigPath = "Identity:Password";
+
+        public const string SaveDateFormat = "yyyy-MM-dd HH:mm:ss";
+
+        public const string PluginsDirectory = "Plugins";
+        public const string PluginFileSearchPattern = "*.dll";
+        public const string PluginLoadedMessage = "Loaded plugin animal: {0}";
+        public const string PluginLoadFailedMessage = "Failed to load plugin: {0}. Error: {1}";
+        public const string PluginAnimalSpawnedMessage = "{0} spawned at ({1}, {2})";
+        public const string FailedToSpawnPluginAnimalMessage = "Failed to spawn {0}";
+        public const string PluginsPath = "/admin/plugins";
+        public const string PluginDetailsPath = "/admin/plugins/{0}";
+
+        public const string ErrorShowingNavigationWarningModalMessage = "Error showing navigation warning modal: {0}";
+        public const string ErrorSettingBeforeUnloadWarningMessage = "Error setting beforeunload warning: {0}";
+        public const string SaveNotFoundMessage = "Save not found";
+
+        public const string GameSaveDeletedMessage = "Game save '{0}' deleted";
+        public const string FailedToLoadSavedGamesMessage = "Failed to load saved games: {0}";
+        public const string PleaseEnterSaveNameMessage = "Please enter a name for your save";
+
+        public const string AnimalManuallyRemovedMessage = "{0} was manually removed from the simulation.";
+        public const string NewOffspringCreatedMessage = "New {0} offspring was manually created.";
+        public const string ErrorLoadingPluginAnimalsMessage = "Error loading plugin animals: {0}";
+        public const string ErrorLoadingAnimalDetailsMessage = "Error loading animal details: {0}";
+
+        public const string ErrorTitleText = "Error";
+        public const string SuccessTitleText = "Success";
+        public const string WarningTitleText = "Warning";
+        public const string InfoTitleText = "Information";
+
+        public const string RoleAddedSuccessMessage = "Role '{0}' added successfully.";
+        public const string FailedToAddRoleMessage = "Failed to add role: {0}";
+        public const string RoleRemovedSuccessMessage = "Role '{0}' removed successfully.";
+        public const string FailedToRemoveRoleMessage = "Failed to remove role: {0}";
+        public const string FailedToLockAccountMessage = "Failed to lock account: {0}";
+        public const string FailedToUnlockAccountMessage = "Failed to unlock account: {0}";
+
+        public const string ErrorUpdatingProfileMessage = "Error updating profile: {0}";
+        public const string ErrorChangingPasswordMessage = "Error changing password: {0}";
+        public const string ErrorUpdatingEmailMessage = "Error updating email: {0}";
+        public const string ProfileUpdatedSuccessMessage = "Profile updated successfully.";
+        public const string PasswordChangedSuccessMessage = "Password changed successfully.";
+        public const string EmailUpdatedSuccessMessage = "Email updated successfully.";
+        public const string AllPasswordFieldsRequiredMessage = "Please fill in all password fields.";
+        public const string PasswordMismatchNewConfirmMessage = "The new password and confirmation password do not match.";
+        public const string EmailCannotBeEmptyMessage = "Email cannot be empty.";
+        public const string EmailSameAsCurrentMessage = "The new email is the same as the current email.";
+        public const string AccountLockedSuccessMessage = "Account locked successfully.";
+        public const string AccountUnlockedSuccessMessage = "Account unlocked successfully.";
+        public const string CannotLockLastAdminMessage = "Cannot lock the last Admin user account.";
+        public const string CannotRemoveLastAdminMessage = "Cannot remove the last Admin user from the system.";
     }
 }

@@ -1,0 +1,162 @@
+@namespace Savanna.Web.Components.Game
+
+<div class="welcome-panel">
+    <div class="welcome-content">
+        <h2>Welcome to Savanna World</h2>
+        <p>Experience the circle of life in this interactive ecosystem simulation where lions hunt antelopes in a
+            dynamic virtual environment.</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-compass"></i>
+                </div>
+                <h3>Explore</h3>
+                <p>Watch as lions hunt antelopes in a realistic ecosystem.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-sliders"></i>
+                </div>
+                <h3>Control</h3>
+                <p>Add new animals, pause simulation, and influence the ecosystem.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-save"></i>
+                </div>
+                <h3>Save</h3>
+                <p>Create multiple scenarios and revisit them anytime.</p>
+            </div>
+        </div>
+        <div class="action-buttons">
+            <button class="btn btn-primary btn-lg start-button" @onclick="OnStartNewGame">
+                <i class="bi bi-play-fill me-2"></i>Start New Simulation
+            </button>
+            <button class="btn btn-secondary btn-lg load-button" @onclick="OnLoadGame">
+                <i class="bi bi-folder-fill me-2"></i>Load Saved Game
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .welcome-panel {
+        background: linear-gradient(135deg, #e9c583 0%, #f2e2c9 100%);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        padding: 3rem 2rem;
+        text-align: center;
+        position: relative;
+    }
+
+    .welcome-panel:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(to right, #e07b39, #8ba446, #e07b39);
+    }
+
+    .welcome-content {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .welcome-content h2 {
+        color: #5d4037;
+        margin-bottom: 1rem;
+        font-weight: 700;
+    }
+
+    .welcome-content p {
+        color: #5d4037;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .feature-card {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: var(--border-radius);
+        padding: 1.5rem;
+        text-align: center;
+        transition: transform 0.3s, box-shadow 0.3s;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: #e07b39;
+        display: inline-block;
+    }
+
+    .feature-card h3 {
+        color: #5d4037;
+        margin-bottom: 0.5rem;
+    }
+
+    .feature-card p {
+        color: #5d4037;
+        margin-bottom: 0;
+        font-size: 0.9rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .start-button {
+        background-color: #e07b39;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        transition: transform 0.3s, background-color 0.3s;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+
+    .start-button:hover {
+        background-color: #c56a2d;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .load-button {
+        padding: 0.75rem 2rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        transition: transform 0.3s, background-color 0.3s;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .load-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    }
+</style>
+
+@code {
+    [Parameter]
+    public EventCallback OnStartNewGame { get; set; }
+
+    [Parameter]
+    public EventCallback OnLoadGame { get; set; }
+}
