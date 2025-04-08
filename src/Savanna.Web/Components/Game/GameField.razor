@@ -8,7 +8,7 @@
     <div class="game-field" id="gameField">
         @if (GameEngine != null)
         {
-            @foreach (var animal in GameEngine.Animals)
+            @foreach (var animal in _animalsSnapshot)
             {
                 string animalClass = GetAnimalClass(animal.Name);
                 string animalDisplay = GetAnimalDisplay(animal.Name);
@@ -104,6 +104,13 @@
 
     [Parameter]
     public EventCallback<IAnimal> OnSelectAnimal { get; set; }
+
+    private List<IAnimal> _animalsSnapshot = new List<IAnimal>();
+
+    protected override void OnParametersSet()
+    {
+        _animalsSnapshot = GameEngine?.Animals.ToList() ?? new List<IAnimal>();
+    }
 
     private string GetAnimalClass(string animalName)
     {
