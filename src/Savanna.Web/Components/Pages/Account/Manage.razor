@@ -12,7 +12,7 @@
 
 <PageTitle>Account Management</PageTitle>
 
-<div class="container mt-4">
+<div class="savanna-container">
     <h1>Account Management</h1>
     <p class="lead">Manage your account settings and profile information</p>
 
@@ -28,16 +28,16 @@
     {
         <div class="row">
             <div class="col-md-3">
-                <div class="list-group mb-4">
-                    <button class="list-group-item list-group-item-action @(_activeTab == "profile" ? "active" : "")"
+                <div class="savanna-nav-menu mb-4">
+                    <button class="savanna-nav-item @(_activeTab == "profile" ? "active" : "")"
                         @onclick='() => ActivateTab("profile")'>
                         <i class="bi bi-person me-2"></i> Profile
                     </button>
-                    <button class="list-group-item list-group-item-action @(_activeTab == "password" ? "active" : "")"
+                    <button class="savanna-nav-item @(_activeTab == "password" ? "active" : "")"
                         @onclick='() => ActivateTab("password")'>
                         <i class="bi bi-key me-2"></i> Password
                     </button>
-                    <button class="list-group-item list-group-item-action @(_activeTab == "email" ? "active" : "")"
+                    <button class="savanna-nav-item @(_activeTab == "email" ? "active" : "")"
                         @onclick='() => ActivateTab("email")'>
                         <i class="bi bi-envelope me-2"></i> Email
                     </button>
@@ -45,8 +45,8 @@
             </div>
 
             <div class="col-md-9">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
+                <div class="savanna-card">
+                    <div class="savanna-card-header">
                         <h3 class="card-title mb-0">
                             @if (_activeTab == "profile")
                             {
@@ -62,12 +62,14 @@
                             }
                         </h3>
                     </div>
-                    <div class="card-body">
+                    <div class="savanna-card-body">
                         @if (!string.IsNullOrEmpty(_statusMessage))
                         {
-                            <div class="alert @_statusClass alert-dismissible fade show" role="alert">
+                            <div class="savanna-alert @_statusClass" role="alert">
                                 @_statusMessage
-                                <button type="button" class="btn-close" @onclick="ClearStatusMessage"></button>
+                                <button type="button" class="savanna-alert-close" @onclick="ClearStatusMessage">
+                                    <i class="bi bi-x"></i>
+                                </button>
                             </div>
                         }
 
@@ -81,7 +83,9 @@
                                 <label class="form-label">Username</label>
                                 <input type="text" class="form-control" @bind="_username" />
                             </div>
-                            <button class="btn btn-primary" @onclick="UpdateProfileAsync">Save Changes</button>
+                            <button class="btn-savanna btn-primary" @onclick="UpdateProfileAsync">
+                                <i class="bi bi-save me-1"></i> Save Changes
+                            </button>
                         }
                         else if (_activeTab == "password")
                         {
@@ -97,7 +101,9 @@
                                 <label class="form-label">Confirm New Password</label>
                                 <input type="password" class="form-control" @bind="_confirmPassword" />
                             </div>
-                            <button class="btn btn-primary" @onclick="ChangePasswordAsync">Change Password</button>
+                            <button class="btn-savanna btn-primary" @onclick="ChangePasswordAsync">
+                                <i class="bi bi-key me-1"></i> Change Password
+                            </button>
                         }
                         else if (_activeTab == "email")
                         {
@@ -113,7 +119,9 @@
                                     </label>
                                 </div>
                             </div>
-                            <button class="btn btn-primary" @onclick="UpdateEmailAsync">Update Email</button>
+                            <button class="btn-savanna btn-primary" @onclick="UpdateEmailAsync">
+                                <i class="bi bi-envelope me-1"></i> Update Email
+                            </button>
                         }
                     </div>
                 </div>
@@ -121,6 +129,153 @@
         </div>
     }
 </div>
+
+<style>
+    .savanna-container {
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239e9764' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+            linear-gradient(135deg, var(--savanna-sand) 0%, var(--secondary-bg) 100%);
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 2rem;
+        margin: 2rem auto;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .savanna-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(to right, var(--savanna-accent), var(--savanna-grass), var(--savanna-accent));
+    }
+
+    .savanna-container h1 {
+        text-align: center;
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+        color: var(--savanna-earth);
+        font-weight: 700;
+        font-size: 2.2rem;
+    }
+
+    .savanna-container .lead {
+        text-align: center;
+        color: var(--secondary-text);
+        margin-bottom: 2rem;
+    }
+
+    .savanna-nav-menu {
+        background-color: var(--panel-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .savanna-nav-item {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        text-align: left;
+        background: none;
+        border: none;
+        border-bottom: 1px solid var(--savanna-sand-light);
+        color: var(--primary-text);
+        transition: all var(--transition-speed);
+        cursor: pointer;
+    }
+
+    .savanna-nav-item:last-child {
+        border-bottom: none;
+    }
+
+    .savanna-nav-item:hover {
+        background-color: rgba(194, 112, 61, 0.05);
+    }
+
+    .savanna-nav-item.active {
+        background-color: var(--savanna-accent);
+        color: white;
+        font-weight: 500;
+    }
+
+    .savanna-card {
+        background-color: var(--panel-bg);
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .savanna-card-header {
+        background-color: var(--savanna-sand);
+        color: var(--savanna-earth);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--savanna-sand-light);
+    }
+
+    .savanna-card-body {
+        padding: 1.5rem;
+    }
+
+    .savanna-alert {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 1.5rem;
+    }
+
+    .savanna-alert.alert-success {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #146c43;
+        border-left: 4px solid #146c43;
+    }
+
+    .savanna-alert.alert-danger {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #b02a37;
+        border-left: 4px solid #b02a37;
+    }
+
+    .savanna-alert.alert-info {
+        background-color: rgba(13, 110, 253, 0.1);
+        color: #0a58ca;
+        border-left: 4px solid #0a58ca;
+    }
+
+    .savanna-alert-close {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        font-size: 1.25rem;
+        line-height: 1;
+    }
+
+    .btn-savanna {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: all var(--transition-speed);
+        border: none;
+    }
+
+    .btn-primary {
+        background-color: var(--savanna-accent);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--savanna-accent-dark, #b85c36);
+    }
+</style>
 
 @code {
     private ApplicationUser? _user;
