@@ -12,30 +12,30 @@
 
 <PageTitle>User Details</PageTitle>
 
-<div class="container mt-4">
+<div class="savanna-container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>User Details</h1>
-        <button class="btn btn-secondary" @onclick="NavigateBack">
-            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        <button class="btn-savanna btn-secondary" @onclick="NavigateBack">
+            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
         </button>
     </div>
 
     @if (_user == null)
     {
-        <div class="alert alert-warning">
-            <i class="bi bi-exclamation-triangle"></i> User not found.
+        <div class="savanna-alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i> User not found.
         </div>
     }
     else
     {
         <div class="row">
             <div class="col-md-6">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
+                <div class="savanna-card mb-4">
+                    <div class="savanna-card-header">
                         <h3 class="card-title mb-0">User Information</h3>
                     </div>
-                    <div class="card-body">
-                        <table class="table">
+                    <div class="savanna-card-body">
+                        <table class="savanna-table">
                             <tbody>
                                 <tr>
                                     <th>User ID</th>
@@ -50,36 +50,15 @@
                                     <td>@_user.Email</td>
                                 </tr>
                                 <tr>
-                                    <th>Email Confirmed</th>
-                                    <td>
-                                        @if (_user.EmailConfirmed)
-                                        {
-                                            <span class="badge bg-success">Yes</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning">No</span>
-                                        }
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Phone Number</th>
-                                    <td>@(_user.PhoneNumber ?? "Not provided")</td>
-                                </tr>
-                                <tr>
-                                    <th>Account Created</th>
-                                    <td>Unknown</td>
-                                </tr>
-                                <tr>
                                     <th>Account Locked</th>
                                     <td>
                                         @if (_user.LockoutEnd != null && _user.LockoutEnd > DateTimeOffset.Now)
                                         {
-                                            <span class="badge bg-danger">Locked until @_user.LockoutEnd</span>
+                                            <span class="status-badge locked">Locked until @_user.LockoutEnd</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-success">Not locked</span>
+                                            <span class="status-badge active">Not locked</span>
                                         }
                                     </td>
                                 </tr>
@@ -90,11 +69,11 @@
             </div>
 
             <div class="col-md-6">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
+                <div class="savanna-card mb-4">
+                    <div class="savanna-card-header">
                         <h3 class="card-title mb-0">Role Management</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="savanna-card-body">
                         <h4>Current Roles</h4>
                         @if (!_userRoles.Any())
                         {
@@ -105,11 +84,13 @@
                             <div class="mb-3">
                                 @foreach (var role in _userRoles)
                                 {
-                                    <span class="badge bg-primary me-2 mb-2 p-2">
+                                    <span class="role-badge">
                                         @role
                                         @if (role != "Admin" || (_userRoles.Contains("Admin") && _userRoles.Count > 1))
                                         {
-                                            <button class="btn btn-sm btn-close ms-2" @onclick="() => RemoveRole(role)"></button>
+                                            <button class="role-remove-btn" @onclick="() => RemoveRole(role)">
+                                                <i class="bi bi-x"></i>
+                                            </button>
                                         }
                                     </span>
                                 }
@@ -125,37 +106,37 @@
                                     <option value="@role">@role</option>
                                 }
                             </select>
-                            <button class="btn btn-primary" @onclick="AddRole"
+                            <button class="btn-savanna btn-primary" @onclick="AddRole"
                                 disabled="@string.IsNullOrEmpty(_selectedRole)">
-                                <i class="bi bi-plus-circle"></i> Add
+                                <i class="bi bi-plus-circle me-1"></i> Add
                             </button>
                         </div>
 
                         @if (!string.IsNullOrEmpty(_message))
                         {
-                            <div class="alert @_alertClass mt-3">
+                            <div class="savanna-alert @_alertClass mt-3">
                                 @_message
                             </div>
                         }
                     </div>
                 </div>
 
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-danger text-white">
+                <div class="savanna-card mb-4 danger-zone">
+                    <div class="savanna-card-header">
                         <h3 class="card-title mb-0">Danger Zone</h3>
                     </div>
-                    <div class="card-body">
+                    <div class="savanna-card-body">
                         <div class="d-grid gap-2">
                             @if (_user.LockoutEnd != null && _user.LockoutEnd > DateTimeOffset.Now)
                             {
-                                <button class="btn btn-warning" @onclick="UnlockAccount">
-                                    <i class="bi bi-unlock"></i> Unlock Account
+                                <button class="btn-savanna btn-warning" @onclick="UnlockAccount">
+                                    <i class="bi bi-unlock me-1"></i> Unlock Account
                                 </button>
                             }
                             else
                             {
-                                <button class="btn btn-warning" @onclick="LockAccount">
-                                    <i class="bi bi-lock"></i> Lock Account
+                                <button class="btn-savanna btn-warning" @onclick="LockAccount">
+                                    <i class="bi bi-lock me-1"></i> Lock Account
                                 </button>
                             }
                         </div>
@@ -165,6 +146,197 @@
         </div>
     }
 </div>
+
+<style>
+    .savanna-container {
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239e9764' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+            linear-gradient(135deg, var(--savanna-sand) 0%, var(--secondary-bg) 100%);
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 2rem;
+        margin: 2rem auto;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .savanna-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(to right, var(--savanna-accent), var(--savanna-grass), var(--savanna-accent));
+    }
+
+    .savanna-container h1 {
+        color: var(--savanna-earth);
+        font-weight: 700;
+        font-size: 2.2rem;
+    }
+
+    .savanna-card {
+        background-color: var(--panel-bg);
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .savanna-card-header {
+        background-color: var(--savanna-sand);
+        color: var(--savanna-earth);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--savanna-sand-light);
+    }
+
+    .danger-zone .savanna-card-header {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #b02a37;
+    }
+
+    .savanna-card-body {
+        padding: 1.5rem;
+    }
+
+    .savanna-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .savanna-table th {
+        width: 40%;
+        background-color: var(--savanna-sand-light);
+        padding: 0.75rem 1rem;
+        text-align: left;
+        vertical-align: top;
+        color: var(--savanna-earth);
+        font-weight: 600;
+    }
+
+    .savanna-table td {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--savanna-sand-light);
+        vertical-align: middle;
+    }
+
+    .savanna-table tr:last-child td,
+    .savanna-table tr:last-child th {
+        border-bottom: none;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 0.35em 0.65em;
+        font-size: 0.75em;
+        font-weight: 600;
+        border-radius: 0.25rem;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .status-badge.active {
+        background-color: rgba(25, 135, 84, 0.2);
+        color: #146c43;
+    }
+
+    .status-badge.locked {
+        background-color: rgba(220, 53, 69, 0.2);
+        color: #b02a37;
+    }
+
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.35em 0.65em;
+        font-size: 0.875em;
+        font-weight: 600;
+        background-color: rgba(194, 112, 61, 0.2);
+        color: var(--savanna-accent-dark, #b85c36);
+        border-radius: 0.25rem;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .role-remove-btn {
+        background: transparent;
+        border: none;
+        color: var(--savanna-accent-dark, #b85c36);
+        cursor: pointer;
+        padding: 0 0 0 0.5rem;
+        font-size: 1rem;
+        line-height: 1;
+        opacity: 0.7;
+    }
+
+    .role-remove-btn:hover {
+        opacity: 1;
+    }
+
+    .savanna-alert {
+        padding: 0.75rem 1rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 1.5rem;
+    }
+
+    .savanna-alert.alert-warning {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: #cc9a06;
+        border-left: 4px solid #cc9a06;
+    }
+
+    .savanna-alert.alert-success {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #146c43;
+        border-left: 4px solid #146c43;
+    }
+
+    .savanna-alert.alert-danger {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #b02a37;
+        border-left: 4px solid #b02a37;
+    }
+
+    .btn-savanna {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: all var(--transition-speed);
+        border: none;
+    }
+
+    .btn-primary {
+        background-color: var(--savanna-accent);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--savanna-accent-dark, #b85c36);
+    }
+
+    .btn-secondary {
+        background-color: var(--secondary-bg);
+        color: var(--secondary-text);
+    }
+
+    .btn-secondary:hover {
+        background-color: #e2e2e2;
+    }
+
+    .btn-warning {
+        background-color: rgba(255, 193, 7, 0.2);
+        color: #cc9a06;
+        border: 1px solid rgba(255, 193, 7, 0.5);
+    }
+
+    .btn-warning:hover {
+        background-color: rgba(255, 193, 7, 0.3);
+    }
+</style>
 
 @code {
     [Parameter]
