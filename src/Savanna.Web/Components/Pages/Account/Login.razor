@@ -8,42 +8,95 @@
 
 <PageTitle>Log in</PageTitle>
 
-<h1>Log in</h1>
-<div class="row">
-    <div class="col-md-4">
-        <section>
-            <h2>Use a local account to log in.</h2>
-            <hr />
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="alert alert-danger" role="alert">
-                    @errorMessage
-                </div>
-            }
+<div class="auth-container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <h1>Log in</h1>
+            <section>
+                <h2 class="h5 mb-3 fw-normal">Use a local account to log in.</h2>
+                <hr class="mb-4" />
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger" role="alert">
+                        @errorMessage
+                    </div>
+                }
 
-            <form action="/Account/ProcessLogin" method="post">
-                <div class="form-floating mb-3">
-                    <input name="Email" class="form-control" autocomplete="username" aria-required="true"
-                        placeholder="name@example.com" />
-                    <label for="email">Email/Username</label>
-                </div>
-                <div class="form-floating mb-3">
-                    <input name="Password" type="password" class="form-control" autocomplete="current-password"
-                        aria-required="true" placeholder="password" />
-                    <label for="password">Password</label>
-                </div>
-                <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-                </div>
-                <div class="mt-3">
-                    <p>
-                        <a href="/Account/Register">Register as a new user</a>
-                    </p>
-                </div>
-            </form>
-        </section>
+                <form action="/Account/ProcessLogin" method="post">
+                    <div class="form-floating mb-3">
+                        <input name="Email" class="form-control" autocomplete="username" aria-required="true"
+                            placeholder="name@example.com" />
+                        <label for="email">Email/Username</label>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input name="Password" type="password" class="form-control" autocomplete="current-password"
+                            aria-required="true" placeholder="password" />
+                        <label for="password">Password</label>
+                    </div>
+                    <div class="mb-3">
+                        <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                    </div>
+                    <div class="text-center">
+                        <p>
+                            <a href="/Account/Register">Register as a new user</a>
+                        </p>
+                    </div>
+                </form>
+            </section>
+        </div>
     </div>
 </div>
+
+<style>
+    .auth-container {
+        background-color: transparent;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239e9764' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+            linear-gradient(135deg, var(--savanna-sand) 0%, var(--secondary-bg) 100%);
+        border-radius: var(--border-radius);
+        box-shadow: var(--card-shadow);
+        padding: 2rem;
+        margin: 3rem auto;
+        max-width: 700px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(to right, var(--savanna-accent), var(--savanna-grass), var(--savanna-accent));
+    }
+
+    .auth-container h1 {
+        text-align: center;
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+        color: var(--savanna-earth);
+        font-weight: 700;
+        font-size: 2.2rem;
+    }
+
+    .auth-container section h2 {
+        text-align: center;
+        color: var(--secondary-text);
+        margin-bottom: 1.5rem;
+        font-size: 1.1rem;
+    }
+
+    .auth-container .text-center a {
+        color: var(--savanna-accent);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .auth-container .text-center a:hover {
+        text-decoration: underline;
+    }
+</style>
 
 @code {
     private string? errorMessage;
