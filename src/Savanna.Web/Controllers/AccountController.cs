@@ -47,7 +47,7 @@ namespace Savanna.Web.Controllers
                     }
                 }
 
-                var result = await _signInManager.PasswordSignInAsync(user.UserName, password, rememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, password, rememberMe, lockoutOnFailure: true);
 
                 if (result.Succeeded)
                 {
@@ -59,7 +59,7 @@ namespace Savanna.Web.Controllers
                 }
                 else if (result.IsLockedOut)
                 {
-                    return RedirectToPage("/Account/Lockout");
+                    return Redirect("/Account/Lockout");
                 }
                 else
                 {

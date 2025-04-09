@@ -1,0 +1,329 @@
+.savanna-container, .auth-container {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239e9764' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+        linear-gradient(135deg, var(--savanna-sand) 0%, var(--secondary-bg) 100%);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    padding: 2rem;
+    margin: 2rem auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.savanna-container::before, .auth-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(to right, var(--savanna-accent), var(--savanna-grass), var(--savanna-accent));
+}
+
+.savanna-container h1, .auth-container h1 {
+    text-align: center;
+    margin-bottom: 1rem;
+    margin-top: 1rem;
+    color: var(--savanna-earth);
+    font-weight: 700;
+    font-size: 2.2rem;
+}
+
+.savanna-card {
+    background-color: var(--panel-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+}
+
+.savanna-card-header {
+    background-color: var(--savanna-sand);
+    color: var(--savanna-earth);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--savanna-sand-light);
+}
+
+.savanna-card-header h3 {
+     margin-bottom: 0;
+}
+
+
+.savanna-card-body {
+    padding: 1.5rem;
+}
+
+.savanna-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: rgba(255, 253, 245, 0.7);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.savanna-table th {
+    background-color: var(--savanna-sand);
+    color: var(--savanna-earth);
+    font-weight: 600;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 2px solid var(--savanna-accent);
+}
+
+.savanna-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--savanna-sand);
+    vertical-align: middle;
+}
+
+.savanna-table tr:nth-child(even) {
+    background-color: rgba(246, 240, 227, 0.7);
+}
+
+.savanna-table tr:nth-child(odd) {
+    background-color: rgba(254, 250, 240, 0.7);
+}
+
+.savanna-table tr:hover {
+    background-color: rgba(194, 112, 61, 0.1);
+}
+
+.savanna-alert {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1.5rem;
+    position: relative;
+    border-left: 4px solid;
+}
+
+.savanna-alert.alert-info { background-color: rgba(13, 110, 253, 0.1); color: #0a58ca; border-color: #0a58ca; }
+.savanna-alert.alert-success { background-color: rgba(25, 135, 84, 0.1); color: #146c43; border-color: #146c43; }
+.savanna-alert.alert-warning { background-color: rgba(255, 193, 7, 0.1); color: #997404; border-color: #ffc107; }
+.savanna-alert.alert-danger { background-color: rgba(220, 53, 69, 0.1); color: #b02a37; border-color: #dc3545; }
+
+.savanna-alert-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    padding: 0;
+}
+.savanna-alert-close:hover {
+    opacity: 1;
+}
+
+
+.btn-savanna {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    border: none;
+    text-decoration: none;
+    line-height: 1.5;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+}
+
+.btn-savanna i {
+    vertical-align: middle;
+}
+
+
+.btn-savanna.btn-primary {
+    background-color: var(--savanna-accent);
+    color: white;
+}
+.btn-savanna.btn-primary:hover { background-color: var(--savanna-accent-dark, #b85c36); color: white; }
+.btn-savanna.btn-primary:disabled { background-color: var(--savanna-accent); opacity: 0.65; }
+
+
+.btn-savanna.btn-secondary {
+     background-color: var(--secondary-action, #6c757d);
+     color: white;
+}
+.btn-savanna.btn-secondary:hover { background-color: var(--secondary-action-hover, #5c636a); color: white; }
+.btn-savanna.btn-secondary:disabled { background-color: var(--secondary-action, #6c757d); opacity: 0.65; }
+
+.btn-savanna.btn-warning {
+     background-color: var(--warning-action, #ffc107);
+     color: #000;
+}
+.btn-savanna.btn-warning:hover { background-color: var(--warning-action-hover, #ffca2c); color: #000; }
+.btn-savanna.btn-warning:disabled { background-color: var(--warning-action, #ffc107); opacity: 0.65; }
+
+
+
+.role-badge {
+    display: inline-block;
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    font-weight: 600;
+    background-color: rgba(194, 112, 61, 0.2);
+    color: var(--savanna-accent-dark, #b85c36);
+    border-radius: 0.25rem;
+    text-align: center;
+    white-space: nowrap;
+    margin-right: 0.5rem;
+    line-height: 1;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+    font-weight: 600;
+    border-radius: 0.25rem;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.status-badge.locked {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #b02a37;
+}
+
+.status-badge.active {
+    background-color: rgba(25, 135, 84, 0.1);
+    color: #146c43;
+}
+
+.savanna-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+}
+
+.savanna-modal {
+    background-color: var(--modal-bg, #fff);
+    border-radius: var(--border-radius);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.savanna-modal-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.savanna-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color, #dee2e6);
+    background-color: var(--panel-bg);
+}
+
+.savanna-modal-title {
+    margin-bottom: 0;
+    font-size: 1.25rem;
+    color: var(--savanna-earth);
+}
+
+.savanna-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--secondary-text);
+    opacity: 0.7;
+    padding: 0;
+}
+.savanna-modal-close:hover {
+    opacity: 1;
+}
+
+.savanna-modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.savanna-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color, #dee2e6);
+    background-color: var(--panel-bg);
+    gap: 0.5rem;
+}
+
+.savanna-toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1060;
+    min-width: 250px;
+}
+
+.savanna-toast {
+    background-color: var(--panel-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    margin-bottom: 1rem;
+    border-left: 4px solid;
+    opacity: 0.95;
+}
+
+.savanna-toast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid var(--border-color, #dee2e6);
+    font-weight: bold;
+}
+
+.savanna-toast-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7;
+    padding: 0;
+    margin-left: 0.5rem;
+}
+.savanna-toast-close:hover {
+    opacity: 1;
+}
+
+.savanna-toast-body {
+    padding: 0.75rem 1rem;
+}
+
+.savanna-toast.success { border-color: var(--savanna-grass); }
+.savanna-toast.error { border-color: #dc3545; }
+.savanna-toast.info { border-color: #0dcaf0; }
+.savanna-toast.warning { border-color: #ffc107; }

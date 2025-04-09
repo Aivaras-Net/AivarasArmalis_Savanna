@@ -27,10 +27,8 @@
 <PageTitle>Savanna Game</PageTitle>
 
 <div class="game-container">
-    <GameHeader IsGameRunning="GameService.IsGameRunning" IsPaused="GameService.IsPaused"
-        AnimalsCount="GameService.GameEngine?.Animals.Count ?? 0"
-        LionsCount="GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.LionName) ?? 0"
-        AntelopesCount="GameService.GameEngine?.Animals.Count(a => a.Name == GameConstants.AntelopeName) ?? 0" />
+    <GameHeader IsGameRunning="GameService.IsGameRunning" IsPaused="GameService.IsPaused" AnimalsCount="_animalsCount"
+        LionsCount="_lionsCount" AntelopesCount="_antelopesCount" />
 
     @if (!GameService.IsGameRunning)
     {
@@ -175,6 +173,10 @@
     private int _pendingDeleteSaveId = -1;
     private string _pendingSaveName = string.Empty;
 
+    private int _animalsCount = 0;
+    private int _lionsCount = 0;
+    private int _antelopesCount = 0;
+
     [JSInvokable]
     public static Task HandleNavigationAttempt(string destination)
     {
@@ -203,6 +205,8 @@
         _detailsUpdateTimer = new System.Timers.Timer(WebConstants.AnimalDetailsUpdateInterval);
         _detailsUpdateTimer.Elapsed += UpdateSelectedAnimalDetails;
         _detailsUpdateTimer.AutoReset = true;
+
+        UpdateAnimalCounts();
 
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
@@ -249,7 +253,26 @@
             DeselectAnimal();
         }
 
+        UpdateAnimalCounts();
+
         InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateAnimalCounts()
+    {
+        if (GameService.IsGameRunning && GameService.GameEngine != null)
+        {
+            var animals = GameService.GameEngine.Animals.ToList();
+            _animalsCount = animals.Count;
+            _lionsCount = animals.Count(a => a.Name == GameConstants.LionName);
+            _antelopesCount = animals.Count(a => a.Name == GameConstants.AntelopeName);
+        }
+        else
+        {
+            _animalsCount = 0;
+            _lionsCount = 0;
+            _antelopesCount = 0;
+        }
     }
 
     private void OnAnimalSelectionChanged(object? sender, AnimalDetailViewModel? animal)
@@ -392,7 +415,6 @@
     private void TogglePause()
     {
         GameService.TogglePause();
-        GameService.LogMessage(GameService.IsPaused ? WebConstants.GamePausedMessage : WebConstants.GameResumedMessage);
     }
 
     private void SpawnAntelope()

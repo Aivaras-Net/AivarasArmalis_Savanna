@@ -12,7 +12,7 @@
 
 <PageTitle>Account Management</PageTitle>
 
-<div class="container mt-4">
+<div class="savanna-container">
     <h1>Account Management</h1>
     <p class="lead">Manage your account settings and profile information</p>
 
@@ -28,16 +28,16 @@
     {
         <div class="row">
             <div class="col-md-3">
-                <div class="list-group mb-4">
-                    <button class="list-group-item list-group-item-action @(_activeTab == "profile" ? "active" : "")"
+                <div class="savanna-nav-menu mb-4">
+                    <button class="savanna-nav-item @(_activeTab == "profile" ? "active" : "")"
                         @onclick='() => ActivateTab("profile")'>
                         <i class="bi bi-person me-2"></i> Profile
                     </button>
-                    <button class="list-group-item list-group-item-action @(_activeTab == "password" ? "active" : "")"
+                    <button class="savanna-nav-item @(_activeTab == "password" ? "active" : "")"
                         @onclick='() => ActivateTab("password")'>
                         <i class="bi bi-key me-2"></i> Password
                     </button>
-                    <button class="list-group-item list-group-item-action @(_activeTab == "email" ? "active" : "")"
+                    <button class="savanna-nav-item @(_activeTab == "email" ? "active" : "")"
                         @onclick='() => ActivateTab("email")'>
                         <i class="bi bi-envelope me-2"></i> Email
                     </button>
@@ -45,8 +45,8 @@
             </div>
 
             <div class="col-md-9">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
+                <div class="savanna-card">
+                    <div class="savanna-card-header">
                         <h3 class="card-title mb-0">
                             @if (_activeTab == "profile")
                             {
@@ -62,12 +62,14 @@
                             }
                         </h3>
                     </div>
-                    <div class="card-body">
+                    <div class="savanna-card-body">
                         @if (!string.IsNullOrEmpty(_statusMessage))
                         {
-                            <div class="alert @_statusClass alert-dismissible fade show" role="alert">
+                            <div class="savanna-alert @_statusClass" role="alert">
                                 @_statusMessage
-                                <button type="button" class="btn-close" @onclick="ClearStatusMessage"></button>
+                                <button type="button" class="savanna-alert-close" @onclick="ClearStatusMessage">
+                                    <i class="bi bi-x"></i>
+                                </button>
                             </div>
                         }
 
@@ -81,7 +83,9 @@
                                 <label class="form-label">Username</label>
                                 <input type="text" class="form-control" @bind="_username" />
                             </div>
-                            <button class="btn btn-primary" @onclick="UpdateProfileAsync">Save Changes</button>
+                            <button class="btn-savanna btn-primary" @onclick="UpdateProfileAsync">
+                                <i class="bi bi-save me-1"></i> Save Changes
+                            </button>
                         }
                         else if (_activeTab == "password")
                         {
@@ -97,7 +101,9 @@
                                 <label class="form-label">Confirm New Password</label>
                                 <input type="password" class="form-control" @bind="_confirmPassword" />
                             </div>
-                            <button class="btn btn-primary" @onclick="ChangePasswordAsync">Change Password</button>
+                            <button class="btn-savanna btn-primary" @onclick="ChangePasswordAsync">
+                                <i class="bi bi-key me-1"></i> Change Password
+                            </button>
                         }
                         else if (_activeTab == "email")
                         {
@@ -113,7 +119,9 @@
                                     </label>
                                 </div>
                             </div>
-                            <button class="btn btn-primary" @onclick="UpdateEmailAsync">Update Email</button>
+                            <button class="btn-savanna btn-primary" @onclick="UpdateEmailAsync">
+                                <i class="bi bi-envelope me-1"></i> Update Email
+                            </button>
                         }
                     </div>
                 </div>
@@ -121,6 +129,78 @@
         </div>
     }
 </div>
+
+<style>
+    .savanna-container {
+    }
+
+    .savanna-container .lead {
+        text-align: center;
+        color: var(--secondary-text);
+        margin-bottom: 2rem;
+    }
+
+    .savanna-nav-menu {
+        background-color: var(--panel-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .savanna-nav-item {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        text-align: left;
+        background: none;
+        border: none;
+        border-bottom: 1px solid var(--savanna-sand-light);
+        color: var(--primary-text);
+        transition: all var(--transition-speed);
+        cursor: pointer;
+    }
+
+    .savanna-nav-item:last-child {
+        border-bottom: none;
+    }
+
+    .savanna-nav-item:hover {
+        background-color: rgba(194, 112, 61, 0.05);
+    }
+
+    .savanna-nav-item.active {
+        background-color: var(--savanna-accent);
+        color: white;
+    }
+
+    .savanna-nav-item.active:hover {
+        background-color: var(--savanna-accent-dark, #b85c36);
+    }
+
+    .savanna-nav-item i {
+        margin-right: 0.5rem;
+        width: 1em;
+        text-align: center;
+    }
+
+    .savanna-card {
+    }
+
+    .savanna-card-header h3 {
+        display: flex;
+        align-items: center;
+    }
+
+    .savanna-card-header i {
+        margin-right: 0.5rem;
+    }
+
+    .savanna-alert {
+    }
+
+    .btn-savanna {
+    }
+</style>
 
 @code {
     private ApplicationUser? _user;

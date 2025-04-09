@@ -1,9 +1,18 @@
 using SavannaCore.Tests.Helpers;
+using Savanna.Core.Config;
+using Savanna.Domain;
+using Savanna.Core.Infrastructure;
 
 namespace SavannaCore.Tests.Domain;
 
 public class AnimalTests
 {
+    public AnimalTests()
+    {
+        ConfigurationBootstrap.Initialize();
+        Animal.InitializeConfigProvider(ConfigurationService.Instance);
+    }
+
     [Fact]
     public void Animal_InitialHealth_ShouldMatchConfig()
     {
@@ -28,8 +37,10 @@ public class AnimalTests
         var lion = AnimalTestHelper.CreateLion(AnimalTestHelper.CreatePosition(0, 0));
         var initialHealth = lion.Health;
         var animals = AnimalTestHelper.CreateAnimalList(lion);
+        var lifeCycleManager = new LifeCycleManager();
 
         lion.Move(animals, 10, 10);
+        lifeCycleManager.Update(animals, 10, 10);
 
         Assert.Equal(initialHealth - 0.5, lion.Health);
     }

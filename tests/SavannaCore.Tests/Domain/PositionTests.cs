@@ -1,4 +1,4 @@
-using Savanna.Core.Domain;
+using Savanna.Domain;
 
 namespace SavannaCore.Tests.Domain;
 

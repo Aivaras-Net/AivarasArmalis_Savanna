@@ -17,105 +17,95 @@
 
 <PageTitle>Animal Information</PageTitle>
 
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                    <h3>Animal Information</h3>
-                </div>
-                <div class="card-body">
-                    <h4 class="mb-3">Animals</h4>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Type</th>
-                                    <th>Source</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Lion</td>
-                                    <td><span class="badge bg-danger">Predator</span></td>
-                                    <td>Savanna.Core</td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-primary"
-                                            @onclick="() => ViewDefaultAnimalDetails(GameConstants.LionName)">
-                                            Details
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Antelope</td>
-                                    <td><span class="badge bg-success">Prey</span></td>
-                                    <td>Savanna.Core</td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-primary"
-                                            @onclick="() => ViewDefaultAnimalDetails(GameConstants.AntelopeName)">
-                                            Details
-                                        </button>
-                                    </td>
-                                </tr>
+<div class="savanna-container">
+    <h1>Animal Information</h1>
 
-                                @foreach (var animalName in _availableAnimals)
-                                {
-                                    var info = PluginService.GetPluginAnimalInfo(animalName);
-                                    <tr>
-                                        <td>@info.Name</td>
-                                        <td>
-                                            @if (info.IsPredator)
-                                            {
-                                                <span class="badge bg-danger">Predator</span>
-                                            }
-                                            else if (info.IsPrey)
-                                            {
-                                                <span class="badge bg-success">Prey</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary">Unknown</span>
-                                            }
-                                        </td>
-                                        <td>@info.SourceAssembly</td>
-                                        <td>
-                                            <button type="button" class="btn btn-sm btn-primary"
-                                                @onclick="() => ViewAnimalDetails(animalName)">
-                                                Details
-                                            </button>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="table-responsive">
+        <table class="savanna-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Source</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Lion</td>
+                    <td><span class="animal-badge predator">Predator</span></td>
+                    <td>Savanna.Core</td>
+                    <td>
+                        <button type="button" class="btn-savanna btn-primary"
+                            @onclick="() => ViewDefaultAnimalDetails(GameConstants.LionName)">
+                            <i class="bi bi-info-circle me-1"></i> Details
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Antelope</td>
+                    <td><span class="animal-badge prey">Prey</span></td>
+                    <td>Savanna.Core</td>
+                    <td>
+                        <button type="button" class="btn-savanna btn-primary"
+                            @onclick="() => ViewDefaultAnimalDetails(GameConstants.AntelopeName)">
+                            <i class="bi bi-info-circle me-1"></i> Details
+                        </button>
+                    </td>
+                </tr>
+
+                @foreach (var animalName in _availableAnimals)
+                {
+                    var info = PluginService.GetPluginAnimalInfo(animalName);
+                    <tr>
+                        <td>@info.Name</td>
+                        <td>
+                            @if (info.IsPredator)
+                            {
+                                <span class="animal-badge predator">Predator</span>
+                            }
+                            else if (info.IsPrey)
+                            {
+                                <span class="animal-badge prey">Prey</span>
+                            }
+                            else
+                            {
+                                <span class="animal-badge neutral">Unknown</span>
+                            }
+                        </td>
+                        <td>@info.SourceAssembly</td>
+                        <td>
+                            <button type="button" class="btn-savanna btn-primary"
+                                @onclick="() => ViewAnimalDetails(animalName)">
+                                <i class="bi bi-info-circle me-1"></i> Details
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>
 
 @if (_showAnimalDetailsModal)
 {
-    <div class="modal" tabindex="-1" role="dialog" style="display: block; background-color: rgba(0,0,0,0.5);">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">@_selectedAnimal?.Name Details</h5>
-                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+    <div class="savanna-modal-overlay">
+        <div class="savanna-modal">
+            <div class="savanna-modal-content">
+                <div class="savanna-modal-header">
+                    <h5 class="savanna-modal-title">@_selectedAnimal?.Name Details</h5>
+                    <button type="button" class="savanna-modal-close" @onclick="CloseModal">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
                 </div>
-                <div class="modal-body">
-                    <div class="card">
-                        <div class="card-header bg-light">JSON Representation</div>
-                        <div class="card-body">
-                            <pre class="bg-dark text-light p-3 rounded"><code>@_selectedAnimalJson</code></pre>
-                        </div>
+                <div class="savanna-modal-body">
+                    <div class="code-container">
+                        <div class="code-header">JSON Representation</div>
+                        <pre class="code-content"><code>@_selectedAnimalJson</code></pre>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="CloseModal">Close</button>
+                <div class="savanna-modal-footer">
+                    <button type="button" class="btn-savanna btn-secondary" @onclick="CloseModal">Close</button>
                 </div>
             </div>
         </div>
@@ -124,18 +114,87 @@
 
 @if (!string.IsNullOrEmpty(_statusMessage))
 {
-    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
-        <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header @_statusMessageClass">
-                <strong class="me-auto text-white">@_statusMessageTitle</strong>
-                <button type="button" class="btn-close btn-close-white" @onclick="() => _statusMessage = null"></button>
+    <div class="savanna-toast-container">
+        <div class="savanna-toast @_statusMessageClass">
+            <div class="savanna-toast-header">
+                <strong>@_statusMessageTitle</strong>
+                <button type="button" class="savanna-toast-close" @onclick="() => _statusMessage = null">
+                    <i class="bi bi-x"></i>
+                </button>
             </div>
-            <div class="toast-body">
+            <div class="savanna-toast-body">
                 @_statusMessage
             </div>
         </div>
     </div>
 }
+
+<style>
+    .savanna-container {
+        margin: 2rem auto;
+    }
+
+    .savanna-table {
+    }
+
+    .savanna-table th {
+    }
+
+    .savanna-table td {
+    }
+
+    .animal-badge {
+        display: inline-block;
+        padding: 0.35em 0.65em;
+        font-size: 0.75em;
+        font-weight: 600;
+        border-radius: 0.25rem;
+        text-align: center;
+        white-space: nowrap;
+        line-height: 1;
+    }
+
+    .animal-badge.predator {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #b02a37;
+    }
+
+    .animal-badge.prey {
+        background-color: rgba(25, 135, 84, 0.1);
+        color: #146c43;
+    }
+
+    .animal-badge.neutral {
+        background-color: rgba(108, 117, 125, 0.1);
+        color: #495057;
+    }
+
+    .code-container {
+        background-color: var(--code-bg, #f8f9fa);
+        border: 1px solid var(--border-color, #dee2e6);
+        border-radius: var(--border-radius);
+        margin-top: 1rem;
+        overflow: hidden;
+    }
+
+    .code-header {
+        padding: 0.5rem 1rem;
+        background-color: var(--savanna-sand-light);
+        color: var(--savanna-earth);
+        font-weight: 500;
+        border-bottom: 1px solid var(--border-color, #dee2e6);
+    }
+
+    .code-content {
+        padding: 1rem;
+        max-height: 300px;
+        overflow-y: auto;
+        font-family: var(--font-family-monospace);
+        font-size: 0.875em;
+        background-color: var(--code-content-bg, #fff);
+        color: var(--code-content-text, #212529);
+    }
+</style>
 
 @code {
     private List<string> _availableAnimals = new();

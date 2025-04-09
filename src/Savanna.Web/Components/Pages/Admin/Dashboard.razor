@@ -11,15 +11,15 @@
 
 <PageTitle>Admin Dashboard</PageTitle>
 
-<div class="container mt-4">
+<div class="savanna-container">
     <h1>Admin Dashboard</h1>
     <p class="lead">Manage registered users and their roles</p>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
+    <div class="savanna-card">
+        <div class="savanna-card-header">
             <h3 class="card-title mb-0">User Management</h3>
         </div>
-        <div class="card-body">
+        <div class="savanna-card-body">
             <div class="table-responsive">
                 @if (_users == null)
                 {
@@ -31,18 +31,17 @@
                 }
                 else if (!_users.Any())
                 {
-                    <div class="alert alert-info">
-                        No users found in the system.
+                    <div class="savanna-alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i> No users found in the system.
                     </div>
                 }
                 else
                 {
-                    <table class="table table-striped table-hover">
+                    <table class="savanna-table">
                         <thead>
                             <tr>
                                 <th>Username</th>
                                 <th>Email</th>
-                                <th>Email Confirmed</th>
                                 <th>Roles</th>
                                 <th>Actions</th>
                             </tr>
@@ -54,31 +53,18 @@
                                     <td>@user.UserName</td>
                                     <td>@user.Email</td>
                                     <td>
-                                        @if (user.EmailConfirmed)
-                                        {
-                                            <span class="badge bg-success">Confirmed</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-warning">Not Confirmed</span>
-                                        }
-                                    </td>
-                                    <td>
                                         @if (_userRoles.ContainsKey(user.Id))
                                         {
                                             @foreach (var role in _userRoles[user.Id])
                                             {
-                                                <span class="badge bg-primary me-1">@role</span>
+                                                <span class="role-badge">@role</span>
                                             }
                                         }
                                     </td>
                                     <td>
-                                        <div class="btn-group">
-                                            <button class="btn btn-sm btn-outline-primary"
-                                                @onclick="() => ShowUserDetails(user.Id)">
-                                                <i class="bi bi-info-circle"></i> Details
-                                            </button>
-                                        </div>
+                                        <button class="btn-savanna btn-primary" @onclick="() => ShowUserDetails(user.Id)">
+                                            <i class="bi bi-info-circle me-1"></i> Details
+                                        </button>
                                     </td>
                                 </tr>
                             }
@@ -89,6 +75,39 @@
         </div>
     </div>
 </div>
+
+<style>
+    .savanna-container {
+    }
+
+    .savanna-container .lead {
+        text-align: center;
+        color: var(--secondary-text);
+        margin-bottom: 2rem;
+    }
+
+    .savanna-card {
+    }
+
+    .savanna-table {
+    }
+
+    .savanna-table th {
+    }
+
+    .savanna-table td {
+    }
+
+    .role-badge {
+        margin-bottom: 0.25rem;
+    }
+
+    .savanna-alert {
+    }
+
+    .btn-savanna {
+    }
+</style>
 
 @code {
     private List<ApplicationUser>? _users;
